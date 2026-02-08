@@ -2,108 +2,322 @@
 
 namespace Venezia\Modules\Pricing\Controllers;
 
+use Venezia\Core\EventDispatcher;
+use Venezia\Modules\Pricing\Models\RatePlan;
 use Venezia\Modules\Pricing\Repositories\RatePlanRepository;
 use Venezia\Modules\Pricing\Validators\RatePlanValidator;
 
+/**
+ * REST API controller for rate plan admin CRUD operations.
+ *
+ * All endpoints require the 'manage_options' capability.
+ * Registered under the venezia/v1/rate-plans namespace.
+ */
 class RatePlanController {
 
-    private RatePlanRepository $repo;
-    private RatePlanValidator $validator;
+	private RatePlanRepository $repository;
+	private RatePlanValidator $validator;
+	private EventDispatcher $events;
 
-    public function __construct( RatePlanRepository $repo, RatePlanValidator $validator ) {
-        $this->repo      = $repo;
-        $this->validator = $validator;
-    }
+	public function __construct(
+		RatePlanRepository $repository,
+		RatePlanValidator  $validator,
+		EventDispatcher    $events
+	) {
+		$this->repository = $repository;
+		$this->validator  = $validator;
+		$this->events     = $events;
+	}
 
-    public function index( \WP_REST_Request $request ): \WP_REST_Response {
-        $plans = $this->repo->getActive();
-        return new \WP_REST_Response( [
-            'success' => true,
-            'data'    => array_map( fn( $p ) => $p->toArray(), $plans ),
-        ] );
-    }
+	/**
+	 * Register REST API routes.
+	 */
+	public function registerRoutes(): void {
+		$namespace = 'venezia/v1';
 
-    public function show( \WP_REST_Request $request ): \WP_REST_Response {
-        $plan = $this->repo->find( (int) $request->get_param( 'id' ) );
-        if ( ! $plan ) {
-            return new \WP_REST_Response( [
-                'success' => false,
-                'error'   => [ 'code' => 'NOT_FOUND', 'message' => 'Rate plan not found' ],
-            ], 404 );
-        }
-        return new \WP_REST_Response( [ 'success' => true, 'data' => $plan->toArray() ] );
-    }
+		register_rest_route( $namespace, '/rate-plans', [
+			[
+				'methods'             => \WP_REST_Server::READABLE,
+				'callback'            => [ $this, 'index' ],
+				'permission_callback' => [ $this, 'checkAdminPermission' ],
+			],
+			[
+				'methods'             => \WP_REST_Server::CREATABLE,
+				'callback'            => [ $this, 'store' ],
+				'permission_callback' => [ $this, 'checkAdminPermission' ],
+			],
+		] );
 
-    public function store( \WP_REST_Request $request ): \WP_REST_Response {
-        $data = $request->get_json_params();
+		register_rest_route( $namespace, '/rate-plans/(?P<id>\d+)', [
+			[
+				'methods'             => \WP_REST_Server::READABLE,
+				'callback'            => [ $this, 'show' ],
+				'permission_callback' => [ $this, 'checkAdminPermission' ],
+			],
+			[
+				'methods'             => 'PUT, PATCH',
+				'callback'            => [ $this, 'update' ],
+				'permission_callback' => [ $this, 'checkAdminPermission' ],
+			],
+			[
+				'methods'             => \WP_REST_Server::DELETABLE,
+				'callback'            => [ $this, 'destroy' ],
+				'permission_callback' => [ $this, 'checkAdminPermission' ],
+			],
+		] );
+	}
 
-        if ( ! $this->validator->validateCreate( $data ) ) {
-            return new \WP_REST_Response( [
-                'success' => false,
-                'error'   => [ 'code' => 'VALIDATION_ERROR', 'message' => implode( ' ', $this->validator->getAllErrors() ) ],
-            ], 422 );
-        }
+	/**
+	 * Check that the current user has admin permissions.
+	 */
+	public function checkAdminPermission(): bool {
+		return current_user_can( 'manage_options' );
+	}
 
-        $plan = $this->repo->create( [
-            'room_type_id'      => $data['room_type_id'] ?? null,
-            'name'              => sanitize_text_field( $data['name'] ),
-            'name_ar'           => sanitize_text_field( $data['name_ar'] ),
-            'code'              => sanitize_title( $data['code'] ),
-            'description'       => sanitize_textarea_field( $data['description'] ?? '' ),
-            'meal_plan'         => $data['meal_plan'] ?? 'room_only',
-            'price_modifier'    => (float) ( $data['price_modifier'] ?? 0 ),
-            'modifier_type'     => $data['modifier_type'] ?? 'fixed',
-            'is_default'        => (int) ( $data['is_default'] ?? 0 ),
-            'is_refundable'     => (int) ( $data['is_refundable'] ?? 1 ),
-            'cancellation_hours' => (int) ( $data['cancellation_hours'] ?? 24 ),
-            'min_stay'          => $data['min_stay'] ?? null,
-            'max_stay'          => $data['max_stay'] ?? null,
-            'valid_from'        => $data['valid_from'] ?? null,
-            'valid_to'          => $data['valid_to'] ?? null,
-            'status'            => $data['status'] ?? 'active',
-        ] );
+	/**
+	 * List all rate plans.
+	 *
+	 * GET /venezia/v1/rate-plans
+	 */
+	public function index( \WP_REST_Request $request ): \WP_REST_Response {
+		$status = $request->get_param( 'status' );
 
-        if ( ! $plan ) {
-            return new \WP_REST_Response( [
-                'success' => false,
-                'error'   => [ 'code' => 'CREATE_FAILED', 'message' => 'Failed to create rate plan' ],
-            ], 500 );
-        }
+		if ( $status === 'active' ) {
+			$plans = $this->repository->getActive();
+		} else {
+			$plans = $this->repository->getAllOrdered();
+		}
 
-        return new \WP_REST_Response( [ 'success' => true, 'data' => $plan->toArray() ], 201 );
-    }
+		return new \WP_REST_Response( [
+			'success' => true,
+			'data'    => array_map(
+				fn( RatePlan $plan ) => $plan->toArray(),
+				$plans
+			),
+		] );
+	}
 
-    public function update( \WP_REST_Request $request ): \WP_REST_Response {
-        $id   = (int) $request->get_param( 'id' );
-        $plan = $this->repo->find( $id );
+	/**
+	 * Show a single rate plan.
+	 *
+	 * GET /venezia/v1/rate-plans/{id}
+	 */
+	public function show( \WP_REST_Request $request ): \WP_REST_Response {
+		$plan = $this->repository->find( (int) $request->get_param( 'id' ) );
 
-        if ( ! $plan ) {
-            return new \WP_REST_Response( [
-                'success' => false,
-                'error'   => [ 'code' => 'NOT_FOUND', 'message' => 'Rate plan not found' ],
-            ], 404 );
-        }
+		if ( ! $plan ) {
+			return new \WP_REST_Response( [
+				'success' => false,
+				'error'   => [
+					'code'    => 'NOT_FOUND',
+					'message' => __( 'Rate plan not found.', 'venezia-hotel' ),
+				],
+			], 404 );
+		}
 
-        $data = $request->get_json_params();
-        $this->repo->update( $id, array_filter( [
-            'name'              => isset( $data['name'] ) ? sanitize_text_field( $data['name'] ) : null,
-            'name_ar'           => isset( $data['name_ar'] ) ? sanitize_text_field( $data['name_ar'] ) : null,
-            'description'       => isset( $data['description'] ) ? sanitize_textarea_field( $data['description'] ) : null,
-            'meal_plan'         => $data['meal_plan'] ?? null,
-            'price_modifier'    => isset( $data['price_modifier'] ) ? (float) $data['price_modifier'] : null,
-            'modifier_type'     => $data['modifier_type'] ?? null,
-            'is_default'        => isset( $data['is_default'] ) ? (int) $data['is_default'] : null,
-            'is_refundable'     => isset( $data['is_refundable'] ) ? (int) $data['is_refundable'] : null,
-            'status'            => $data['status'] ?? null,
-        ], fn( $v ) => $v !== null ) );
+		return new \WP_REST_Response( [
+			'success' => true,
+			'data'    => $plan->toArray(),
+		] );
+	}
 
-        $updated = $this->repo->find( $id );
-        return new \WP_REST_Response( [ 'success' => true, 'data' => $updated->toArray() ] );
-    }
+	/**
+	 * Create a new rate plan.
+	 *
+	 * POST /venezia/v1/rate-plans
+	 */
+	public function store( \WP_REST_Request $request ): \WP_REST_Response {
+		$data = $request->get_json_params();
 
-    public function destroy( \WP_REST_Request $request ): \WP_REST_Response {
-        $id = (int) $request->get_param( 'id' );
-        $this->repo->delete( $id );
-        return new \WP_REST_Response( [ 'success' => true ] );
-    }
+		if ( ! $this->validator->validateCreate( $data ) ) {
+			return new \WP_REST_Response( [
+				'success' => false,
+				'error'   => [
+					'code'    => 'VALIDATION_ERROR',
+					'message' => implode( ' ', $this->validator->getAllErrors() ),
+					'fields'  => $this->validator->getErrors(),
+				],
+			], 422 );
+		}
+
+		$sanitized = $this->sanitizeRatePlanData( $data );
+		$plan      = $this->repository->create( $sanitized );
+
+		if ( ! $plan ) {
+			return new \WP_REST_Response( [
+				'success' => false,
+				'error'   => [
+					'code'    => 'CREATE_FAILED',
+					'message' => __( 'Failed to create rate plan.', 'venezia-hotel' ),
+				],
+			], 500 );
+		}
+
+		$this->events->dispatch( 'pricing/rate_plan_created', $plan );
+
+		return new \WP_REST_Response( [
+			'success' => true,
+			'data'    => $plan->toArray(),
+		], 201 );
+	}
+
+	/**
+	 * Update an existing rate plan.
+	 *
+	 * PUT/PATCH /venezia/v1/rate-plans/{id}
+	 */
+	public function update( \WP_REST_Request $request ): \WP_REST_Response {
+		$id   = (int) $request->get_param( 'id' );
+		$plan = $this->repository->find( $id );
+
+		if ( ! $plan ) {
+			return new \WP_REST_Response( [
+				'success' => false,
+				'error'   => [
+					'code'    => 'NOT_FOUND',
+					'message' => __( 'Rate plan not found.', 'venezia-hotel' ),
+				],
+			], 404 );
+		}
+
+		$data = $request->get_json_params();
+
+		if ( ! $this->validator->validateUpdate( $id, $data ) ) {
+			return new \WP_REST_Response( [
+				'success' => false,
+				'error'   => [
+					'code'    => 'VALIDATION_ERROR',
+					'message' => implode( ' ', $this->validator->getAllErrors() ),
+					'fields'  => $this->validator->getErrors(),
+				],
+			], 422 );
+		}
+
+		$sanitized = $this->sanitizeRatePlanData( $data );
+
+		// Only include fields that were provided.
+		$updateData = array_filter( $sanitized, fn( $v ) => $v !== null );
+
+		$updated = $this->repository->update( $id, $updateData );
+
+		if ( ! $updated ) {
+			return new \WP_REST_Response( [
+				'success' => false,
+				'error'   => [
+					'code'    => 'UPDATE_FAILED',
+					'message' => __( 'Failed to update rate plan.', 'venezia-hotel' ),
+				],
+			], 500 );
+		}
+
+		$plan = $this->repository->find( $id );
+		$this->events->dispatch( 'pricing/rate_plan_updated', $plan );
+
+		return new \WP_REST_Response( [
+			'success' => true,
+			'data'    => $plan->toArray(),
+		] );
+	}
+
+	/**
+	 * Delete a rate plan.
+	 *
+	 * DELETE /venezia/v1/rate-plans/{id}
+	 */
+	public function destroy( \WP_REST_Request $request ): \WP_REST_Response {
+		$id   = (int) $request->get_param( 'id' );
+		$plan = $this->repository->find( $id );
+
+		if ( ! $plan ) {
+			return new \WP_REST_Response( [
+				'success' => false,
+				'error'   => [
+					'code'    => 'NOT_FOUND',
+					'message' => __( 'Rate plan not found.', 'venezia-hotel' ),
+				],
+			], 404 );
+		}
+
+		$deleted = $this->repository->delete( $id );
+
+		if ( ! $deleted ) {
+			return new \WP_REST_Response( [
+				'success' => false,
+				'error'   => [
+					'code'    => 'DELETE_FAILED',
+					'message' => __( 'Failed to delete rate plan.', 'venezia-hotel' ),
+				],
+			], 500 );
+		}
+
+		$this->events->dispatch( 'pricing/rate_plan_deleted', $id, $plan );
+
+		return new \WP_REST_Response( [
+			'success' => true,
+			'message' => __( 'Rate plan deleted successfully.', 'venezia-hotel' ),
+		] );
+	}
+
+	/**
+	 * Sanitize rate plan data before storage.
+	 *
+	 * @param array $data Raw input data.
+	 * @return array Sanitized data.
+	 */
+	private function sanitizeRatePlanData( array $data ): array {
+		$sanitized = [];
+
+		// Text fields.
+		$textFields = [ 'name', 'code', 'modifier_type', 'status' ];
+		foreach ( $textFields as $field ) {
+			if ( array_key_exists( $field, $data ) ) {
+				$sanitized[ $field ] = sanitize_text_field( $data[ $field ] );
+			}
+		}
+
+		// Code should be lowercased.
+		if ( isset( $sanitized['code'] ) ) {
+			$sanitized['code'] = sanitize_title( $sanitized['code'] );
+		}
+
+		// Textarea fields.
+		if ( array_key_exists( 'description', $data ) ) {
+			$sanitized['description'] = sanitize_textarea_field( $data['description'] ?? '' );
+		}
+
+		if ( array_key_exists( 'cancellation_policy', $data ) ) {
+			$sanitized['cancellation_policy'] = sanitize_textarea_field( $data['cancellation_policy'] ?? '' );
+		}
+
+		// Numeric fields.
+		if ( array_key_exists( 'modifier_value', $data ) ) {
+			$sanitized['modifier_value'] = (float) $data['modifier_value'];
+		}
+
+		// Integer fields.
+		$intFields = [ 'room_type_id', 'min_stay', 'max_stay', 'priority' ];
+		foreach ( $intFields as $field ) {
+			if ( array_key_exists( $field, $data ) ) {
+				$sanitized[ $field ] = $data[ $field ] !== null ? (int) $data[ $field ] : null;
+			}
+		}
+
+		// Boolean fields.
+		$boolFields = [ 'is_refundable', 'includes_breakfast', 'is_default' ];
+		foreach ( $boolFields as $field ) {
+			if ( array_key_exists( $field, $data ) ) {
+				$sanitized[ $field ] = (bool) $data[ $field ];
+			}
+		}
+
+		// Date fields.
+		$dateFields = [ 'valid_from', 'valid_until' ];
+		foreach ( $dateFields as $field ) {
+			if ( array_key_exists( $field, $data ) ) {
+				$sanitized[ $field ] = $data[ $field ] ? sanitize_text_field( $data[ $field ] ) : null;
+			}
+		}
+
+		return $sanitized;
+	}
 }
