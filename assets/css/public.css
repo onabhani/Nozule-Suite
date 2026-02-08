@@ -1,0 +1,305 @@
+/**
+ * Venezia Hotel Manager - Public Styles
+ *
+ * Minimal custom styles. Most styling via Tailwind utility classes in templates.
+ */
+
+/* ============================================
+   CSS Custom Properties
+   ============================================ */
+:root {
+    --vhm-primary: #1e40af;
+    --vhm-primary-light: #3b82f6;
+    --vhm-primary-dark: #1e3a8a;
+    --vhm-secondary: #f59e0b;
+    --vhm-secondary-light: #fbbf24;
+    --vhm-success: #10b981;
+    --vhm-danger: #ef4444;
+    --vhm-warning: #f59e0b;
+    --vhm-info: #3b82f6;
+    --vhm-gray: #6b7280;
+    --vhm-light: #f9fafb;
+    --vhm-border: #e5e7eb;
+    --vhm-radius: 0.5rem;
+    --vhm-shadow: 0 1px 3px 0 rgba(0, 0, 0, 0.1), 0 1px 2px -1px rgba(0, 0, 0, 0.1);
+    --vhm-shadow-lg: 0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -4px rgba(0, 0, 0, 0.1);
+    --vhm-transition: 150ms cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+/* ============================================
+   Base Widget Styles
+   ============================================ */
+.vhm-widget {
+    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+    line-height: 1.5;
+    color: #1f2937;
+}
+
+.vhm-widget *,
+.vhm-widget *::before,
+.vhm-widget *::after {
+    box-sizing: border-box;
+}
+
+/* ============================================
+   Form Elements
+   ============================================ */
+.vhm-input {
+    display: block;
+    width: 100%;
+    padding: 0.5rem 0.75rem;
+    font-size: 0.875rem;
+    line-height: 1.5;
+    color: #374151;
+    background-color: #fff;
+    border: 1px solid var(--vhm-border);
+    border-radius: var(--vhm-radius);
+    transition: border-color var(--vhm-transition), box-shadow var(--vhm-transition);
+}
+
+.vhm-input:focus {
+    outline: none;
+    border-color: var(--vhm-primary-light);
+    box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.1);
+}
+
+.vhm-input.is-error {
+    border-color: var(--vhm-danger);
+}
+
+.vhm-label {
+    display: block;
+    margin-bottom: 0.25rem;
+    font-size: 0.875rem;
+    font-weight: 500;
+    color: #374151;
+}
+
+.vhm-error-text {
+    margin-top: 0.25rem;
+    font-size: 0.75rem;
+    color: var(--vhm-danger);
+}
+
+/* ============================================
+   Buttons
+   ============================================ */
+.vhm-btn {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    padding: 0.5rem 1rem;
+    font-size: 0.875rem;
+    font-weight: 500;
+    line-height: 1.5;
+    border: 1px solid transparent;
+    border-radius: var(--vhm-radius);
+    cursor: pointer;
+    transition: all var(--vhm-transition);
+    text-decoration: none;
+}
+
+.vhm-btn:disabled {
+    opacity: 0.5;
+    cursor: not-allowed;
+}
+
+.vhm-btn-primary {
+    color: #fff;
+    background-color: var(--vhm-primary);
+    border-color: var(--vhm-primary);
+}
+
+.vhm-btn-primary:hover:not(:disabled) {
+    background-color: var(--vhm-primary-dark);
+}
+
+.vhm-btn-secondary {
+    color: #374151;
+    background-color: #fff;
+    border-color: var(--vhm-border);
+}
+
+.vhm-btn-secondary:hover:not(:disabled) {
+    background-color: var(--vhm-light);
+}
+
+.vhm-btn-success {
+    color: #fff;
+    background-color: var(--vhm-success);
+}
+
+.vhm-btn-danger {
+    color: #fff;
+    background-color: var(--vhm-danger);
+}
+
+.vhm-btn-lg {
+    padding: 0.75rem 1.5rem;
+    font-size: 1rem;
+}
+
+.vhm-btn-sm {
+    padding: 0.25rem 0.75rem;
+    font-size: 0.75rem;
+}
+
+/* ============================================
+   Cards
+   ============================================ */
+.vhm-card {
+    background: #fff;
+    border: 1px solid var(--vhm-border);
+    border-radius: var(--vhm-radius);
+    box-shadow: var(--vhm-shadow);
+    overflow: hidden;
+}
+
+.vhm-card-header {
+    padding: 1rem 1.5rem;
+    border-bottom: 1px solid var(--vhm-border);
+    font-weight: 600;
+}
+
+.vhm-card-body {
+    padding: 1.5rem;
+}
+
+.vhm-card-footer {
+    padding: 1rem 1.5rem;
+    border-top: 1px solid var(--vhm-border);
+    background-color: var(--vhm-light);
+}
+
+/* ============================================
+   Room Cards
+   ============================================ */
+.vhm-room-card {
+    transition: transform var(--vhm-transition), box-shadow var(--vhm-transition);
+}
+
+.vhm-room-card:hover {
+    transform: translateY(-2px);
+    box-shadow: var(--vhm-shadow-lg);
+}
+
+.vhm-room-card .vhm-room-image {
+    width: 100%;
+    height: 200px;
+    object-fit: cover;
+}
+
+.vhm-room-card .vhm-room-price {
+    font-size: 1.25rem;
+    font-weight: 700;
+    color: var(--vhm-primary);
+}
+
+/* ============================================
+   Status Badges
+   ============================================ */
+.vhm-badge {
+    display: inline-flex;
+    align-items: center;
+    padding: 0.125rem 0.625rem;
+    font-size: 0.75rem;
+    font-weight: 500;
+    border-radius: 9999px;
+}
+
+.vhm-badge-pending { background-color: #fef3c7; color: #92400e; }
+.vhm-badge-confirmed { background-color: #d1fae5; color: #065f46; }
+.vhm-badge-checked-in { background-color: #dbeafe; color: #1e40af; }
+.vhm-badge-checked-out { background-color: #f3f4f6; color: #374151; }
+.vhm-badge-cancelled { background-color: #fee2e2; color: #991b1b; }
+
+/* ============================================
+   Loading Spinner
+   ============================================ */
+.vhm-spinner {
+    display: inline-block;
+    width: 1.25rem;
+    height: 1.25rem;
+    border: 2px solid var(--vhm-border);
+    border-top-color: var(--vhm-primary);
+    border-radius: 50%;
+    animation: vhm-spin 0.6s linear infinite;
+}
+
+.vhm-spinner-lg {
+    width: 2.5rem;
+    height: 2.5rem;
+    border-width: 3px;
+}
+
+@keyframes vhm-spin {
+    to { transform: rotate(360deg); }
+}
+
+/* ============================================
+   Toast Notifications
+   ============================================ */
+.vhm-toast-container {
+    position: fixed;
+    top: 1rem;
+    right: 1rem;
+    z-index: 9999;
+    display: flex;
+    flex-direction: column;
+    gap: 0.5rem;
+    max-width: 24rem;
+}
+
+.vhm-toast {
+    padding: 0.75rem 1rem;
+    border-radius: var(--vhm-radius);
+    box-shadow: var(--vhm-shadow-lg);
+    animation: vhm-slide-in 0.3s ease-out;
+}
+
+.vhm-toast-info { background: #eff6ff; border-left: 4px solid var(--vhm-info); color: #1e40af; }
+.vhm-toast-success { background: #f0fdf4; border-left: 4px solid var(--vhm-success); color: #065f46; }
+.vhm-toast-error { background: #fef2f2; border-left: 4px solid var(--vhm-danger); color: #991b1b; }
+.vhm-toast-warning { background: #fffbeb; border-left: 4px solid var(--vhm-warning); color: #92400e; }
+
+@keyframes vhm-slide-in {
+    from { transform: translateX(100%); opacity: 0; }
+    to { transform: translateX(0); opacity: 1; }
+}
+
+/* ============================================
+   Booking Widget Layout
+   ============================================ */
+.vhm-booking-widget {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.75rem;
+    align-items: flex-end;
+    padding: 1.5rem;
+}
+
+.vhm-booking-widget.vhm-horizontal {
+    flex-direction: row;
+}
+
+.vhm-booking-widget.vhm-vertical {
+    flex-direction: column;
+}
+
+.vhm-booking-widget .vhm-field {
+    flex: 1;
+    min-width: 150px;
+}
+
+/* ============================================
+   Responsive
+   ============================================ */
+@media (max-width: 768px) {
+    .vhm-booking-widget {
+        flex-direction: column;
+    }
+
+    .vhm-booking-widget .vhm-field {
+        min-width: 100%;
+    }
+}
