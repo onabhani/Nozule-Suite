@@ -9,6 +9,7 @@ document.addEventListener('alpine:init', function () {
             viewMode: '2week',
             dates: [],
             rooms: [],
+            roomTypeMap: {},
             bookings: [],
             loading: true,
 
@@ -31,8 +32,88 @@ document.addEventListener('alpine:init', function () {
 
             init: function () {
                 this.buildDates();
-                this.loadRooms();
-                this.loadCalendar();
+                this.loadAll();
+            },
+
+            loadAll: function () {
+                var self = this;
+                self.loading = true;
+
+                var startDate = self.dates[0];
+                var endDate = self.dates[self.dates.length - 1];
+
+                // Load room types, rooms, and calendar data in parallel
+                var roomTypesP = VeneziaAPI.get('/admin/room-types').then(function (response) {
+                    var types = response.data || [];
+                    var map = {};
+                    types.forEach(function (rt) {
+                        map[rt.id] = rt.name;
+                    });
+                    self.roomTypeMap = map;
+                    return types;
+                }).catch(function () {
+                    return [];
+                });
+
+                var roomsP = VeneziaAPI.get('/admin/rooms').then(function (response) {
+                    return response.data || [];
+                }).catch(function () {
+                    return [];
+                });
+
+                var calendarP = VeneziaAPI.get('/admin/calendar', {
+                    start: startDate,
+                    end: endDate
+                }).then(function (response) {
+                    return response.data || [];
+                }).catch(function (err) {
+                    console.error('Calendar error:', err);
+                    return [];
+                });
+
+                Promise.all([roomTypesP, roomsP, calendarP]).then(function (results) {
+                    var roomTypes = results[0];
+                    var roomsData = results[1];
+                    var events = results[2];
+
+                    // If we have individual rooms, use them; otherwise fall back to room types
+                    if (roomsData.length > 0) {
+                        self.rooms = roomsData.map(function (r) {
+                            return {
+                                id: r.id,
+                                room_number: r.room_number || r.name || ('Room ' + r.id),
+                                room_type_name: self.roomTypeMap[r.room_type_id] || ''
+                            };
+                        });
+                    } else if (roomTypes.length > 0) {
+                        // Fall back to room types as "rooms"
+                        self.rooms = roomTypes.map(function (rt) {
+                            return {
+                                id: rt.id,
+                                room_number: rt.name,
+                                room_type_name: ''
+                            };
+                        });
+                    } else {
+                        self.rooms = [];
+                    }
+
+                    // Process bookings
+                    self.bookings = events.map(function (e) {
+                        return {
+                            id: e.id,
+                            booking_number: e.booking_number,
+                            guest_name: e.guest_name || e.booking_number || '',
+                            room_id: e.room_id,
+                            room_type_id: e.room_type_id,
+                            check_in: e.start || e.check_in,
+                            check_out: e.end || e.check_out,
+                            status: e.status
+                        };
+                    });
+                }).finally(function () {
+                    self.loading = false;
+                });
             },
 
             buildDates: function () {
@@ -46,58 +127,9 @@ document.addEventListener('alpine:init', function () {
                 this.dates = dates;
             },
 
-            loadRooms: function () {
-                var self = this;
-                VeneziaAPI.get('/admin/rooms').then(function (response) {
-                    self.rooms = response.data || [];
-                }).catch(function () {
-                    // Fallback: try room-types if rooms endpoint not available
-                    VeneziaAPI.get('/admin/room-types').then(function (response) {
-                        self.rooms = (response.data || []).map(function (rt) {
-                            return {
-                                id: rt.id,
-                                room_number: rt.name,
-                                room_type_name: ''
-                            };
-                        });
-                    }).catch(function () {
-                        self.rooms = [];
-                    });
-                });
-            },
-
             loadCalendar: function () {
-                var self = this;
-                self.buildDates();
-                self.loading = true;
-
-                var startDate = self.dates[0];
-                var endDate = self.dates[self.dates.length - 1];
-
-                VeneziaAPI.get('/admin/calendar', {
-                    start: startDate,
-                    end: endDate
-                }).then(function (response) {
-                    // CalendarController returns { data: [...events...] }
-                    var events = response.data || [];
-                    self.bookings = events.map(function (e) {
-                        return {
-                            id: e.id,
-                            booking_number: e.booking_number,
-                            guest_name: e.guest_name || e.booking_number || '',
-                            room_id: e.room_id,
-                            room_type_id: e.room_type_id,
-                            check_in: e.start || e.check_in,
-                            check_out: e.end || e.check_out,
-                            status: e.status
-                        };
-                    });
-                }).catch(function (err) {
-                    console.error('Calendar error:', err);
-                    self.bookings = [];
-                }).finally(function () {
-                    self.loading = false;
-                });
+                this.buildDates();
+                this.loadAll();
             },
 
             prevPeriod: function () {
@@ -117,8 +149,10 @@ document.addEventListener('alpine:init', function () {
             },
 
             formatDayName: function (dateStr) {
+                var config = window.VeneziaAdmin || window.VeneziaConfig || {};
+                var locale = config.locale || undefined;
                 var date = new Date(dateStr + 'T00:00:00');
-                return date.toLocaleDateString(undefined, { weekday: 'short' });
+                return date.toLocaleDateString(locale, { weekday: 'short' });
             },
 
             formatDayNum: function (dateStr) {

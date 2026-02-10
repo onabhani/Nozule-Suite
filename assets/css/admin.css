@@ -6,8 +6,7 @@
    Admin Layout
    ============================================ */
 .vhm-admin-wrap {
-    max-width: 1400px;
-    margin: 20px 20px 0 0;
+    margin: 20px;
     font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
 }
 
@@ -179,6 +178,7 @@
     border-collapse: collapse;
     width: 100%;
     table-layout: fixed;
+    direction: ltr;
 }
 .vhm-calendar-table th,
 .vhm-calendar-table td {

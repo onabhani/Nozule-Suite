@@ -1,134 +1,717 @@
+# Arabic translation for Venezia Hotel Manager
 # Copyright (C) 2026 Rawaq Suite
 # This file is distributed under the GPL-2.0-or-later.
 msgid ""
 msgstr ""
-"Project-Id-Version: Venezia Hotel Manager 1.0.0\n"
+"Project-Id-Version: Venezia Hotel Manager 1.0.1\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2026-01-01 00:00+0000\n"
-"PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
+"POT-Creation-Date: 2026-02-10 00:00+0000\n"
+"PO-Revision-Date: 2026-02-10 00:00+0000\n"
 "Last-Translator: \n"
-"Language-Team: \n"
-"Language: \n"
+"Language-Team: Arabic\n"
+"Language: ar\n"
 "MIME-Version: 1.0\n"
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
+"Plural-Forms: nplurals=6; plural=(n==0 ? 0 : n==1 ? 1 : n==2 ? 2 : n%100>=3 "
+"&& n%100<=10 ? 3 : n%100>=11 && n%100<=99 ? 4 : 5);\n"
 
-#: venezia-hotel-manager.php
+# ---- Plugin Meta ----
 msgid "Venezia Hotel Manager"
-msgstr ""
+msgstr "مدير فندق فينيسيا"
 
-#: templates/public/booking-widget.php
-msgid "Check-in"
-msgstr ""
-
-#: templates/public/booking-widget.php
-msgid "Check-out"
-msgstr ""
-
-#: templates/public/booking-widget.php
-msgid "Adults"
-msgstr ""
-
-#: templates/public/booking-widget.php
-msgid "Children"
-msgstr ""
-
-#: templates/public/booking-widget.php
-msgid "Search"
-msgstr ""
-
-#: templates/public/booking-widget.php
-msgid "night(s)"
-msgstr ""
-
-#: templates/public/booking-widget.php
-msgid "available"
-msgstr ""
-
-#: templates/public/booking-widget.php
-msgid "No rooms available for the selected dates."
-msgstr ""
-
-#: templates/public/booking-form.php
-msgid "Guest Details"
-msgstr ""
-
-#: templates/public/booking-form.php
-msgid "First Name"
-msgstr ""
-
-#: templates/public/booking-form.php
-msgid "Last Name"
-msgstr ""
-
-#: templates/public/booking-form.php
-msgid "Email"
-msgstr ""
-
-#: templates/public/booking-form.php
-msgid "Phone"
-msgstr ""
-
-#: templates/public/booking-form.php
-msgid "Nationality"
-msgstr ""
-
-#: templates/public/booking-form.php
-msgid "Special Requests"
-msgstr ""
-
-#: templates/public/booking-form.php
-msgid "Estimated Arrival Time"
-msgstr ""
-
-#: templates/public/booking-form.php
-msgid "Continue to Review"
-msgstr ""
-
-#: templates/public/booking-form.php
-msgid "Review Your Booking"
-msgstr ""
-
-#: templates/public/booking-form.php
-msgid "Confirm Booking"
-msgstr ""
-
-#: templates/public/booking-form.php
-msgid "Booking Confirmed!"
-msgstr ""
-
-#: templates/public/booking-form.php
-msgid "Booking Number"
-msgstr ""
-
-#: templates/admin/dashboard.php
-msgid "Hotel Dashboard"
-msgstr ""
-
-#: templates/admin/dashboard.php
-msgid "Today's Arrivals"
-msgstr ""
-
-#: templates/admin/dashboard.php
-msgid "Today's Departures"
-msgstr ""
-
-#: templates/admin/dashboard.php
-msgid "In-House Guests"
-msgstr ""
-
-#: templates/admin/dashboard.php
-msgid "Occupancy Rate"
-msgstr ""
-
-#: templates/admin/dashboard.php
-msgid "Today's Revenue"
-msgstr ""
-
-#: includes/Core/Activator.php
+# ---- Admin Menu (AdminMenu.php) ----
 msgid "Hotel Manager"
-msgstr ""
+msgstr "مدير الفندق"
 
-#: includes/Core/Activator.php
+msgid "Dashboard"
+msgstr "لوحة التحكم"
+
+msgid "Bookings"
+msgstr "الحجوزات"
+
+msgid "Calendar"
+msgstr "التقويم"
+
+msgid "Guests"
+msgstr "الضيوف"
+
+msgid "Rooms"
+msgstr "الغرف"
+
+msgid "Rates & Pricing"
+msgstr "الأسعار والتسعير"
+
+msgid "Inventory"
+msgstr "المخزون"
+
+msgid "Reports"
+msgstr "التقارير"
+
+msgid "Channel Manager"
+msgstr "مدير القنوات"
+
+msgid "Settings"
+msgstr "الإعدادات"
+
+# ---- Dashboard ----
+msgid "Hotel Dashboard"
+msgstr "لوحة تحكم الفندق"
+
+msgid "Today's Arrivals"
+msgstr "وصول اليوم"
+
+msgid "Today's Departures"
+msgstr "مغادرة اليوم"
+
+msgid "In-House Guests"
+msgstr "الضيوف الحاليون"
+
+msgid "Occupancy Rate"
+msgstr "نسبة الإشغال"
+
+msgid "Today's Revenue"
+msgstr "إيرادات اليوم"
+
+msgid "Arrivals"
+msgstr "الوصول"
+
+msgid "Departures"
+msgstr "المغادرة"
+
+msgid "In-House"
+msgstr "في الفندق"
+
+msgid "Booking #"
+msgstr "حجز #"
+
+msgid "Guest"
+msgstr "الضيف"
+
+msgid "Room Type"
+msgstr "نوع الغرفة"
+
+msgid "Nights"
+msgstr "ليالي"
+
+msgid "Status"
+msgstr "الحالة"
+
+msgid "Actions"
+msgstr "إجراءات"
+
+msgid "Confirm"
+msgstr "تأكيد"
+
+msgid "Check In"
+msgstr "تسجيل وصول"
+
+msgid "Check Out"
+msgstr "تسجيل مغادرة"
+
+msgid "Room"
+msgstr "الغرفة"
+
+msgid "Balance"
+msgstr "الرصيد"
+
+msgid "No arrivals today"
+msgstr "لا يوجد وصول اليوم"
+
+msgid "No departures today"
+msgstr "لا توجد مغادرات اليوم"
+
+msgid "No guests currently in-house"
+msgstr "لا يوجد ضيوف حالياً في الفندق"
+
+# ---- Bookings ----
+msgid "Add New Booking"
+msgstr "إضافة حجز جديد"
+
+msgid "All Statuses"
+msgstr "جميع الحالات"
+
+msgid "Pending"
+msgstr "معلق"
+
+msgid "Confirmed"
+msgstr "مؤكد"
+
+msgid "Checked In"
+msgstr "مسجل وصول"
+
+msgid "Checked Out"
+msgstr "مسجل مغادرة"
+
+msgid "Cancelled"
+msgstr "ملغي"
+
+msgid "No Show"
+msgstr "لم يحضر"
+
+msgid "From"
+msgstr "من"
+
+msgid "To"
+msgstr "إلى"
+
+msgid "Search"
+msgstr "بحث"
+
+msgid "Booking #, guest name..."
+msgstr "رقم الحجز، اسم الضيف..."
+
+msgid "Check-in"
+msgstr "تسجيل الوصول"
+
+msgid "Check-out"
+msgstr "تسجيل المغادرة"
+
+msgid "Total"
+msgstr "المجموع"
+
+msgid "No bookings found."
+msgstr "لا توجد حجوزات."
+
+msgid "Page"
+msgstr "صفحة"
+
+msgid "of"
+msgstr "من"
+
+msgid "Previous"
+msgstr "السابق"
+
+msgid "Next"
+msgstr "التالي"
+
+# ---- Calendar ----
+msgid "Availability Calendar"
+msgstr "تقويم التوفر"
+
+msgid "Week"
+msgstr "أسبوع"
+
+msgid "2 Weeks"
+msgstr "أسبوعين"
+
+msgid "Month"
+msgstr "شهر"
+
+msgid "Available"
+msgstr "متاح"
+
+msgid "Occupied"
+msgstr "مشغول"
+
+msgid "Blocked"
+msgstr "محجوب"
+
+msgid "No rooms configured yet. Add room types and rooms first."
+msgstr "لم يتم إعداد غرف بعد. أضف أنواع الغرف والغرف أولاً."
+
+msgid "Go to Rooms"
+msgstr "الذهاب إلى الغرف"
+
+# ---- Guests ----
+msgid "Name, email, phone..."
+msgstr "الاسم، البريد الإلكتروني، الهاتف..."
+
+msgid "Name"
+msgstr "الاسم"
+
+msgid "Email"
+msgstr "البريد الإلكتروني"
+
+msgid "Phone"
+msgstr "الهاتف"
+
+msgid "Country"
+msgstr "الدولة"
+
+msgid "Total Bookings"
+msgstr "إجمالي الحجوزات"
+
+msgid "Last Stay"
+msgstr "آخر إقامة"
+
+msgid "View"
+msgstr "عرض"
+
+msgid "No guests found."
+msgstr "لا يوجد ضيوف."
+
+# ---- Rooms ----
+msgid "Add Room Type"
+msgstr "إضافة نوع غرفة"
+
+msgid "Add Room"
+msgstr "إضافة غرفة"
+
+msgid "Room Types"
+msgstr "أنواع الغرف"
+
+msgid "Individual Rooms"
+msgstr "الغرف الفردية"
+
+msgid "Base Price"
+msgstr "السعر الأساسي"
+
+msgid "Max Occupancy"
+msgstr "الحد الأقصى للإشغال"
+
+msgid "Edit"
+msgstr "تعديل"
+
+msgid "Delete"
+msgstr "حذف"
+
+msgid "No room types found."
+msgstr "لا توجد أنواع غرف."
+
+msgid "Room Number"
+msgstr "رقم الغرفة"
+
+msgid "Floor"
+msgstr "الطابق"
+
+msgid "No rooms found."
+msgstr "لا توجد غرف."
+
+# ---- Inventory ----
+msgid "Room Inventory"
+msgstr "مخزون الغرف"
+
+msgid "Bulk Update"
+msgstr "تحديث جماعي"
+
+msgid "All Room Types"
+msgstr "جميع أنواع الغرف"
+
+msgid "High Availability"
+msgstr "توفر عالي"
+
+msgid "Low Availability"
+msgstr "توفر منخفض"
+
+msgid "Sold Out"
+msgstr "نفذ"
+
+# ---- Reports ----
+msgid "Export CSV"
+msgstr "تصدير CSV"
+
+msgid "Report Type"
+msgstr "نوع التقرير"
+
+msgid "Revenue"
+msgstr "الإيرادات"
+
+msgid "Occupancy"
+msgstr "الإشغال"
+
+msgid "Booking Sources"
+msgstr "مصادر الحجز"
+
+msgid "Period"
+msgstr "الفترة"
+
+msgid "Today"
+msgstr "اليوم"
+
+msgid "This Week"
+msgstr "هذا الأسبوع"
+
+msgid "This Month"
+msgstr "هذا الشهر"
+
+msgid "This Quarter"
+msgstr "هذا الربع"
+
+msgid "This Year"
+msgstr "هذه السنة"
+
+msgid "Custom Range"
+msgstr "نطاق مخصص"
+
+msgid "Apply"
+msgstr "تطبيق"
+
+msgid "No data available for the selected period."
+msgstr "لا توجد بيانات للفترة المحددة."
+
+# ---- Channels ----
+msgid "Add Channel"
+msgstr "إضافة قناة"
+
+msgid "Type:"
+msgstr "النوع:"
+
+msgid "Last Sync:"
+msgstr "آخر مزامنة:"
+
+msgid "Never"
+msgstr "أبداً"
+
+msgid "Bookings:"
+msgstr "الحجوزات:"
+
+msgid "Sync Now"
+msgstr "مزامنة الآن"
+
+msgid "Syncing..."
+msgstr "جاري المزامنة..."
+
+msgid "No channels configured yet."
+msgstr "لم يتم إعداد قنوات بعد."
+
+msgid ""
+"Connect to OTAs and booking platforms to sync availability and reservations."
+msgstr "اتصل بمنصات الحجز لمزامنة التوفر والحجوزات."
+
+msgid "Add Your First Channel"
+msgstr "أضف قناتك الأولى"
+
+# ---- Settings ----
+msgid "General"
+msgstr "عام"
+
+msgid "Currency"
+msgstr "العملة"
+
+msgid "Booking"
+msgstr "الحجز"
+
+msgid "Notifications"
+msgstr "الإشعارات"
+
+msgid "Policies"
+msgstr "السياسات"
+
+msgid "General Settings"
+msgstr "الإعدادات العامة"
+
+msgid "Hotel Name"
+msgstr "اسم الفندق"
+
+msgid "Hotel Email"
+msgstr "البريد الإلكتروني للفندق"
+
+msgid "Hotel Phone"
+msgstr "هاتف الفندق"
+
+msgid "Hotel Address"
+msgstr "عنوان الفندق"
+
+msgid "Timezone"
+msgstr "المنطقة الزمنية"
+
+msgid "e.g. America/New_York"
+msgstr "مثال: Asia/Riyadh"
+
+msgid "Check-in Time"
+msgstr "وقت تسجيل الوصول"
+
+msgid "Check-out Time"
+msgstr "وقت تسجيل المغادرة"
+
+msgid "Currency Settings"
+msgstr "إعدادات العملة"
+
+msgid "Default Currency"
+msgstr "العملة الافتراضية"
+
+msgid "Currency Symbol"
+msgstr "رمز العملة"
+
+msgid "Symbol Position"
+msgstr "موضع الرمز"
+
+msgid "Before amount ($100)"
+msgstr "قبل المبلغ (100﷼)"
+
+msgid "After amount (100$)"
+msgstr "بعد المبلغ (﷼100)"
+
+msgid "Booking Settings"
+msgstr "إعدادات الحجز"
+
+msgid "Minimum Stay (nights)"
+msgstr "الحد الأدنى للإقامة (ليالي)"
+
+msgid "Maximum Stay (nights)"
+msgstr "الحد الأقصى للإقامة (ليالي)"
+
+msgid "Advance Booking (days)"
+msgstr "الحجز المسبق (أيام)"
+
+msgid "Auto-confirm bookings"
+msgstr "تأكيد الحجوزات تلقائياً"
+
+msgid "Notification Settings"
+msgstr "إعدادات الإشعارات"
+
+msgid "Email admin on new booking"
+msgstr "إرسال بريد للمدير عند حجز جديد"
+
+msgid "Email admin on cancellation"
+msgstr "إرسال بريد للمدير عند الإلغاء"
+
+msgid "Send booking confirmation to guest"
+msgstr "إرسال تأكيد الحجز للضيف"
+
+msgid "Send pre-arrival reminder to guest"
+msgstr "إرسال تذكير ما قبل الوصول للضيف"
+
+msgid "Reminder Days Before Arrival"
+msgstr "أيام التذكير قبل الوصول"
+
+msgid "Cancellation & Policies"
+msgstr "الإلغاء والسياسات"
+
+msgid "Free Cancellation Hours"
+msgstr "ساعات الإلغاء المجاني"
+
+msgid "Cancellation Policy Text"
+msgstr "نص سياسة الإلغاء"
+
+msgid "Terms & Conditions"
+msgstr "الشروط والأحكام"
+
+msgid "Save Settings"
+msgstr "حفظ الإعدادات"
+
+msgid "Saving..."
+msgstr "جاري الحفظ..."
+
+msgid "Settings saved successfully."
+msgstr "تم حفظ الإعدادات بنجاح."
+
+# ---- Rates & Pricing ----
+msgid "Add Rate Plan"
+msgstr "إضافة خطة أسعار"
+
+msgid "Add Seasonal Rate"
+msgstr "إضافة سعر موسمي"
+
+msgid "Rate Plans"
+msgstr "خطط الأسعار"
+
+msgid "Seasonal Rates"
+msgstr "الأسعار الموسمية"
+
+msgid "Code"
+msgstr "الرمز"
+
+msgid "Modifier Type"
+msgstr "نوع المعدّل"
+
+msgid "Modifier Value"
+msgstr "قيمة المعدّل"
+
+msgid "Min Stay"
+msgstr "الحد الأدنى للإقامة"
+
+msgid "No rate plans found."
+msgstr "لا توجد خطط أسعار."
+
+msgid "Season Name"
+msgstr "اسم الموسم"
+
+msgid "Start Date"
+msgstr "تاريخ البدء"
+
+msgid "End Date"
+msgstr "تاريخ الانتهاء"
+
+msgid "Modifier"
+msgstr "المعدّل"
+
+msgid "Priority"
+msgstr "الأولوية"
+
+msgid "No seasonal rates found."
+msgstr "لا توجد أسعار موسمية."
+
+msgid "Edit Rate Plan"
+msgstr "تعديل خطة الأسعار"
+
+msgid "Plan Name"
+msgstr "اسم الخطة"
+
+msgid "e.g. Standard Rate"
+msgstr "مثال: السعر القياسي"
+
+msgid "e.g. standard-rate"
+msgstr "مثال: standard-rate"
+
+msgid "Percentage"
+msgstr "نسبة مئوية"
+
+msgid "Fixed Amount"
+msgstr "مبلغ ثابت"
+
+msgid "Absolute Price"
+msgstr "سعر مطلق"
+
+msgid "e.g. 10 for 10%"
+msgstr "مثال: 10 لنسبة 10%"
+
+msgid "Min Stay (nights)"
+msgstr "الحد الأدنى للإقامة (ليالي)"
+
+msgid "Max Stay (nights)"
+msgstr "الحد الأقصى للإقامة (ليالي)"
+
+msgid "Active"
+msgstr "نشط"
+
+msgid "Inactive"
+msgstr "غير نشط"
+
+msgid "Description"
+msgstr "الوصف"
+
+msgid "Optional description..."
+msgstr "وصف اختياري..."
+
+msgid "Cancel"
+msgstr "إلغاء"
+
+msgid "Update"
+msgstr "تحديث"
+
+msgid "Create"
+msgstr "إنشاء"
+
+msgid "Edit Seasonal Rate"
+msgstr "تعديل السعر الموسمي"
+
+msgid "e.g. Summer Peak"
+msgstr "مثال: ذروة الصيف"
+
+msgid "Room Type ID"
+msgstr "معرّف نوع الغرفة"
+
+msgid "-- Select --"
+msgstr "-- اختر --"
+
+msgid "e.g. 25 for 25%"
+msgstr "مثال: 25 لنسبة 25%"
+
+# ---- Reception Portal ----
+msgid "Reception Portal - Venezia Hotel"
+msgstr "بوابة الاستقبال - فندق فينيسيا"
+
 msgid "Hotel Reception"
-msgstr ""
+msgstr "استقبال الفندق"
+
+# ---- Public Booking Flow ----
+msgid "Adults"
+msgstr "بالغين"
+
+msgid "Children"
+msgstr "أطفال"
+
+msgid "night(s)"
+msgstr "ليلة/ليالي"
+
+msgid "available"
+msgstr "متاح"
+
+msgid "No rooms available for the selected dates."
+msgstr "لا تتوفر غرف للتواريخ المحددة."
+
+msgid "Guest Details"
+msgstr "بيانات الضيف"
+
+msgid "First Name"
+msgstr "الاسم الأول"
+
+msgid "Last Name"
+msgstr "اسم العائلة"
+
+msgid "Nationality"
+msgstr "الجنسية"
+
+msgid "Special Requests"
+msgstr "طلبات خاصة"
+
+msgid "Estimated Arrival Time"
+msgstr "وقت الوصول المتوقع"
+
+msgid "Continue to Review"
+msgstr "متابعة للمراجعة"
+
+msgid "Review Your Booking"
+msgstr "مراجعة حجزك"
+
+msgid "Confirm Booking"
+msgstr "تأكيد الحجز"
+
+msgid "Booking Confirmed!"
+msgstr "تم تأكيد الحجز!"
+
+msgid "Booking Number"
+msgstr "رقم الحجز"
+
+msgid "Booking Confirmation"
+msgstr "تأكيد الحجز"
+
+msgid "Booking Cancelled"
+msgstr "إلغاء الحجز"
+
+msgid "night"
+msgstr "ليلة"
+
+msgid "nights"
+msgstr "ليالي"
+
+msgid "guests"
+msgstr "ضيوف"
+
+msgid "Max"
+msgstr "الحد الأقصى"
+
+msgid "Select"
+msgstr "اختيار"
+
+msgid "No Image"
+msgstr "لا توجد صورة"
+
+msgid "Back"
+msgstr "رجوع"
+
+msgid "Cancel Booking"
+msgstr "إلغاء الحجز"
+
+msgid "Cancellation Reason"
+msgstr "سبب الإلغاء"
+
+msgid "Confirm Cancellation"
+msgstr "تأكيد الإلغاء"
+
+msgid "Never mind"
+msgstr "تراجع"
+
+msgid "Look Up Your Booking"
+msgstr "البحث عن حجزك"
+
+msgid "Payment"
+msgstr "الدفع"
+
+msgid "Processing your booking..."
+msgstr "جاري معالجة حجزك..."
+
+msgid "A confirmation email has been sent to"
+msgstr "تم إرسال بريد التأكيد إلى"
+
+msgid "Please select a room first using the booking search widget."
+msgstr "يرجى اختيار غرفة أولاً باستخدام أداة البحث عن الحجز."
+
+# ---- Common / Shared ----
+msgid "Room not found."
+msgstr "الغرفة غير موجودة."
+
+msgid "Room type created successfully."
+msgstr "تم إنشاء نوع الغرفة بنجاح."
