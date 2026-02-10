@@ -261,8 +261,10 @@ class RestController {
         // --- Rooms CRUD ---
         $this->registerCrudRoutes( 'admin/rooms', RoomController::class, $admin_permission );
 
-        // --- Inventory CRUD ---
-        $this->registerCrudRoutes( 'admin/inventory', InventoryController::class, $admin_permission );
+        // --- Inventory ---
+        // NOTE: InventoryController registers its own specialised routes
+        // (with optional room_type_id, bulk-update, initialize) so we do
+        // NOT register generic CRUD routes here to avoid conflicts.
 
         // --- Rate Plans CRUD ---
         $this->registerCrudRoutes( 'admin/rate-plans', RatePlanController::class, $admin_permission );
