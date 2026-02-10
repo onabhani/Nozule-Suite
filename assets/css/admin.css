@@ -173,6 +173,39 @@
     text-overflow: ellipsis;
 }
 
+/* Calendar table layout (used by calendar.php template) */
+.vhm-calendar-table {
+    border-collapse: collapse;
+    width: 100%;
+    table-layout: fixed;
+}
+.vhm-calendar-table th,
+.vhm-calendar-table td {
+    border: 1px solid #e2e8f0;
+    text-align: center;
+    vertical-align: middle;
+}
+.vhm-calendar-room-col {
+    min-width: 120px;
+    max-width: 160px;
+    padding: 0.5rem 0.75rem;
+    text-align: left;
+    background: #f8fafc;
+    font-size: 0.813rem;
+}
+.vhm-calendar-date-col {
+    min-width: 48px;
+    padding: 0.375rem 0.25rem;
+    font-size: 0.75rem;
+    font-weight: 600;
+    color: #64748b;
+    background: #f8fafc;
+}
+.vhm-calendar-date-col.vhm-today {
+    background: #eff6ff;
+    color: #1e40af;
+}
+
 /* ============================================
    Admin Tabs
    ============================================ */

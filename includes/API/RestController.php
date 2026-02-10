@@ -132,7 +132,7 @@ class RestController {
 
     private function registerStaffRoutes(): void {
 
-        $staff_permission = fn() => current_user_can( 'vhm_staff' );
+        $staff_permission = fn() => current_user_can( 'manage_options' ) || current_user_can( 'vhm_staff' );
 
         // --- Bookings management ---
 
