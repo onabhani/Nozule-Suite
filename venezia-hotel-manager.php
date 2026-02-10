@@ -4,8 +4,8 @@
  * Plugin URI:  https://github.com/onabhani/Rawaq-Suite
  * Description: A comprehensive hotel booking management system for WordPress. Manage rooms, bookings, guests, pricing, channels, and reports.
  * Version:     1.0.0
- * Author:      Rawaq Suite
- * Author URI:  https://github.com/onabhani
+ * Author:      hdqah.com
+ * Author URI:  https://hdqah.com
  * License:     GPL-2.0-or-later
  * License URI: https://www.gnu.org/licenses/gpl-2.0.html
  * Text Domain: venezia-hotel

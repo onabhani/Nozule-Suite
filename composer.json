@@ -12,6 +12,12 @@
             "Venezia\\": "includes/"
         }
     },
+    "authors": [
+        {
+            "name": "hdqah.com",
+            "homepage": "https://hdqah.com"
+        }
+    ],
     "config": {
         "optimize-autoloader": true
     }

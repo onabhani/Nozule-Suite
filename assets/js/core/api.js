@@ -48,6 +48,20 @@ const VeneziaAPI = {
         }
 
         const response = await fetch(url.toString(), config);
+
+        // Guard against non-JSON responses (e.g. permission denied returning HTML)
+        const contentType = response.headers.get('content-type') || '';
+        if (!contentType.includes('application/json')) {
+            const error = new Error(
+                response.status === 403 ? 'Permission denied. Try deactivating and reactivating the plugin.'
+                : response.status === 404 ? 'API endpoint not found. Please flush permalinks (Settings > Permalinks > Save).'
+                : 'Server returned an unexpected response (status ' + response.status + '). Check PHP error logs.'
+            );
+            error.code = 'NON_JSON_RESPONSE';
+            error.status = response.status;
+            throw error;
+        }
+
         const json = await response.json();
 
         if (!response.ok) {

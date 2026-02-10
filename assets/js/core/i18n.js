@@ -71,7 +71,80 @@ var VeneziaI18n = (function () {
             'occupancy': 'الإشغال',
             'available': 'متاح',
             'unavailable': 'غير متاح',
-            'arrival_time': 'وقت الوصول المتوقع'
+            'arrival_time': 'وقت الوصول المتوقع',
+            'save': 'حفظ',
+            'edit': 'تعديل',
+            'delete': 'حذف',
+            'close': 'إغلاق',
+            'add': 'إضافة',
+            'status': 'الحالة',
+            'active': 'نشط',
+            'inactive': 'غير نشط',
+            'name': 'الاسم',
+            'actions': 'الإجراءات',
+            'dashboard': 'لوحة التحكم',
+            'bookings': 'الحجوزات',
+            'rooms': 'الغرف',
+            'guests': 'الضيوف',
+            'rates': 'الأسعار',
+            'reports': 'التقارير',
+            'settings': 'الإعدادات',
+            'channels': 'القنوات',
+            'calendar': 'التقويم',
+            'inventory': 'المخزون',
+            'rate_plans': 'خطط الأسعار',
+            'seasonal_rates': 'الأسعار الموسمية',
+            'add_rate_plan': 'إضافة خطة سعر',
+            'add_seasonal_rate': 'إضافة سعر موسمي',
+            'edit_rate_plan': 'تعديل خطة السعر',
+            'edit_seasonal_rate': 'تعديل السعر الموسمي',
+            'plan_name': 'اسم الخطة',
+            'plan_code': 'كود الخطة',
+            'modifier_type': 'نوع التعديل',
+            'modifier_value': 'قيمة التعديل',
+            'percentage': 'نسبة مئوية',
+            'fixed': 'مبلغ ثابت',
+            'absolute': 'سعر مطلق',
+            'min_stay': 'الحد الأدنى للإقامة',
+            'max_stay': 'الحد الأقصى للإقامة',
+            'priority': 'الأولوية',
+            'description': 'الوصف',
+            'start_date': 'تاريخ البداية',
+            'end_date': 'تاريخ النهاية',
+            'season_name': 'اسم الموسم',
+            'no_rate_plans': 'لا توجد خطط أسعار.',
+            'no_seasonal_rates': 'لا توجد أسعار موسمية.',
+            'confirm_delete': 'هل أنت متأكد من الحذف؟',
+            'saved_successfully': 'تم الحفظ بنجاح',
+            'deleted_successfully': 'تم الحذف بنجاح',
+            'pending': 'قيد الانتظار',
+            'confirmed': 'مؤكد',
+            'checked_in': 'مسجل وصول',
+            'checked_out': 'مسجل مغادرة',
+            'cancelled': 'ملغي',
+            'no_show': 'عدم حضور',
+            'today_arrivals': 'وصولات اليوم',
+            'today_departures': 'مغادرات اليوم',
+            'in_house': 'في الفندق',
+            'occupancy_rate': 'نسبة الإشغال',
+            'today_revenue': 'إيرادات اليوم',
+            'page': 'صفحة',
+            'of': 'من',
+            'previous': 'السابق',
+            'next': 'التالي',
+            'all_statuses': 'جميع الحالات',
+            'from': 'من',
+            'to': 'إلى',
+            'no_bookings': 'لا توجد حجوزات.',
+            'no_guests': 'لا يوجد ضيوف.',
+            'hotel_name': 'اسم الفندق',
+            'hotel_email': 'بريد الفندق',
+            'hotel_phone': 'هاتف الفندق',
+            'currency': 'العملة',
+            'timezone': 'المنطقة الزمنية',
+            'general': 'عام',
+            'notifications': 'الإشعارات',
+            'policies': 'السياسات'
         }
     };
 
@@ -117,10 +190,13 @@ var VeneziaI18n = (function () {
     };
 })();
 
-// Initialize locale from config
-if (window.VeneziaConfig && window.VeneziaConfig.locale) {
-    var locale = window.VeneziaConfig.locale.substring(0, 2);
-    VeneziaI18n.setLocale(locale);
-}
+// Initialize locale from config (check both admin and public config)
+(function () {
+    var config = window.VeneziaAdmin || window.VeneziaConfig;
+    if (config && config.locale) {
+        var locale = config.locale.substring(0, 2);
+        VeneziaI18n.setLocale(locale);
+    }
+})();
 
 window.VeneziaI18n = VeneziaI18n;
