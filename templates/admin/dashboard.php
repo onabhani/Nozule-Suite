@@ -78,7 +78,7 @@ if ( ! defined( 'ABSPATH' ) ) {
                                     <td x-text="b.guest_name"></td>
                                     <td x-text="b.room_type_name"></td>
                                     <td x-text="b.nights"></td>
-                                    <td><span class="vhm-badge" :class="{'vhm-badge-pending': b.status === 'pending', 'vhm-badge-confirmed': b.status === 'confirmed'}" x-text="b.status"></span></td>
+                                    <td><span class="vhm-badge" :class="{'vhm-badge-pending': b.status === 'pending', 'vhm-badge-confirmed': b.status === 'confirmed'}" x-text="VeneziaI18n.t(b.status)"></span></td>
                                     <td>
                                         <template x-if="b.status === 'pending'">
                                             <button class="vhm-btn vhm-btn-sm vhm-btn-success" @click="confirmBooking(b.id)"><?php esc_html_e( 'Confirm', 'venezia-hotel' ); ?></button>

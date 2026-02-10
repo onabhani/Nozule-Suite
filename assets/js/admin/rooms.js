@@ -63,7 +63,7 @@ document.addEventListener('alpine:init', function () {
                     self.rooms = responses[1].data || [];
                 }).catch(function (err) {
                     console.error('Rooms load error:', err);
-                    VeneziaUtils.toast(err.message || 'Failed to load rooms data', 'error');
+                    VeneziaUtils.toast(err.message || VeneziaI18n.t('failed_load_rooms'), 'error');
                 }).finally(function () {
                     self.loading = false;
                 });
@@ -131,24 +131,24 @@ document.addEventListener('alpine:init', function () {
                     self.showRoomTypeModal = false;
                     self.loadData();
                     VeneziaUtils.toast(
-                        self.editingRoomTypeId ? 'Room type updated' : 'Room type created',
+                        VeneziaI18n.t(self.editingRoomTypeId ? 'room_type_updated' : 'room_type_created'),
                         'success'
                     );
                 }).catch(function (err) {
-                    VeneziaUtils.toast(err.message || 'Failed to save room type', 'error');
+                    VeneziaUtils.toast(err.message || VeneziaI18n.t('failed_save_room_type'), 'error');
                 }).finally(function () {
                     self.saving = false;
                 });
             },
 
             deleteRoomType: function (id) {
-                if (!confirm('Are you sure you want to delete this room type?')) return;
+                if (!confirm(VeneziaI18n.t('confirm_delete_room_type'))) return;
                 var self = this;
                 VeneziaAPI.delete('/admin/room-types/' + id).then(function () {
                     self.loadData();
-                    VeneziaUtils.toast('Room type deleted', 'success');
+                    VeneziaUtils.toast(VeneziaI18n.t('room_type_deleted'), 'success');
                 }).catch(function (err) {
-                    VeneziaUtils.toast(err.message || 'Failed to delete room type', 'error');
+                    VeneziaUtils.toast(err.message || VeneziaI18n.t('failed_delete_room_type'), 'error');
                 });
             },
 
@@ -156,7 +156,7 @@ document.addEventListener('alpine:init', function () {
 
             openRoomModal: function () {
                 if (this.roomTypes.length === 0) {
-                    VeneziaUtils.toast('Please create a room type first', 'error');
+                    VeneziaUtils.toast(VeneziaI18n.t('select_room_type_first'), 'error');
                     return;
                 }
                 this.editingRoomId = null;
@@ -178,9 +178,14 @@ document.addEventListener('alpine:init', function () {
 
             saveRoom: function () {
                 var self = this;
+                var roomTypeId = parseInt(self.roomForm.room_type_id, 10);
+                if (!roomTypeId || roomTypeId < 1) {
+                    VeneziaUtils.toast(VeneziaI18n.t('select_room_type'), 'error');
+                    return;
+                }
                 var data = {
                     room_number: self.roomForm.room_number,
-                    room_type_id: parseInt(self.roomForm.room_type_id, 10) || 0,
+                    room_type_id: roomTypeId,
                     status: self.roomForm.status
                 };
 
@@ -204,28 +209,32 @@ document.addEventListener('alpine:init', function () {
                     self.showRoomModal = false;
                     self.loadData();
                     VeneziaUtils.toast(
-                        self.editingRoomId ? 'Room updated' : 'Room created',
+                        VeneziaI18n.t(self.editingRoomId ? 'room_updated' : 'room_created'),
                         'success'
                     );
                 }).catch(function (err) {
-                    VeneziaUtils.toast(err.message || 'Failed to save room', 'error');
+                    VeneziaUtils.toast(err.message || VeneziaI18n.t('failed_save_room'), 'error');
                 }).finally(function () {
                     self.saving = false;
                 });
             },
 
             deleteRoom: function (id) {
-                if (!confirm('Are you sure you want to delete this room?')) return;
+                if (!confirm(VeneziaI18n.t('confirm_delete_room'))) return;
                 var self = this;
                 VeneziaAPI.delete('/admin/rooms/' + id).then(function () {
                     self.loadData();
-                    VeneziaUtils.toast('Room deleted', 'success');
+                    VeneziaUtils.toast(VeneziaI18n.t('room_deleted'), 'success');
                 }).catch(function (err) {
-                    VeneziaUtils.toast(err.message || 'Failed to delete room', 'error');
+                    VeneziaUtils.toast(err.message || VeneziaI18n.t('failed_delete_room'), 'error');
                 });
             },
 
             // ---- Helpers ----
+
+            statusLabel: function (status) {
+                return VeneziaI18n.t(status);
+            },
 
             formatPrice: function (amount) {
                 return VeneziaUtils.formatPrice(amount);

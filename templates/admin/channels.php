@@ -29,7 +29,7 @@ if ( ! defined( 'ABSPATH' ) ) {
                 <div class="vhm-card">
                     <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:1rem;">
                         <h3 style="font-size:1.125rem; font-weight:600; margin:0;" x-text="channel.name"></h3>
-                        <span class="vhm-badge" :class="channel.status === 'active' ? 'vhm-badge-confirmed' : 'vhm-badge-cancelled'" x-text="channel.status"></span>
+                        <span class="vhm-badge" :class="channel.status === 'active' ? 'vhm-badge-confirmed' : 'vhm-badge-cancelled'" x-text="VeneziaI18n.t(channel.status)"></span>
                     </div>
                     <div style="font-size:0.875rem; color:#64748b; display:flex; flex-direction:column; gap:0.25rem;">
                         <span><?php esc_html_e( 'Type:', 'venezia-hotel' ); ?> <strong x-text="channel.type"></strong></span>

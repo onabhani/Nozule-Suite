@@ -59,7 +59,7 @@ if ( ! defined( 'ABSPATH' ) ) {
                             <td x-text="type.max_occupancy"></td>
                             <td x-text="type.room_count || 0"></td>
                             <td>
-                                <span class="vhm-badge" :class="type.status === 'active' ? 'vhm-badge-confirmed' : 'vhm-badge-cancelled'" x-text="type.status"></span>
+                                <span class="vhm-badge" :class="type.status === 'active' ? 'vhm-badge-confirmed' : 'vhm-badge-cancelled'" x-text="statusLabel(type.status)"></span>
                             </td>
                             <td>
                                 <button class="vhm-btn vhm-btn-sm" @click="editRoomType(type)"><?php esc_html_e( 'Edit', 'venezia-hotel' ); ?></button>
@@ -101,7 +101,7 @@ if ( ! defined( 'ABSPATH' ) ) {
                                           'vhm-badge-checked_in': room.status === 'occupied',
                                           'vhm-badge-pending': room.status === 'maintenance',
                                           'vhm-badge-cancelled': room.status === 'out_of_order'
-                                      }" x-text="room.status"></span>
+                                      }" x-text="statusLabel(room.status)"></span>
                             </td>
                             <td>
                                 <button class="vhm-btn vhm-btn-sm" @click="editRoom(room)"><?php esc_html_e( 'Edit', 'venezia-hotel' ); ?></button>
