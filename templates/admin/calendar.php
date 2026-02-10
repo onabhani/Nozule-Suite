@@ -38,7 +38,7 @@ if ( ! defined( 'ABSPATH' ) ) {
     </template>
 
     <!-- Calendar grid -->
-    <template x-if="!loading">
+    <template x-if="!loading && rooms.length > 0">
         <div class="vhm-table-wrap" style="overflow-x:auto;">
             <table class="vhm-table vhm-calendar-table">
                 <thead>
@@ -76,8 +76,18 @@ if ( ! defined( 'ABSPATH' ) ) {
         </div>
     </template>
 
+    <!-- No rooms message -->
+    <template x-if="!loading && rooms.length === 0">
+        <div class="vhm-card" style="text-align:center; padding:3rem;">
+            <p style="color:#64748b; margin:0 0 1rem;"><?php esc_html_e( 'No rooms configured yet. Add room types and rooms first.', 'venezia-hotel' ); ?></p>
+            <a href="<?php echo esc_url( admin_url( 'admin.php?page=vhm-rooms' ) ); ?>" class="vhm-btn vhm-btn-primary">
+                <?php esc_html_e( 'Go to Rooms', 'venezia-hotel' ); ?>
+            </a>
+        </div>
+    </template>
+
     <!-- Legend -->
-    <div style="margin-top:1rem; display:flex; gap:1.5rem; font-size:0.875rem; color:#64748b;">
+    <div style="margin-top:1rem; display:flex; flex-wrap:wrap; gap:1rem 1.5rem; font-size:0.875rem; color:#64748b; direction:ltr;">
         <span style="display:flex; align-items:center; gap:0.25rem;">
             <span style="display:inline-block; width:1rem; height:1rem; border-radius:0.25rem; background:#dcfce7;"></span>
             <?php esc_html_e( 'Available', 'venezia-hotel' ); ?>
