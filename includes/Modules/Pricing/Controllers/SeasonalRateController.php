@@ -285,9 +285,9 @@ class SeasonalRateController {
 			}
 		}
 
-		// Numeric fields.
+		// Numeric fields — frontend sends modifier_value, DB column is price_modifier.
 		if ( array_key_exists( 'modifier_value', $data ) ) {
-			$sanitized['modifier_value'] = (float) $data['modifier_value'];
+			$sanitized['price_modifier'] = (float) $data['modifier_value'];
 		}
 
 		// Integer fields (nullable).
@@ -299,7 +299,7 @@ class SeasonalRateController {
 		}
 
 		// Integer fields (non-nullable).
-		$intFields = [ 'priority', 'min_stay' ];
+		$intFields = [ 'priority' ];
 		foreach ( $intFields as $field ) {
 			if ( array_key_exists( $field, $data ) ) {
 				$sanitized[ $field ] = (int) $data[ $field ];

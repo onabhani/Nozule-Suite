@@ -39,7 +39,6 @@ document.addEventListener('alpine:init', function () {
                     modifier_value: 0,
                     min_stay: '',
                     max_stay: '',
-                    priority: 0,
                     status: 'active',
                     description: ''
                 };
@@ -54,7 +53,6 @@ document.addEventListener('alpine:init', function () {
                     modifier_type: 'percentage',
                     modifier_value: 0,
                     priority: 0,
-                    min_stay: '',
                     status: 'active'
                 };
             },

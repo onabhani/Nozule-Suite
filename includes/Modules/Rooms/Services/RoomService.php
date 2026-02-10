@@ -69,6 +69,15 @@ class RoomService {
 	}
 
 	/**
+	 * Get all room types without caching (for admin lists that need fresh data).
+	 *
+	 * @return RoomType[]
+	 */
+	public function getAllRoomTypesFresh(): array {
+		return $this->roomTypeRepository->getAllOrdered();
+	}
+
+	/**
 	 * Get active room types only.
 	 *
 	 * @return RoomType[]
