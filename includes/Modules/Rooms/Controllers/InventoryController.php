@@ -36,15 +36,15 @@ class InventoryController {
 	public function registerRoutes(): void {
 		$namespace = 'venezia/v1';
 
-		// Get inventory for a date range.
+		// Get inventory for a date range (room_type_id optional — returns all types if omitted).
 		register_rest_route( $namespace, '/admin/inventory', [
 			'methods'             => WP_REST_Server::READABLE,
 			'callback'            => [ $this, 'getInventory' ],
 			'permission_callback' => [ $this, 'checkStaffPermission' ],
 			'args'                => [
 				'room_type_id' => [
-					'required'          => true,
-					'validate_callback' => fn( $v ) => is_numeric( $v ) && $v > 0,
+					'required'          => false,
+					'validate_callback' => fn( $v ) => $v === '' || $v === null || ( is_numeric( $v ) && (int) $v > 0 ),
 					'sanitize_callback' => 'absint',
 				],
 				'start_date' => [
@@ -76,28 +76,77 @@ class InventoryController {
 	}
 
 	/**
-	 * Get inventory for a room type within a date range.
+	 * Alias for getInventory — used by RestController CRUD routes.
+	 */
+	public function index( WP_REST_Request $request ): WP_REST_Response {
+		return $this->getInventory( $request );
+	}
+
+	/**
+	 * Get inventory grid for a date range.
+	 *
+	 * Returns data grouped by room type with availability indexed by date,
+	 * matching the format expected by the admin inventory template.
 	 */
 	public function getInventory( WP_REST_Request $request ): WP_REST_Response {
 		$roomTypeId = absint( $request->get_param( 'room_type_id' ) );
 		$startDate  = sanitize_text_field( $request->get_param( 'start_date' ) );
 		$endDate    = sanitize_text_field( $request->get_param( 'end_date' ) );
 
-		$inventory = $this->inventoryRepository->getForDateRange( $roomTypeId, $startDate, $endDate );
+		if ( ! $startDate || ! $endDate ) {
+			return new WP_REST_Response( [
+				'success' => false,
+				'error'   => [
+					'code'    => 'MISSING_DATES',
+					'message' => __( 'start_date and end_date are required.', 'venezia-hotel' ),
+				],
+			], 400 );
+		}
 
-		$data = array_map(
-			fn( RoomInventory $inv ) => $inv->toArray(),
-			$inventory
-		);
+		// Build dates array.
+		$dates   = [];
+		$current = new \DateTimeImmutable( $startDate );
+		$end     = new \DateTimeImmutable( $endDate );
+		while ( $current <= $end ) {
+			$dates[] = $current->format( 'Y-m-d' );
+			$current = $current->modify( '+1 day' );
+		}
+
+		// Determine which room types to include.
+		if ( $roomTypeId ) {
+			$roomType  = $this->roomService->findRoomType( $roomTypeId );
+			$roomTypes = $roomType ? [ $roomType ] : [];
+		} else {
+			$roomTypes = $this->roomService->getActiveRoomTypes();
+		}
+
+		// Build inventory data grouped by room type.
+		$inventory = [];
+		foreach ( $roomTypes as $rt ) {
+			$records      = $this->inventoryRepository->getForDateRange( $rt->id, $startDate, $endDate );
+			$availability = [];
+			$totalRooms   = 0;
+
+			foreach ( $records as $record ) {
+				$availability[ $record->date ] = (int) $record->available_rooms;
+				if ( ! $totalRooms && $record->total_rooms ) {
+					$totalRooms = (int) $record->total_rooms;
+				}
+			}
+
+			$inventory[] = [
+				'id'           => $rt->id,
+				'name'         => $rt->name,
+				'total_rooms'  => $totalRooms ?: ( $rt->total_rooms ?? 0 ),
+				'availability' => $availability,
+			];
+		}
 
 		return new WP_REST_Response( [
 			'success' => true,
-			'data'    => $data,
-			'meta'    => [
-				'room_type_id' => $roomTypeId,
-				'start_date'   => $startDate,
-				'end_date'     => $endDate,
-				'total_days'   => count( $data ),
+			'data'    => [
+				'inventory' => $inventory,
+				'dates'     => $dates,
 			],
 		], 200 );
 	}
@@ -213,16 +262,16 @@ class InventoryController {
 	}
 
 	/**
-	 * Permission callback: require vhm_admin capability.
+	 * Permission callback: require manage_options capability.
 	 */
 	public function checkAdminPermission( WP_REST_Request $request ): bool {
-		return current_user_can( 'vhm_admin' );
+		return current_user_can( 'manage_options' );
 	}
 
 	/**
-	 * Permission callback: require vhm_staff or vhm_admin capability.
+	 * Permission callback: require manage_options or vhm_staff capability.
 	 */
 	public function checkStaffPermission( WP_REST_Request $request ): bool {
-		return current_user_can( 'vhm_admin' ) || current_user_can( 'vhm_staff' );
+		return current_user_can( 'manage_options' ) || current_user_can( 'vhm_staff' );
 	}
 }

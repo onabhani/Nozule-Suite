@@ -36,8 +36,12 @@
     border-left: 1px solid #f1f5f9;
 }
 
-/* Sidebar */
-.vhm-modal-overlay {
+.vhm-calendar-room-col {
+    text-align: right;
+}
+
+/* Modal / Sidebar */
+.vhm-modal-overlay:has(.vhm-sidebar-panel) {
     justify-content: flex-start;
 }
 
@@ -51,12 +55,16 @@
     to { transform: translateX(0); }
 }
 
+.vhm-modal-footer {
+    flex-direction: row-reverse;
+}
+
 /* Tabs */
 .vhm-tabs {
     flex-direction: row-reverse;
 }
 
-/* Buttons */
+/* Toast */
 .vhm-toast-container {
     left: 1rem;
     right: auto;
@@ -70,6 +78,22 @@
 /* Forms */
 .vhm-form-grid {
     direction: rtl;
+}
+
+.vhm-form-group label,
+.vhm-label {
+    text-align: right;
+}
+
+/* Buttons — flip icon gap */
+.vhm-btn {
+    flex-direction: row-reverse;
+}
+
+/* Filters */
+.vhm-filters {
+    flex-direction: row-reverse;
+    flex-wrap: wrap;
 }
 
 /* Inventory sticky columns */
@@ -89,9 +113,66 @@
     text-align: right;
 }
 
-/* Responsive */
-@media (max-width: 782px) {
+/* ============================================
+   Responsive RTL — Tablet (≤ 960px)
+   ============================================ */
+@media (max-width: 960px) {
     .vhm-admin-wrap {
         margin: 10px;
+    }
+
+    .vhm-filters {
+        flex-direction: column;
+    }
+}
+
+/* ============================================
+   Responsive RTL — Mobile (≤ 600px)
+   ============================================ */
+@media (max-width: 600px) {
+    .vhm-admin-wrap {
+        margin: 6px;
+    }
+
+    .vhm-admin-header {
+        flex-direction: column;
+        align-items: stretch;
+    }
+
+    /* Tabs: keep LTR scroll direction in RTL context */
+    .vhm-tabs {
+        flex-direction: row-reverse;
+    }
+
+    /* Pagination: stack vertically */
+    .vhm-pagination {
+        flex-direction: column;
+        align-items: center;
+    }
+
+    /* Toast: full width on mobile */
+    .vhm-toast-container {
+        left: 0.5rem;
+        right: 0.5rem;
+        max-width: none;
+    }
+
+    /* Modal footer: stack buttons */
+    .vhm-modal-footer {
+        flex-direction: column-reverse;
+    }
+
+    .vhm-modal-footer .vhm-btn {
+        width: 100%;
+        justify-content: center;
+    }
+}
+
+/* ============================================
+   Responsive RTL — Small phones (≤ 400px)
+   ============================================ */
+@media (max-width: 400px) {
+    .vhm-admin-header h1 {
+        font-size: 1.1rem;
     }
 }

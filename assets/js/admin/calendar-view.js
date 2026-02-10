@@ -31,6 +31,7 @@ document.addEventListener('alpine:init', function () {
 
             init: function () {
                 this.buildDates();
+                this.loadRooms();
                 this.loadCalendar();
             },
 
@@ -45,6 +46,26 @@ document.addEventListener('alpine:init', function () {
                 this.dates = dates;
             },
 
+            loadRooms: function () {
+                var self = this;
+                VeneziaAPI.get('/admin/rooms').then(function (response) {
+                    self.rooms = response.data || [];
+                }).catch(function () {
+                    // Fallback: try room-types if rooms endpoint not available
+                    VeneziaAPI.get('/admin/room-types').then(function (response) {
+                        self.rooms = (response.data || []).map(function (rt) {
+                            return {
+                                id: rt.id,
+                                room_number: rt.name,
+                                room_type_name: ''
+                            };
+                        });
+                    }).catch(function () {
+                        self.rooms = [];
+                    });
+                });
+            },
+
             loadCalendar: function () {
                 var self = this;
                 self.buildDates();
@@ -54,13 +75,26 @@ document.addEventListener('alpine:init', function () {
                 var endDate = self.dates[self.dates.length - 1];
 
                 VeneziaAPI.get('/admin/calendar', {
-                    start_date: startDate,
-                    end_date: endDate
+                    start: startDate,
+                    end: endDate
                 }).then(function (response) {
-                    self.rooms = response.data.rooms || response.data.room_types || [];
-                    self.bookings = response.data.bookings || [];
+                    // CalendarController returns { data: [...events...] }
+                    var events = response.data || [];
+                    self.bookings = events.map(function (e) {
+                        return {
+                            id: e.id,
+                            booking_number: e.booking_number,
+                            guest_name: e.guest_name || e.booking_number || '',
+                            room_id: e.room_id,
+                            room_type_id: e.room_type_id,
+                            check_in: e.start || e.check_in,
+                            check_out: e.end || e.check_out,
+                            status: e.status
+                        };
+                    });
                 }).catch(function (err) {
                     console.error('Calendar error:', err);
+                    self.bookings = [];
                 }).finally(function () {
                     self.loading = false;
                 });

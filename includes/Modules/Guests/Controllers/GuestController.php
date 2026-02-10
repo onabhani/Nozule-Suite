@@ -80,7 +80,40 @@ class GuestController {
      * Permission callback: user must have the vhm_staff capability.
      */
     public function checkPermission( \WP_REST_Request $request ): bool {
-        return current_user_can( 'vhm_staff' );
+        return current_user_can( 'manage_options' ) || current_user_can( 'vhm_staff' );
+    }
+
+    // Standard CRUD aliases (used by RestController admin routes)
+
+    public function index( \WP_REST_Request $request ): \WP_REST_Response {
+        $result = $this->repository->list( [
+            'search'   => $request->get_param( 'search' ) ?? '',
+            'orderby'  => $request->get_param( 'orderby' ) ?? 'created_at',
+            'order'    => $request->get_param( 'order' ) ?? 'DESC',
+            'per_page' => $request->get_param( 'per_page' ) ?? 20,
+            'page'     => $request->get_param( 'page' ) ?? 1,
+        ] );
+
+        $guests = array_map(
+            fn( $guest ) => $guest->toArray(),
+            $result['guests']
+        );
+
+        return new \WP_REST_Response( [
+            'data' => [
+                'items'      => $guests,
+                'pagination' => [
+                    'page'        => (int) ( $request->get_param( 'page' ) ?? 1 ),
+                    'per_page'    => (int) ( $request->get_param( 'per_page' ) ?? 20 ),
+                    'total'       => $result['total'],
+                    'total_pages' => $result['pages'],
+                ],
+            ],
+        ], 200 );
+    }
+
+    public function show( \WP_REST_Request $request ): \WP_REST_Response {
+        return $this->getGuest( $request );
     }
 
     /**

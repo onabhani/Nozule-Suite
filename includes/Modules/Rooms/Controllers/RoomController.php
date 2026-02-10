@@ -291,13 +291,23 @@ class RoomController {
 	 * Permission callback: require vhm_admin capability.
 	 */
 	public function checkAdminPermission( WP_REST_Request $request ): bool {
-		return current_user_can( 'vhm_admin' );
+		return current_user_can( 'manage_options' ) || current_user_can( 'vhm_admin' );
 	}
 
 	/**
 	 * Permission callback: require vhm_staff or vhm_admin capability.
 	 */
 	public function checkStaffPermission( WP_REST_Request $request ): bool {
-		return current_user_can( 'vhm_admin' ) || current_user_can( 'vhm_staff' );
+		return current_user_can( 'manage_options' ) || current_user_can( 'vhm_admin' ) || current_user_can( 'vhm_staff' );
+	}
+
+	// Standard CRUD aliases (used by RestController admin routes)
+
+	public function store( WP_REST_Request $request ): WP_REST_Response {
+		return $this->create( $request );
+	}
+
+	public function destroy( WP_REST_Request $request ): WP_REST_Response {
+		return $this->delete( $request );
 	}
 }

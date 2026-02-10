@@ -103,7 +103,7 @@ class ChannelController {
      * Permission check: current user must have the vhm_admin capability.
      */
     public function checkPermission(): bool {
-        return current_user_can( self::PERMISSION );
+        return current_user_can( 'manage_options' ) || current_user_can( self::PERMISSION );
     }
 
     /**
@@ -354,6 +354,34 @@ class ChannelController {
         return new \WP_REST_Response( [
             'history' => $history,
         ], 200 );
+    }
+
+    // ------------------------------------------------------------------
+    // Standard CRUD aliases (used by RestController admin routes)
+    // ------------------------------------------------------------------
+
+    public function index( \WP_REST_Request $request ): \WP_REST_Response {
+        return $this->listChannels( $request );
+    }
+
+    public function store( \WP_REST_Request $request ): \WP_REST_Response {
+        return $this->createMapping( $request );
+    }
+
+    public function show( \WP_REST_Request $request ): \WP_REST_Response {
+        return $this->getMapping( $request );
+    }
+
+    public function update( \WP_REST_Request $request ): \WP_REST_Response {
+        return $this->updateMapping( $request );
+    }
+
+    public function destroy( \WP_REST_Request $request ): \WP_REST_Response {
+        return $this->deleteMapping( $request );
+    }
+
+    public function sync( \WP_REST_Request $request ): \WP_REST_Response {
+        return $this->triggerSync( $request );
     }
 
     /**
