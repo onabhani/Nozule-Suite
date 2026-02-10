@@ -1,18 +1,55 @@
 /**
  * Venezia Hotel Manager - Admin Rooms
+ *
+ * Modal-based CRUD for room types and individual rooms.
  */
 document.addEventListener('alpine:init', function () {
 
     Alpine.data('vhmRooms', function () {
         return {
             loading: true,
+            saving: false,
             activeTab: 'types',
             roomTypes: [],
             rooms: [],
 
+            // Room Type modal state
+            showRoomTypeModal: false,
+            editingRoomTypeId: null,
+            rtForm: {},
+
+            // Room modal state
+            showRoomModal: false,
+            editingRoomId: null,
+            roomForm: {},
+
             init: function () {
                 this.loadData();
             },
+
+            // ---- Default form values ----
+
+            defaultRtForm: function () {
+                return {
+                    name: '',
+                    base_price: '',
+                    max_occupancy: 2,
+                    description: '',
+                    status: 'active'
+                };
+            },
+
+            defaultRoomForm: function () {
+                return {
+                    room_number: '',
+                    room_type_id: '',
+                    floor: '',
+                    status: 'available',
+                    notes: ''
+                };
+            },
+
+            // ---- Data loading ----
 
             loadData: function () {
                 var self = this;
@@ -26,75 +63,65 @@ document.addEventListener('alpine:init', function () {
                     self.rooms = responses[1].data || [];
                 }).catch(function (err) {
                     console.error('Rooms load error:', err);
+                    VeneziaUtils.toast(err.message || 'Failed to load rooms data', 'error');
                 }).finally(function () {
                     self.loading = false;
                 });
             },
 
-            openCreateModal: function (type) {
-                if (type === 'room_type') {
-                    var name = prompt('Room Type Name:');
-                    if (!name) return;
-                    var basePrice = prompt('Base Price per Night:');
-                    if (!basePrice) return;
-                    var maxOccupancy = prompt('Max Occupancy:');
+            // ---- Room Type CRUD ----
 
-                    var self = this;
-                    VeneziaAPI.post('/admin/room-types', {
-                        name: name,
-                        base_price: parseFloat(basePrice),
-                        max_occupancy: parseInt(maxOccupancy) || 2,
-                        status: 'active'
-                    }).then(function () {
-                        self.loadData();
-                        VeneziaUtils.toast('Room type created', 'success');
-                    }).catch(function (err) {
-                        VeneziaUtils.toast(err.message, 'error');
-                    });
-                } else if (type === 'room') {
-                    if (this.roomTypes.length === 0) {
-                        VeneziaUtils.toast('Please create a room type first', 'error');
-                        return;
-                    }
-                    var roomNumber = prompt('Room Number:');
-                    if (!roomNumber) return;
-                    var typeNames = this.roomTypes.map(function (t) { return t.id + ': ' + t.name; }).join('\n');
-                    var typeId = prompt('Room Type ID:\n' + typeNames);
-                    if (!typeId) return;
-                    var floor = prompt('Floor Number (optional):');
-
-                    var self = this;
-                    VeneziaAPI.post('/admin/rooms', {
-                        room_number: roomNumber,
-                        room_type_id: parseInt(typeId),
-                        floor: floor || null,
-                        status: 'available'
-                    }).then(function () {
-                        self.loadData();
-                        VeneziaUtils.toast('Room created', 'success');
-                    }).catch(function (err) {
-                        VeneziaUtils.toast(err.message, 'error');
-                    });
-                }
+            openRoomTypeModal: function () {
+                this.editingRoomTypeId = null;
+                this.rtForm = this.defaultRtForm();
+                this.showRoomTypeModal = true;
             },
 
-            editRoomType: function (id) {
-                var type = this.roomTypes.find(function (t) { return t.id === id; });
-                if (!type) return;
-                var name = prompt('Room Type Name:', type.name);
-                if (name === null) return;
-                var basePrice = prompt('Base Price:', type.base_price);
-                if (basePrice === null) return;
+            editRoomType: function (type) {
+                this.editingRoomTypeId = type.id;
+                this.rtForm = {
+                    name: type.name || '',
+                    base_price: type.base_price || '',
+                    max_occupancy: type.max_occupancy || 2,
+                    description: type.description || '',
+                    status: type.status || 'active'
+                };
+                this.showRoomTypeModal = true;
+            },
 
+            saveRoomType: function () {
                 var self = this;
-                VeneziaAPI.put('/admin/room-types/' + id, {
-                    name: name,
-                    base_price: parseFloat(basePrice)
-                }).then(function () {
+                var data = {
+                    name: self.rtForm.name,
+                    base_price: parseFloat(self.rtForm.base_price) || 0,
+                    max_occupancy: parseInt(self.rtForm.max_occupancy, 10) || 2,
+                    status: self.rtForm.status
+                };
+
+                if (self.rtForm.description) {
+                    data.description = self.rtForm.description;
+                }
+
+                self.saving = true;
+
+                var promise;
+                if (self.editingRoomTypeId) {
+                    promise = VeneziaAPI.put('/admin/room-types/' + self.editingRoomTypeId, data);
+                } else {
+                    promise = VeneziaAPI.post('/admin/room-types', data);
+                }
+
+                promise.then(function () {
+                    self.showRoomTypeModal = false;
                     self.loadData();
-                    VeneziaUtils.toast('Room type updated', 'success');
+                    VeneziaUtils.toast(
+                        self.editingRoomTypeId ? 'Room type updated' : 'Room type created',
+                        'success'
+                    );
                 }).catch(function (err) {
-                    VeneziaUtils.toast(err.message, 'error');
+                    VeneziaUtils.toast(err.message || 'Failed to save room type', 'error');
+                }).finally(function () {
+                    self.saving = false;
                 });
             },
 
@@ -105,27 +132,69 @@ document.addEventListener('alpine:init', function () {
                     self.loadData();
                     VeneziaUtils.toast('Room type deleted', 'success');
                 }).catch(function (err) {
-                    VeneziaUtils.toast(err.message, 'error');
+                    VeneziaUtils.toast(err.message || 'Failed to delete room type', 'error');
                 });
             },
 
-            editRoom: function (id) {
-                var room = this.rooms.find(function (r) { return r.id === id; });
-                if (!room) return;
-                var roomNumber = prompt('Room Number:', room.room_number);
-                if (roomNumber === null) return;
-                var status = prompt('Status (available, occupied, maintenance, out_of_order):', room.status);
-                if (status === null) return;
+            // ---- Room CRUD ----
 
+            openRoomModal: function () {
+                if (this.roomTypes.length === 0) {
+                    VeneziaUtils.toast('Please create a room type first', 'error');
+                    return;
+                }
+                this.editingRoomId = null;
+                this.roomForm = this.defaultRoomForm();
+                this.showRoomModal = true;
+            },
+
+            editRoom: function (room) {
+                this.editingRoomId = room.id;
+                this.roomForm = {
+                    room_number: room.room_number || '',
+                    room_type_id: room.room_type_id || '',
+                    floor: room.floor || '',
+                    status: room.status || 'available',
+                    notes: room.notes || ''
+                };
+                this.showRoomModal = true;
+            },
+
+            saveRoom: function () {
                 var self = this;
-                VeneziaAPI.put('/admin/rooms/' + id, {
-                    room_number: roomNumber,
-                    status: status
-                }).then(function () {
+                var data = {
+                    room_number: self.roomForm.room_number,
+                    room_type_id: parseInt(self.roomForm.room_type_id, 10) || 0,
+                    status: self.roomForm.status
+                };
+
+                if (self.roomForm.floor !== '' && self.roomForm.floor != null) {
+                    data.floor = self.roomForm.floor;
+                }
+                if (self.roomForm.notes) {
+                    data.notes = self.roomForm.notes;
+                }
+
+                self.saving = true;
+
+                var promise;
+                if (self.editingRoomId) {
+                    promise = VeneziaAPI.put('/admin/rooms/' + self.editingRoomId, data);
+                } else {
+                    promise = VeneziaAPI.post('/admin/rooms', data);
+                }
+
+                promise.then(function () {
+                    self.showRoomModal = false;
                     self.loadData();
-                    VeneziaUtils.toast('Room updated', 'success');
+                    VeneziaUtils.toast(
+                        self.editingRoomId ? 'Room updated' : 'Room created',
+                        'success'
+                    );
                 }).catch(function (err) {
-                    VeneziaUtils.toast(err.message, 'error');
+                    VeneziaUtils.toast(err.message || 'Failed to save room', 'error');
+                }).finally(function () {
+                    self.saving = false;
                 });
             },
 
@@ -136,9 +205,11 @@ document.addEventListener('alpine:init', function () {
                     self.loadData();
                     VeneziaUtils.toast('Room deleted', 'success');
                 }).catch(function (err) {
-                    VeneziaUtils.toast(err.message, 'error');
+                    VeneziaUtils.toast(err.message || 'Failed to delete room', 'error');
                 });
             },
+
+            // ---- Helpers ----
 
             formatPrice: function (amount) {
                 return VeneziaUtils.formatPrice(amount);

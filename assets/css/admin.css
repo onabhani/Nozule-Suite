@@ -577,6 +577,7 @@
 
 select.vhm-input {
     appearance: auto;
+    background-image: none;
 }
 
 textarea.vhm-input {

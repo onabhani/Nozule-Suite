@@ -728,3 +728,87 @@ msgstr "الغرفة غير موجودة."
 
 msgid "Room type created successfully."
 msgstr "تم إنشاء نوع الغرفة بنجاح."
+
+# ---- Rooms Modal (new) ----
+
+msgid "Edit Room Type"
+msgstr "تعديل نوع الغرفة"
+
+msgid "Edit Room"
+msgstr "تعديل الغرفة"
+
+msgid "Room Name/Number"
+msgstr "رقم/اسم الغرفة"
+
+msgid "Notes"
+msgstr "ملاحظات"
+
+msgid "Optional notes..."
+msgstr "ملاحظات اختيارية..."
+
+msgid "Maintenance"
+msgstr "صيانة"
+
+msgid "Out of Order"
+msgstr "خارج الخدمة"
+
+msgid "Save"
+msgstr "حفظ"
+
+# ---- Bookings Modal (new) ----
+
+msgid "Guest First Name"
+msgstr "الاسم الأول للضيف"
+
+msgid "Guest Last Name"
+msgstr "اسم العائلة للضيف"
+
+msgid "Number of Adults"
+msgstr "عدد البالغين"
+
+msgid "Number of Children"
+msgstr "عدد الأطفال"
+
+# ---- Channels Modal (new) ----
+
+msgid "Edit Channel"
+msgstr "تعديل القناة"
+
+msgid "Channel Name"
+msgstr "اسم القناة"
+
+msgid "Booking.com"
+msgstr "Booking.com"
+
+msgid "Expedia"
+msgstr "Expedia"
+
+msgid "Airbnb"
+msgstr "Airbnb"
+
+msgid "Agoda"
+msgstr "Agoda"
+
+msgid "Hotels.com"
+msgstr "Hotels.com"
+
+msgid "Direct"
+msgstr "مباشر"
+
+msgid "Custom"
+msgstr "مخصص"
+
+msgid "External Room/Property ID"
+msgstr "معرّف الغرفة/العقار الخارجي"
+
+msgid "Sync Options"
+msgstr "خيارات المزامنة"
+
+msgid "Sync Availability"
+msgstr "مزامنة التوفر"
+
+msgid "Sync Rates"
+msgstr "مزامنة الأسعار"
+
+msgid "Sync Reservations"
+msgstr "مزامنة الحجوزات"

@@ -135,6 +135,78 @@ if ( ! defined( 'ABSPATH' ) ) {
             </div>
         </div>
     </template>
+
+    <!-- Add New Booking Modal -->
+    <template x-if="showCreateModal">
+        <div class="vhm-modal-overlay" @click.self="showCreateModal = false">
+            <div class="vhm-modal" style="max-width:640px;">
+                <div class="vhm-modal-header">
+                    <h2><?php esc_html_e( 'Add New Booking', 'venezia-hotel' ); ?></h2>
+                    <button @click="showCreateModal = false" class="vhm-modal-close">&times;</button>
+                </div>
+                <div class="vhm-modal-body">
+                    <div class="vhm-form-grid">
+                        <div>
+                            <label class="vhm-label"><?php esc_html_e( 'Guest First Name', 'venezia-hotel' ); ?></label>
+                            <input type="text" x-model="bookingForm.guest_first_name" class="vhm-input">
+                        </div>
+                        <div>
+                            <label class="vhm-label"><?php esc_html_e( 'Guest Last Name', 'venezia-hotel' ); ?></label>
+                            <input type="text" x-model="bookingForm.guest_last_name" class="vhm-input">
+                        </div>
+                        <div>
+                            <label class="vhm-label"><?php esc_html_e( 'Email', 'venezia-hotel' ); ?></label>
+                            <input type="email" x-model="bookingForm.guest_email" class="vhm-input">
+                        </div>
+                        <div>
+                            <label class="vhm-label"><?php esc_html_e( 'Phone', 'venezia-hotel' ); ?></label>
+                            <input type="tel" x-model="bookingForm.guest_phone" class="vhm-input">
+                        </div>
+                        <div>
+                            <label class="vhm-label"><?php esc_html_e( 'Room Type', 'venezia-hotel' ); ?></label>
+                            <select x-model="bookingForm.room_type_id" class="vhm-input">
+                                <option value=""><?php esc_html_e( 'Select Room Type', 'venezia-hotel' ); ?></option>
+                                <template x-for="rt in roomTypes" :key="rt.id">
+                                    <option :value="rt.id" x-text="rt.name"></option>
+                                </template>
+                            </select>
+                        </div>
+                        <div>
+                            <label class="vhm-label"><?php esc_html_e( 'Status', 'venezia-hotel' ); ?></label>
+                            <select x-model="bookingForm.status" class="vhm-input">
+                                <option value="pending"><?php esc_html_e( 'Pending', 'venezia-hotel' ); ?></option>
+                                <option value="confirmed"><?php esc_html_e( 'Confirmed', 'venezia-hotel' ); ?></option>
+                            </select>
+                        </div>
+                        <div>
+                            <label class="vhm-label"><?php esc_html_e( 'Check-in', 'venezia-hotel' ); ?></label>
+                            <input type="date" x-model="bookingForm.check_in" class="vhm-input">
+                        </div>
+                        <div>
+                            <label class="vhm-label"><?php esc_html_e( 'Check-out', 'venezia-hotel' ); ?></label>
+                            <input type="date" x-model="bookingForm.check_out" class="vhm-input">
+                        </div>
+                        <div>
+                            <label class="vhm-label"><?php esc_html_e( 'Adults', 'venezia-hotel' ); ?></label>
+                            <input type="number" x-model="bookingForm.adults" min="1" class="vhm-input">
+                        </div>
+                        <div>
+                            <label class="vhm-label"><?php esc_html_e( 'Children', 'venezia-hotel' ); ?></label>
+                            <input type="number" x-model="bookingForm.children" min="0" class="vhm-input">
+                        </div>
+                        <div style="grid-column: span 2;">
+                            <label class="vhm-label"><?php esc_html_e( 'Notes', 'venezia-hotel' ); ?></label>
+                            <textarea x-model="bookingForm.notes" class="vhm-input" rows="3"></textarea>
+                        </div>
+                    </div>
+                </div>
+                <div class="vhm-modal-footer">
+                    <button class="vhm-btn" @click="showCreateModal = false"><?php esc_html_e( 'Cancel', 'venezia-hotel' ); ?></button>
+                    <button class="vhm-btn vhm-btn-primary" @click="saveBooking()"><?php esc_html_e( 'Save Booking', 'venezia-hotel' ); ?></button>
+                </div>
+            </div>
+        </div>
+    </template>
 </div>
 
 <!-- Toast Notifications -->

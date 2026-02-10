@@ -20,6 +20,9 @@ document.addEventListener('alpine:init', function () {
             showPaymentForm: false,
             paymentData: { amount: '', method: 'cash', notes: '' },
             bookingLogs: [],
+            showCreateModal: false,
+            roomTypes: [],
+            bookingForm: {},
 
             init: function () {
                 this.loadBookings();
@@ -52,11 +55,48 @@ document.addEventListener('alpine:init', function () {
                 });
             },
 
+            defaultBookingForm: function () {
+                return {
+                    guest_first_name: '',
+                    guest_last_name: '',
+                    guest_email: '',
+                    guest_phone: '',
+                    room_type_id: '',
+                    check_in: '',
+                    check_out: '',
+                    adults: 1,
+                    children: 0,
+                    notes: '',
+                    status: 'pending'
+                };
+            },
+
             openCreateModal: function () {
-                var config = window.VeneziaAdmin || window.VeneziaConfig || {};
-                if (config.adminUrl) {
-                    window.location.href = config.adminUrl + 'admin.php?page=vhm-bookings&action=new';
+                this.bookingForm = this.defaultBookingForm();
+                this.showCreateModal = true;
+                if (this.roomTypes.length === 0) {
+                    this.loadRoomTypes();
                 }
+            },
+
+            loadRoomTypes: function () {
+                var self = this;
+                VeneziaAPI.get('/admin/room-types').then(function (response) {
+                    self.roomTypes = response.data.items || response.data || [];
+                }).catch(function (err) {
+                    VeneziaUtils.toast(err.message, 'error');
+                });
+            },
+
+            saveBooking: function () {
+                var self = this;
+                VeneziaAPI.post('/admin/bookings', self.bookingForm).then(function () {
+                    self.showCreateModal = false;
+                    self.loadBookings();
+                    VeneziaUtils.toast('Booking created successfully', 'success');
+                }).catch(function (err) {
+                    VeneziaUtils.toast(err.message, 'error');
+                });
             },
 
             prevPage: function () {

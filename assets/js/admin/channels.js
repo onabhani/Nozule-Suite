@@ -9,9 +9,33 @@ document.addEventListener('alpine:init', function () {
             channels: [],
             availableChannels: [],
             syncing: null,
+            showCreateModal: false,
+            editingChannelId: null,
+            roomTypes: [],
+            channelForm: {
+                channel_name: '',
+                room_type_id: '',
+                external_room_id: '',
+                sync_availability: true,
+                sync_rates: true,
+                sync_reservations: true,
+                status: 'active'
+            },
 
             init: function () {
                 this.loadChannels();
+            },
+
+            defaultChannelForm: function () {
+                return {
+                    channel_name: '',
+                    room_type_id: '',
+                    external_room_id: '',
+                    sync_availability: true,
+                    sync_rates: true,
+                    sync_reservations: true,
+                    status: 'active'
+                };
             },
 
             loadChannels: function () {
@@ -41,28 +65,72 @@ document.addEventListener('alpine:init', function () {
                 });
             },
 
-            openCreateModal: function () {
-                var channelName = prompt('Channel Name (e.g. booking_com, expedia):');
-                if (!channelName) return;
-                var roomTypeId = prompt('Room Type ID:');
-                if (!roomTypeId) return;
-                var externalRoomId = prompt('External Room/Property ID:');
-                if (!externalRoomId) return;
-
+            loadRoomTypes: function () {
                 var self = this;
-                VeneziaAPI.post('/admin/channels', {
-                    channel_name: channelName,
-                    room_type_id: parseInt(roomTypeId, 10),
-                    external_room_id: externalRoomId,
-                    sync_availability: true,
-                    sync_rates: true,
-                    sync_reservations: true,
-                    status: 'active'
-                }).then(function () {
-                    self.loadChannels();
-                    VeneziaUtils.toast('Channel mapping created', 'success');
+                VeneziaAPI.get('/admin/room-types').then(function (response) {
+                    self.roomTypes = response.room_types || response || [];
                 }).catch(function (err) {
-                    VeneziaUtils.toast(err.message || 'Failed to create channel', 'error');
+                    console.error('Room types load error:', err);
+                    VeneziaUtils.toast(err.message || 'Failed to load room types', 'error');
+                });
+            },
+
+            openCreateModal: function () {
+                this.editingChannelId = null;
+                this.channelForm = this.defaultChannelForm();
+                this.showCreateModal = true;
+                this.loadRoomTypes();
+            },
+
+            editChannel: function (id) {
+                var channel = this.channels.find(function (c) { return c.id === id; });
+                if (!channel) return;
+
+                this.editingChannelId = id;
+                this.channelForm = {
+                    channel_name: channel.type || channel.name || '',
+                    room_type_id: channel.room_type_id || '',
+                    external_room_id: channel.external_room_id || '',
+                    sync_availability: channel.sync_availability !== undefined ? channel.sync_availability : true,
+                    sync_rates: channel.sync_rates !== undefined ? channel.sync_rates : true,
+                    sync_reservations: channel.sync_reservations !== undefined ? channel.sync_reservations : true,
+                    status: channel.status || 'active'
+                };
+                this.showCreateModal = true;
+                this.loadRoomTypes();
+            },
+
+            saveChannel: function () {
+                var self = this;
+                var payload = {
+                    channel_name: self.channelForm.channel_name,
+                    room_type_id: parseInt(self.channelForm.room_type_id, 10),
+                    external_room_id: self.channelForm.external_room_id,
+                    sync_availability: self.channelForm.sync_availability,
+                    sync_rates: self.channelForm.sync_rates,
+                    sync_reservations: self.channelForm.sync_reservations,
+                    status: self.channelForm.status
+                };
+
+                var request;
+                if (self.editingChannelId) {
+                    request = VeneziaAPI.put('/admin/channels/' + self.editingChannelId, payload);
+                } else {
+                    request = VeneziaAPI.post('/admin/channels', payload);
+                }
+
+                request.then(function () {
+                    self.showCreateModal = false;
+                    self.loadChannels();
+                    VeneziaUtils.toast(
+                        self.editingChannelId ? 'Channel updated' : 'Channel mapping created',
+                        'success'
+                    );
+                }).catch(function (err) {
+                    VeneziaUtils.toast(
+                        err.message || (self.editingChannelId ? 'Update failed' : 'Failed to create channel'),
+                        'error'
+                    );
                 });
             },
 
@@ -77,23 +145,6 @@ document.addEventListener('alpine:init', function () {
                     VeneziaUtils.toast(err.message || 'Sync failed', 'error');
                 }).finally(function () {
                     self.syncing = null;
-                });
-            },
-
-            editChannel: function (id) {
-                var channel = this.channels.find(function (c) { return c.id === id; });
-                if (!channel) return;
-                var status = prompt('Status (active, inactive):', channel.status);
-                if (status === null) return;
-
-                var self = this;
-                VeneziaAPI.put('/admin/channels/' + id, {
-                    status: status
-                }).then(function () {
-                    self.loadChannels();
-                    VeneziaUtils.toast('Channel updated', 'success');
-                }).catch(function (err) {
-                    VeneziaUtils.toast(err.message || 'Update failed', 'error');
                 });
             },
 
