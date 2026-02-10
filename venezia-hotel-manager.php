@@ -1,17 +1,19 @@
 <?php
 /**
- * Plugin Name: Venezia Hotel Manager
- * Plugin URI:  https://github.com/onabhani/Rawaq-Suite
- * Description: A comprehensive hotel booking management system for WordPress. Manage rooms, bookings, guests, pricing, channels, and reports.
- * Version:     1.0.3
- * Author:      hdqah.com
- * Author URI:  https://hdqah.com
- * License:     GPL-2.0-or-later
- * License URI: https://www.gnu.org/licenses/gpl-2.0.html
- * Text Domain: venezia-hotel
- * Domain Path: /languages
+ * Plugin Name:       Venezia Hotel Manager
+ * Plugin URI:        https://github.com/onabhani/Rawaq-Suite
+ * Description:       A comprehensive hotel booking management system for WordPress. Manage rooms, bookings, guests, pricing, channels, and reports.
+ * Version:           1.0.3
+ * Author:            hdqah.com
+ * Author URI:        https://hdqah.com
+ * License:           GPL-2.0-or-later
+ * License URI:       https://www.gnu.org/licenses/gpl-2.0.html
+ * Text Domain:       venezia-hotel
+ * Domain Path:       /languages
  * Requires at least: 6.0
- * Requires PHP: 8.0
+ * Requires PHP:      8.0
+ * GitHub Plugin URI: onabhani/Rawaq-Suite
+ * GitHub Branch:     main
  */
 
 if ( ! defined( 'ABSPATH' ) ) {
