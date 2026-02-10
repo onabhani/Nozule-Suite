@@ -481,8 +481,8 @@
 }
 
 .vhm-btn-primary:hover {
-    background: #1e3a8a;
-    border-color: #1e3a8a;
+    background: #1d4ed8;
+    border-color: #1d4ed8;
 }
 
 .vhm-btn-success {
@@ -492,8 +492,8 @@
 }
 
 .vhm-btn-success:hover {
-    background: #047857;
-    border-color: #047857;
+    background: #059669;
+    border-color: #04855e;
 }
 
 .vhm-btn-danger {
@@ -503,8 +503,8 @@
 }
 
 .vhm-btn-danger:hover {
-    background: #b91c1c;
-    border-color: #b91c1c;
+    background: #dc2626;
+    border-color: #c42020;
 }
 
 .vhm-btn-sm {

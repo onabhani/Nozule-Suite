@@ -812,3 +812,23 @@ msgstr "مزامنة الأسعار"
 
 msgid "Sync Reservations"
 msgstr "مزامنة الحجوزات"
+
+# ---- Additional UI strings ----
+
+msgid "Select Room Type"
+msgstr "اختر نوع الغرفة"
+
+msgid "Save Booking"
+msgstr "حفظ الحجز"
+
+msgid "e.g. Deluxe Suite"
+msgstr "مثال: جناح فاخر"
+
+msgid "e.g. 150.00"
+msgstr "مثال: 150.00"
+
+msgid "e.g. 101"
+msgstr "مثال: 101"
+
+msgid "e.g. 1"
+msgstr "مثال: 1"

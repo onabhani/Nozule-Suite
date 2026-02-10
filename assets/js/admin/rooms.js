@@ -89,12 +89,23 @@ document.addEventListener('alpine:init', function () {
                 this.showRoomTypeModal = true;
             },
 
+            slugify: function (text) {
+                return text.toString().toLowerCase().trim()
+                    .replace(/[\s_]+/g, '-')
+                    .replace(/[^\w\-]+/g, '')
+                    .replace(/--+/g, '-')
+                    .replace(/^-+|-+$/g, '');
+            },
+
             saveRoomType: function () {
                 var self = this;
+                var maxOcc = parseInt(self.rtForm.max_occupancy, 10) || 2;
                 var data = {
                     name: self.rtForm.name,
+                    slug: self.slugify(self.rtForm.name),
                     base_price: parseFloat(self.rtForm.base_price) || 0,
-                    max_occupancy: parseInt(self.rtForm.max_occupancy, 10) || 2,
+                    max_occupancy: maxOcc,
+                    base_occupancy: maxOcc,
                     status: self.rtForm.status
                 };
 
