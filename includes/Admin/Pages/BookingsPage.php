@@ -1,0 +1,20 @@
+<?php
+
+namespace Venezia\Admin\Pages;
+
+/**
+ * Renders the Bookings management admin page.
+ */
+class BookingsPage {
+
+    /**
+     * Render the bookings page.
+     */
+    public function render(): void {
+        if ( ! current_user_can( 'vhm_staff' ) ) {
+            wp_die( esc_html__( 'You do not have permission to access this page.', 'venezia-hotel' ) );
+        }
+
+        include VHM_PLUGIN_DIR . 'templates/admin/bookings.php';
+    }
+}

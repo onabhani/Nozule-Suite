@@ -1,0 +1,10 @@
+{
+    "name": "venezia-hotel-manager",
+    "version": "1.0.0",
+    "description": "Venezia Hotel Manager WordPress Plugin",
+    "private": true,
+    "scripts": {
+        "build": "echo 'No build step required - Alpine.js and Tailwind CSS via CDN'"
+    },
+    "devDependencies": {}
+}

@@ -1,0 +1,228 @@
+<?php
+
+namespace Venezia\Modules\Rooms\Controllers;
+
+use Venezia\Modules\Rooms\Models\RoomInventory;
+use Venezia\Modules\Rooms\Repositories\InventoryRepository;
+use Venezia\Modules\Rooms\Services\RoomService;
+use WP_REST_Request;
+use WP_REST_Response;
+use WP_REST_Server;
+
+/**
+ * REST controller for room inventory management (admin only).
+ *
+ * Routes:
+ *   GET  /venezia/v1/admin/inventory                  Get inventory grid for a date range
+ *   POST /venezia/v1/admin/inventory/bulk-update       Bulk update inventory
+ *   POST /venezia/v1/admin/inventory/initialize        Initialize inventory for a room type
+ */
+class InventoryController {
+
+	private InventoryRepository $inventoryRepository;
+	private RoomService $roomService;
+
+	public function __construct(
+		InventoryRepository $inventoryRepository,
+		RoomService $roomService
+	) {
+		$this->inventoryRepository = $inventoryRepository;
+		$this->roomService         = $roomService;
+	}
+
+	/**
+	 * Register REST routes.
+	 */
+	public function registerRoutes(): void {
+		$namespace = 'venezia/v1';
+
+		// Get inventory for a date range.
+		register_rest_route( $namespace, '/admin/inventory', [
+			'methods'             => WP_REST_Server::READABLE,
+			'callback'            => [ $this, 'getInventory' ],
+			'permission_callback' => [ $this, 'checkStaffPermission' ],
+			'args'                => [
+				'room_type_id' => [
+					'required'          => true,
+					'validate_callback' => fn( $v ) => is_numeric( $v ) && $v > 0,
+					'sanitize_callback' => 'absint',
+				],
+				'start_date' => [
+					'required'          => true,
+					'validate_callback' => fn( $v ) => (bool) strtotime( $v ),
+					'sanitize_callback' => 'sanitize_text_field',
+				],
+				'end_date' => [
+					'required'          => true,
+					'validate_callback' => fn( $v ) => (bool) strtotime( $v ),
+					'sanitize_callback' => 'sanitize_text_field',
+				],
+			],
+		] );
+
+		// Bulk update inventory.
+		register_rest_route( $namespace, '/admin/inventory/bulk-update', [
+			'methods'             => WP_REST_Server::CREATABLE,
+			'callback'            => [ $this, 'bulkUpdate' ],
+			'permission_callback' => [ $this, 'checkAdminPermission' ],
+		] );
+
+		// Initialize inventory.
+		register_rest_route( $namespace, '/admin/inventory/initialize', [
+			'methods'             => WP_REST_Server::CREATABLE,
+			'callback'            => [ $this, 'initialize' ],
+			'permission_callback' => [ $this, 'checkAdminPermission' ],
+		] );
+	}
+
+	/**
+	 * Get inventory for a room type within a date range.
+	 */
+	public function getInventory( WP_REST_Request $request ): WP_REST_Response {
+		$roomTypeId = absint( $request->get_param( 'room_type_id' ) );
+		$startDate  = sanitize_text_field( $request->get_param( 'start_date' ) );
+		$endDate    = sanitize_text_field( $request->get_param( 'end_date' ) );
+
+		$inventory = $this->inventoryRepository->getForDateRange( $roomTypeId, $startDate, $endDate );
+
+		$data = array_map(
+			fn( RoomInventory $inv ) => $inv->toArray(),
+			$inventory
+		);
+
+		return new WP_REST_Response( [
+			'success' => true,
+			'data'    => $data,
+			'meta'    => [
+				'room_type_id' => $roomTypeId,
+				'start_date'   => $startDate,
+				'end_date'     => $endDate,
+				'total_days'   => count( $data ),
+			],
+		], 200 );
+	}
+
+	/**
+	 * Bulk update inventory for a room type across a date range.
+	 *
+	 * Accepts fields: total_rooms, price_override, stop_sell, min_stay.
+	 */
+	public function bulkUpdate( WP_REST_Request $request ): WP_REST_Response {
+		$roomTypeId = absint( $request->get_param( 'room_type_id' ) );
+		$startDate  = sanitize_text_field( $request->get_param( 'start_date' ) ?? '' );
+		$endDate    = sanitize_text_field( $request->get_param( 'end_date' ) ?? '' );
+
+		if ( ! $roomTypeId || ! $startDate || ! $endDate ) {
+			return new WP_REST_Response( [
+				'success' => false,
+				'message' => __( 'room_type_id, start_date, and end_date are required.', 'venezia-hotel' ),
+			], 422 );
+		}
+
+		if ( strtotime( $endDate ) < strtotime( $startDate ) ) {
+			return new WP_REST_Response( [
+				'success' => false,
+				'message' => __( 'end_date must be on or after start_date.', 'venezia-hotel' ),
+			], 422 );
+		}
+
+		// Extract updateable fields.
+		$updateData = [];
+		$fields     = [ 'total_rooms', 'price_override', 'stop_sell', 'min_stay' ];
+
+		foreach ( $fields as $field ) {
+			$value = $request->get_param( $field );
+			if ( $value !== null ) {
+				$updateData[ $field ] = $value;
+			}
+		}
+
+		if ( empty( $updateData ) ) {
+			return new WP_REST_Response( [
+				'success' => false,
+				'message' => __( 'No fields provided for update.', 'venezia-hotel' ),
+			], 422 );
+		}
+
+		// Sanitize values.
+		if ( isset( $updateData['total_rooms'] ) ) {
+			$updateData['total_rooms'] = absint( $updateData['total_rooms'] );
+		}
+		if ( isset( $updateData['price_override'] ) ) {
+			$updateData['price_override'] = $updateData['price_override'] === '' ? null : (float) $updateData['price_override'];
+		}
+		if ( isset( $updateData['stop_sell'] ) ) {
+			$updateData['stop_sell'] = (int) (bool) $updateData['stop_sell'];
+		}
+		if ( isset( $updateData['min_stay'] ) ) {
+			$updateData['min_stay'] = max( 1, absint( $updateData['min_stay'] ) );
+		}
+
+		$success = $this->inventoryRepository->bulkUpdate( $roomTypeId, $startDate, $endDate, $updateData );
+
+		if ( $success ) {
+			return new WP_REST_Response( [
+				'success' => true,
+				'message' => __( 'Inventory updated successfully.', 'venezia-hotel' ),
+			], 200 );
+		}
+
+		return new WP_REST_Response( [
+			'success' => false,
+			'message' => __( 'Failed to update inventory.', 'venezia-hotel' ),
+		], 500 );
+	}
+
+	/**
+	 * Initialize inventory records for a room type.
+	 *
+	 * Creates inventory rows for dates that do not yet have them.
+	 */
+	public function initialize( WP_REST_Request $request ): WP_REST_Response {
+		$roomTypeId = absint( $request->get_param( 'room_type_id' ) );
+		$startDate  = sanitize_text_field( $request->get_param( 'start_date' ) ?? '' );
+		$endDate    = sanitize_text_field( $request->get_param( 'end_date' ) ?? '' );
+
+		if ( ! $roomTypeId || ! $startDate || ! $endDate ) {
+			return new WP_REST_Response( [
+				'success' => false,
+				'message' => __( 'room_type_id, start_date, and end_date are required.', 'venezia-hotel' ),
+			], 422 );
+		}
+
+		$roomType = $this->roomService->findRoomType( $roomTypeId );
+		if ( ! $roomType ) {
+			return new WP_REST_Response( [
+				'success' => false,
+				'message' => __( 'Room type not found.', 'venezia-hotel' ),
+			], 404 );
+		}
+
+		$created = $this->roomService->initializeInventory( $roomTypeId, $startDate, $endDate );
+
+		return new WP_REST_Response( [
+			'success' => true,
+			'message' => sprintf(
+				__( 'Inventory initialized: %d new day(s) created.', 'venezia-hotel' ),
+				$created
+			),
+			'data'    => [
+				'days_created' => $created,
+			],
+		], 200 );
+	}
+
+	/**
+	 * Permission callback: require vhm_admin capability.
+	 */
+	public function checkAdminPermission( WP_REST_Request $request ): bool {
+		return current_user_can( 'vhm_admin' );
+	}
+
+	/**
+	 * Permission callback: require vhm_staff or vhm_admin capability.
+	 */
+	public function checkStaffPermission( WP_REST_Request $request ): bool {
+		return current_user_can( 'vhm_admin' ) || current_user_can( 'vhm_staff' );
+	}
+}

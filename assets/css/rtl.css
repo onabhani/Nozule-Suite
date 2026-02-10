@@ -1,0 +1,93 @@
+/**
+ * Venezia Hotel Manager - RTL (Right-to-Left) Styles
+ */
+
+/* Direction */
+.vhm-widget,
+.vhm-admin-wrap {
+    direction: rtl;
+    text-align: right;
+}
+
+/* Flip horizontal layout */
+.vhm-booking-widget.vhm-horizontal {
+    flex-direction: row-reverse;
+}
+
+/* Tables */
+.vhm-table th,
+.vhm-table td {
+    text-align: right;
+}
+
+/* Toast notifications - flip to left side */
+.vhm-toast-container {
+    right: auto;
+    left: 1rem;
+}
+
+.vhm-toast-info { border-left: none; border-right: 4px solid var(--vhm-info); }
+.vhm-toast-success { border-left: none; border-right: 4px solid var(--vhm-success); }
+.vhm-toast-error { border-left: none; border-right: 4px solid var(--vhm-danger); }
+.vhm-toast-warning { border-left: none; border-right: 4px solid var(--vhm-warning); }
+
+@keyframes vhm-slide-in {
+    from { transform: translateX(-100%); opacity: 0; }
+    to { transform: translateX(0); opacity: 1; }
+}
+
+/* Modal slides from left in RTL */
+.vhm-modal-overlay {
+    justify-content: flex-start;
+}
+
+@keyframes vhm-slide-in-right {
+    from { transform: translateX(-100%); }
+    to { transform: translateX(0); }
+}
+
+.vhm-sidebar-panel {
+    box-shadow: 4px 0 15px rgba(0, 0, 0, 0.1);
+}
+
+/* Admin header */
+.vhm-admin-wrap {
+    margin: 20px 0 0 20px;
+}
+
+/* Pagination */
+.vhm-pagination {
+    flex-direction: row-reverse;
+}
+
+/* Filter bar */
+.vhm-filters {
+    direction: rtl;
+}
+
+/* Input fields in RTL */
+.vhm-input {
+    text-align: right;
+}
+
+/* Calendar */
+.vhm-calendar-room-label {
+    border-right: none;
+    border-left: 1px solid #e2e8f0;
+}
+
+.vhm-calendar-header-cell {
+    border-right: none;
+    border-left: 1px solid #e2e8f0;
+}
+
+.vhm-calendar-cell {
+    border-right: none;
+    border-left: 1px solid #f1f5f9;
+}
+
+@media (max-width: 782px) {
+    .vhm-admin-wrap {
+        margin: 10px;
+    }
+}
