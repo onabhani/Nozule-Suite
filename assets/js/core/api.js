@@ -4,14 +4,16 @@
  * Provides a simple interface for communicating with the REST API.
  */
 const VeneziaAPI = {
+    get config() {
+        return window.VeneziaAdmin || window.VeneziaConfig || {};
+    },
+
     get baseURL() {
-        return (window.VeneziaConfig && window.VeneziaConfig.apiBase)
-            ? window.VeneziaConfig.apiBase
-            : '/wp-json/venezia/v1';
+        return this.config.apiBase || '/wp-json/venezia/v1';
     },
 
     get nonce() {
-        return (window.VeneziaConfig && window.VeneziaConfig.nonce) || '';
+        return this.config.nonce || '';
     },
 
     /**

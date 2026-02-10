@@ -3,15 +3,15 @@
  */
 document.addEventListener('alpine:init', function () {
 
-    Alpine.data('bookingManager', function () {
+    Alpine.data('vhmBookingManager', function () {
         return {
             bookings: [],
-            pagination: { total: 0, page: 1, per_page: 20, total_pages: 0 },
+            currentPage: 1,
+            totalPages: 1,
             filters: {
                 status: '',
-                source: '',
-                date_from: '',
-                date_to: '',
+                from: '',
+                to: '',
                 search: ''
             },
             loading: true,
@@ -30,20 +30,21 @@ document.addEventListener('alpine:init', function () {
                 self.loading = true;
 
                 var params = {
-                    page: self.pagination.page,
-                    per_page: self.pagination.per_page
+                    page: self.currentPage,
+                    per_page: 20
                 };
 
-                // Add active filters
-                Object.keys(self.filters).forEach(function (key) {
-                    if (self.filters[key]) {
-                        params[key] = self.filters[key];
-                    }
-                });
+                if (self.filters.status) params.status = self.filters.status;
+                if (self.filters.from) params.date_from = self.filters.from;
+                if (self.filters.to) params.date_to = self.filters.to;
+                if (self.filters.search) params.search = self.filters.search;
 
                 VeneziaAPI.get('/admin/bookings', params).then(function (response) {
-                    self.bookings = response.data.items || [];
-                    self.pagination = response.data.pagination || self.pagination;
+                    self.bookings = response.data.items || response.data || [];
+                    if (response.data.pagination) {
+                        self.currentPage = response.data.pagination.page || 1;
+                        self.totalPages = response.data.pagination.total_pages || 1;
+                    }
                 }).catch(function (err) {
                     VeneziaUtils.toast(err.message, 'error');
                 }).finally(function () {
@@ -51,28 +52,36 @@ document.addEventListener('alpine:init', function () {
                 });
             },
 
-            applyFilters: function () {
-                this.pagination.page = 1;
-                this.loadBookings();
+            openCreateModal: function () {
+                var config = window.VeneziaAdmin || window.VeneziaConfig || {};
+                if (config.adminUrl) {
+                    window.location.href = config.adminUrl + 'admin.php?page=vhm-bookings&action=new';
+                }
             },
 
-            clearFilters: function () {
-                this.filters = { status: '', source: '', date_from: '', date_to: '', search: '' };
-                this.applyFilters();
+            prevPage: function () {
+                if (this.currentPage > 1) {
+                    this.currentPage--;
+                    this.loadBookings();
+                }
             },
 
-            goToPage: function (page) {
-                this.pagination.page = page;
-                this.loadBookings();
+            nextPage: function () {
+                if (this.currentPage < this.totalPages) {
+                    this.currentPage++;
+                    this.loadBookings();
+                }
             },
 
-            viewBooking: function (booking) {
+            viewBooking: function (id) {
                 var self = this;
-                self.selectedBooking = booking;
                 self.showDetail = true;
 
-                // Load logs
-                VeneziaAPI.get('/admin/bookings/' + booking.id + '/logs').then(function (response) {
+                VeneziaAPI.get('/admin/bookings/' + id).then(function (response) {
+                    self.selectedBooking = response.data;
+                });
+
+                VeneziaAPI.get('/admin/bookings/' + id + '/logs').then(function (response) {
                     self.bookingLogs = response.data || [];
                 });
             },
@@ -87,9 +96,6 @@ document.addEventListener('alpine:init', function () {
                 var self = this;
                 VeneziaAPI.post('/admin/bookings/' + id + '/confirm').then(function () {
                     self.loadBookings();
-                    if (self.selectedBooking && self.selectedBooking.id === id) {
-                        self.viewBooking({ id: id });
-                    }
                     VeneziaUtils.toast('Booking confirmed', 'success');
                 }).catch(function (err) {
                     VeneziaUtils.toast(err.message, 'error');
@@ -112,11 +118,9 @@ document.addEventListener('alpine:init', function () {
                 });
             },
 
-            checkIn: function (id, roomId) {
+            checkIn: function (id) {
                 var self = this;
-                VeneziaAPI.post('/admin/bookings/' + id + '/check-in', {
-                    room_id: roomId || null
-                }).then(function () {
+                VeneziaAPI.post('/admin/bookings/' + id + '/check-in').then(function () {
                     self.loadBookings();
                     VeneziaUtils.toast('Guest checked in', 'success');
                 }).catch(function (err) {
