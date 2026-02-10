@@ -59,6 +59,76 @@ if ( ! defined( 'ABSPATH' ) ) {
             </button>
         </div>
     </template>
+
+    <!-- Add/Edit Channel Modal -->
+    <template x-if="showCreateModal">
+        <div class="vhm-modal-overlay" @click.self="showCreateModal = false">
+            <div class="vhm-modal" style="max-width:540px;">
+                <div class="vhm-modal-header">
+                    <h2 x-text="editingChannelId ? '<?php esc_attr_e( 'Edit Channel', 'venezia-hotel' ); ?>' : '<?php esc_attr_e( 'Add Channel', 'venezia-hotel' ); ?>'"></h2>
+                    <button class="vhm-modal-close" @click="showCreateModal = false">&times;</button>
+                </div>
+                <div class="vhm-modal-body">
+                    <div class="vhm-form-group">
+                        <label class="vhm-form-label"><?php esc_html_e( 'Channel Name', 'venezia-hotel' ); ?></label>
+                        <select class="vhm-form-input" x-model="channelForm.channel_name">
+                            <option value=""><?php esc_html_e( '-- Select Channel --', 'venezia-hotel' ); ?></option>
+                            <option value="booking_com"><?php esc_html_e( 'Booking.com', 'venezia-hotel' ); ?></option>
+                            <option value="expedia"><?php esc_html_e( 'Expedia', 'venezia-hotel' ); ?></option>
+                            <option value="airbnb"><?php esc_html_e( 'Airbnb', 'venezia-hotel' ); ?></option>
+                            <option value="agoda"><?php esc_html_e( 'Agoda', 'venezia-hotel' ); ?></option>
+                            <option value="hotels_com"><?php esc_html_e( 'Hotels.com', 'venezia-hotel' ); ?></option>
+                            <option value="direct"><?php esc_html_e( 'Direct', 'venezia-hotel' ); ?></option>
+                            <option value="custom"><?php esc_html_e( 'Custom', 'venezia-hotel' ); ?></option>
+                        </select>
+                    </div>
+                    <div class="vhm-form-group">
+                        <label class="vhm-form-label"><?php esc_html_e( 'Room Type', 'venezia-hotel' ); ?></label>
+                        <select class="vhm-form-input" x-model="channelForm.room_type_id">
+                            <option value=""><?php esc_html_e( '-- Select Room Type --', 'venezia-hotel' ); ?></option>
+                            <template x-for="rt in roomTypes" :key="rt.id">
+                                <option :value="rt.id" x-text="rt.name"></option>
+                            </template>
+                        </select>
+                    </div>
+                    <div class="vhm-form-group">
+                        <label class="vhm-form-label"><?php esc_html_e( 'External Room/Property ID', 'venezia-hotel' ); ?></label>
+                        <input type="text" class="vhm-form-input" x-model="channelForm.external_room_id" placeholder="<?php esc_attr_e( 'e.g. 12345678', 'venezia-hotel' ); ?>">
+                    </div>
+                    <div class="vhm-form-group">
+                        <label class="vhm-form-label"><?php esc_html_e( 'Sync Options', 'venezia-hotel' ); ?></label>
+                        <div style="display:flex; flex-direction:column; gap:0.5rem;">
+                            <label style="display:flex; align-items:center; gap:0.5rem; cursor:pointer;">
+                                <input type="checkbox" x-model="channelForm.sync_availability">
+                                <span><?php esc_html_e( 'Availability', 'venezia-hotel' ); ?></span>
+                            </label>
+                            <label style="display:flex; align-items:center; gap:0.5rem; cursor:pointer;">
+                                <input type="checkbox" x-model="channelForm.sync_rates">
+                                <span><?php esc_html_e( 'Rates', 'venezia-hotel' ); ?></span>
+                            </label>
+                            <label style="display:flex; align-items:center; gap:0.5rem; cursor:pointer;">
+                                <input type="checkbox" x-model="channelForm.sync_reservations">
+                                <span><?php esc_html_e( 'Reservations', 'venezia-hotel' ); ?></span>
+                            </label>
+                        </div>
+                    </div>
+                    <div class="vhm-form-group">
+                        <label class="vhm-form-label"><?php esc_html_e( 'Status', 'venezia-hotel' ); ?></label>
+                        <select class="vhm-form-input" x-model="channelForm.status">
+                            <option value="active"><?php esc_html_e( 'Active', 'venezia-hotel' ); ?></option>
+                            <option value="inactive"><?php esc_html_e( 'Inactive', 'venezia-hotel' ); ?></option>
+                        </select>
+                    </div>
+                </div>
+                <div class="vhm-modal-footer">
+                    <button class="vhm-btn" @click="showCreateModal = false"><?php esc_html_e( 'Cancel', 'venezia-hotel' ); ?></button>
+                    <button class="vhm-btn vhm-btn-primary" @click="saveChannel()">
+                        <span x-text="editingChannelId ? '<?php esc_attr_e( 'Update Channel', 'venezia-hotel' ); ?>' : '<?php esc_attr_e( 'Create Channel', 'venezia-hotel' ); ?>'"></span>
+                    </button>
+                </div>
+            </div>
+        </div>
+    </template>
 </div>
 
 <!-- Toast Notifications -->

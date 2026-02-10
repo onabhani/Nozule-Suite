@@ -66,8 +66,8 @@ document.addEventListener('alpine:init', function () {
                 self.loading = true;
 
                 Promise.all([
-                    VeneziaAPI.get('/rate-plans'),
-                    VeneziaAPI.get('/seasonal-rates')
+                    VeneziaAPI.get('/admin/rate-plans'),
+                    VeneziaAPI.get('/admin/seasonal-rates')
                 ]).then(function (responses) {
                     self.ratePlans = responses[0].data || [];
                     self.seasonalRates = responses[1].data || [];
@@ -81,7 +81,7 @@ document.addEventListener('alpine:init', function () {
 
             loadRoomTypes: function () {
                 var self = this;
-                VeneziaAPI.get('/room-types').then(function (response) {
+                VeneziaAPI.get('/admin/room-types').then(function (response) {
                     self.roomTypes = response.data || [];
                 }).catch(function () {
                     // Non-critical, seasonal rate form will still work with manual ID
@@ -142,7 +142,7 @@ document.addEventListener('alpine:init', function () {
                 if (self.editingRatePlanId) {
                     promise = VeneziaAPI.put('/rate-plans/' + self.editingRatePlanId, data);
                 } else {
-                    promise = VeneziaAPI.post('/rate-plans', data);
+                    promise = VeneziaAPI.post('/admin/rate-plans', data);
                 }
 
                 promise.then(function () {
@@ -219,7 +219,7 @@ document.addEventListener('alpine:init', function () {
                 if (self.editingSeasonalId) {
                     promise = VeneziaAPI.put('/seasonal-rates/' + self.editingSeasonalId, data);
                 } else {
-                    promise = VeneziaAPI.post('/seasonal-rates', data);
+                    promise = VeneziaAPI.post('/admin/seasonal-rates', data);
                 }
 
                 promise.then(function () {

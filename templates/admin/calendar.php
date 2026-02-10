@@ -17,7 +17,7 @@ if ( ! defined( 'ABSPATH' ) ) {
     <!-- Calendar navigation -->
     <div class="vhm-card" style="display:flex; align-items:center; justify-content:space-between; margin-bottom:1rem;">
         <button class="vhm-btn vhm-btn-sm" @click="prevPeriod()">
-            &larr; <?php esc_html_e( 'Previous', 'venezia-hotel' ); ?>
+            <span class="vhm-nav-arrow">&rarr;</span> <?php esc_html_e( 'Previous', 'venezia-hotel' ); ?>
         </button>
         <div style="display:flex; align-items:center; gap:1rem;">
             <h2 style="margin:0; font-size:1.125rem;" x-text="periodLabel"></h2>
@@ -28,7 +28,7 @@ if ( ! defined( 'ABSPATH' ) ) {
             </select>
         </div>
         <button class="vhm-btn vhm-btn-sm" @click="nextPeriod()">
-            <?php esc_html_e( 'Next', 'venezia-hotel' ); ?> &rarr;
+            <?php esc_html_e( 'Next', 'venezia-hotel' ); ?> <span class="vhm-nav-arrow">&larr;</span>
         </button>
     </div>
 
