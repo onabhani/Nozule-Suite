@@ -74,12 +74,14 @@ document.addEventListener('alpine:init', function () {
             },
 
             getChartTitle: function () {
+                var config = window.VeneziaAdmin || window.VeneziaConfig || {};
+                var i18n = config.i18n || {};
                 var titles = {
-                    'revenue': 'Revenue Report',
-                    'occupancy': 'Occupancy Report',
-                    'sources': 'Booking Sources'
+                    'revenue': i18n.revenue_report || 'Revenue Report',
+                    'occupancy': i18n.occupancy_report || 'Occupancy Report',
+                    'sources': i18n.booking_sources || 'Booking Sources'
                 };
-                return titles[this.reportType] || 'Report';
+                return titles[this.reportType] || (i18n.report || 'Report');
             },
 
             exportReport: function () {

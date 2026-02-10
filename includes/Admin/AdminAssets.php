@@ -153,6 +153,12 @@ class AdminAssets {
                 'display_name' => $current_user->display_name,
                 'email'        => $current_user->user_email,
             ],
+            'i18n'         => [
+                'revenue_report'  => __( 'Revenue Report', 'venezia-hotel' ),
+                'occupancy_report' => __( 'Occupancy Report', 'venezia-hotel' ),
+                'booking_sources' => __( 'Booking Sources', 'venezia-hotel' ),
+                'report'          => __( 'Report', 'venezia-hotel' ),
+            ],
             'capabilities' => [
                 'admin'            => current_user_can( 'vhm_admin' ),
                 'staff'            => current_user_can( 'vhm_staff' ),

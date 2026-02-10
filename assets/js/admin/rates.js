@@ -140,7 +140,7 @@ document.addEventListener('alpine:init', function () {
 
                 var promise;
                 if (self.editingRatePlanId) {
-                    promise = VeneziaAPI.put('/rate-plans/' + self.editingRatePlanId, data);
+                    promise = VeneziaAPI.put('/admin/rate-plans/' + self.editingRatePlanId, data);
                 } else {
                     promise = VeneziaAPI.post('/admin/rate-plans', data);
                 }
@@ -162,7 +162,7 @@ document.addEventListener('alpine:init', function () {
             deleteRatePlan: function (id) {
                 if (!confirm('Delete this rate plan?')) return;
                 var self = this;
-                VeneziaAPI.delete('/rate-plans/' + id).then(function () {
+                VeneziaAPI.delete('/admin/rate-plans/' + id).then(function () {
                     self.loadData();
                     VeneziaUtils.toast('Rate plan deleted', 'success');
                 }).catch(function (err) {
@@ -217,7 +217,7 @@ document.addEventListener('alpine:init', function () {
 
                 var promise;
                 if (self.editingSeasonalId) {
-                    promise = VeneziaAPI.put('/seasonal-rates/' + self.editingSeasonalId, data);
+                    promise = VeneziaAPI.put('/admin/seasonal-rates/' + self.editingSeasonalId, data);
                 } else {
                     promise = VeneziaAPI.post('/admin/seasonal-rates', data);
                 }
@@ -239,7 +239,7 @@ document.addEventListener('alpine:init', function () {
             deleteSeasonalRate: function (id) {
                 if (!confirm('Delete this seasonal rate?')) return;
                 var self = this;
-                VeneziaAPI.delete('/seasonal-rates/' + id).then(function () {
+                VeneziaAPI.delete('/admin/seasonal-rates/' + id).then(function () {
                     self.loadData();
                     VeneziaUtils.toast('Seasonal rate deleted', 'success');
                 }).catch(function (err) {
