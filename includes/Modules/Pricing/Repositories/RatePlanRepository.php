@@ -45,7 +45,7 @@ class RatePlanRepository extends BaseRepository {
 	}
 
 	/**
-	 * Get all active rate plans, ordered by priority then name.
+	 * Get all active rate plans, ordered by default flag then name.
 	 *
 	 * @return RatePlan[]
 	 */
@@ -54,7 +54,7 @@ class RatePlanRepository extends BaseRepository {
 		$rows  = $this->db->getResults(
 			"SELECT * FROM {$table}
 			WHERE status = 'active'
-			ORDER BY priority ASC, is_default DESC, name ASC"
+			ORDER BY is_default DESC, name ASC"
 		);
 
 		return RatePlan::fromRows( $rows );
@@ -66,7 +66,7 @@ class RatePlanRepository extends BaseRepository {
 	 * Looks for rate plans that are marked as default and apply to the
 	 * given room type (either specifically or globally via NULL room_type_id).
 	 * Prefers a room-type-specific plan over a global one.
-	 * Falls back to the highest-priority active plan for the room type.
+	 * Falls back to the first active plan for the room type.
 	 */
 	public function getDefaultForRoomType( int $roomTypeId ): ?RatePlan {
 		$table = $this->tableName();
@@ -79,7 +79,7 @@ class RatePlanRepository extends BaseRepository {
 			AND (room_type_id = %d OR room_type_id IS NULL)
 			ORDER BY
 				CASE WHEN room_type_id = %d THEN 0 ELSE 1 END ASC,
-				priority ASC
+				name ASC
 			LIMIT 1",
 			$roomTypeId,
 			$roomTypeId
@@ -89,14 +89,14 @@ class RatePlanRepository extends BaseRepository {
 			return RatePlan::fromRow( $row );
 		}
 
-		// Fallback: highest-priority active plan applicable to this room type.
+		// Fallback: first active plan applicable to this room type.
 		$row = $this->db->getRow(
 			"SELECT * FROM {$table}
 			WHERE status = 'active'
 			AND (room_type_id = %d OR room_type_id IS NULL)
 			ORDER BY
 				CASE WHEN room_type_id = %d THEN 0 ELSE 1 END ASC,
-				priority ASC
+				name ASC
 			LIMIT 1",
 			$roomTypeId,
 			$roomTypeId
@@ -119,7 +119,7 @@ class RatePlanRepository extends BaseRepository {
 			"SELECT * FROM {$table}
 			WHERE status = 'active'
 			AND (room_type_id = %d OR room_type_id IS NULL)
-			ORDER BY priority ASC, is_default DESC, name ASC",
+			ORDER BY is_default DESC, name ASC",
 			$roomTypeId
 		);
 
@@ -194,7 +194,7 @@ class RatePlanRepository extends BaseRepository {
 	public function getAllOrdered(): array {
 		$table = $this->tableName();
 		$rows  = $this->db->getResults(
-			"SELECT * FROM {$table} ORDER BY priority ASC, name ASC"
+			"SELECT * FROM {$table} ORDER BY is_default DESC, name ASC"
 		);
 
 		return RatePlan::fromRows( $rows );
@@ -204,7 +204,7 @@ class RatePlanRepository extends BaseRepository {
 	 * Ensure boolean fields are stored as integer 1/0 for the database.
 	 */
 	private function prepareBoolFields( array $data ): array {
-		$boolFields = [ 'is_refundable', 'includes_breakfast', 'is_default' ];
+		$boolFields = [ 'is_refundable', 'is_default' ];
 
 		foreach ( $boolFields as $field ) {
 			if ( array_key_exists( $field, $data ) ) {

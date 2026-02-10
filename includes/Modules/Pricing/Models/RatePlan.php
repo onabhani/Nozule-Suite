@@ -43,7 +43,6 @@ class RatePlan extends BaseModel {
 		'room_type_id',
 		'min_stay',
 		'max_stay',
-		'priority',
 	];
 
 	/**
@@ -52,7 +51,7 @@ class RatePlan extends BaseModel {
 	 * @var string[]
 	 */
 	protected static array $floatFields = [
-		'modifier_value',
+		'price_modifier',
 	];
 
 	/**
@@ -62,7 +61,6 @@ class RatePlan extends BaseModel {
 	 */
 	protected static array $boolFields = [
 		'is_refundable',
-		'includes_breakfast',
 		'is_default',
 	];
 
@@ -98,6 +96,28 @@ class RatePlan extends BaseModel {
 	 */
 	public function isActive(): bool {
 		return $this->status === 'active';
+	}
+
+	/**
+	 * Convert to a public-facing array, mapping DB column names to API field names.
+	 */
+	public function toPublicArray(): array {
+		$data = parent::toArray();
+
+		if ( array_key_exists( 'price_modifier', $data ) ) {
+			$data['modifier_value'] = $data['price_modifier'];
+			unset( $data['price_modifier'] );
+		}
+		if ( array_key_exists( 'cancellation_hours', $data ) ) {
+			$data['cancellation_policy'] = $data['cancellation_hours'];
+			unset( $data['cancellation_hours'] );
+		}
+		if ( array_key_exists( 'valid_to', $data ) ) {
+			$data['valid_until'] = $data['valid_to'];
+			unset( $data['valid_to'] );
+		}
+
+		return $data;
 	}
 
 	/**

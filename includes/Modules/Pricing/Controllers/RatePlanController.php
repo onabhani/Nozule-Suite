@@ -91,7 +91,7 @@ class RatePlanController {
 		return new \WP_REST_Response( [
 			'success' => true,
 			'data'    => array_map(
-				fn( RatePlan $plan ) => $plan->toArray(),
+				fn( RatePlan $plan ) => $plan->toPublicArray(),
 				$plans
 			),
 		] );
@@ -117,7 +117,7 @@ class RatePlanController {
 
 		return new \WP_REST_Response( [
 			'success' => true,
-			'data'    => $plan->toArray(),
+			'data'    => $plan->toPublicArray(),
 		] );
 	}
 
@@ -157,7 +157,7 @@ class RatePlanController {
 
 		return new \WP_REST_Response( [
 			'success' => true,
-			'data'    => $plan->toArray(),
+			'data'    => $plan->toPublicArray(),
 		], 201 );
 	}
 
@@ -215,7 +215,7 @@ class RatePlanController {
 
 		return new \WP_REST_Response( [
 			'success' => true,
-			'data'    => $plan->toArray(),
+			'data'    => $plan->toPublicArray(),
 		] );
 	}
 
@@ -286,16 +286,16 @@ class RatePlanController {
 		}
 
 		if ( array_key_exists( 'cancellation_policy', $data ) ) {
-			$sanitized['cancellation_policy'] = sanitize_textarea_field( $data['cancellation_policy'] ?? '' );
+			$sanitized['cancellation_hours'] = (int) ( $data['cancellation_policy'] ?? 24 );
 		}
 
-		// Numeric fields.
+		// Numeric fields — frontend sends modifier_value, DB column is price_modifier.
 		if ( array_key_exists( 'modifier_value', $data ) ) {
-			$sanitized['modifier_value'] = (float) $data['modifier_value'];
+			$sanitized['price_modifier'] = (float) $data['modifier_value'];
 		}
 
 		// Integer fields.
-		$intFields = [ 'room_type_id', 'min_stay', 'max_stay', 'priority' ];
+		$intFields = [ 'room_type_id', 'min_stay', 'max_stay' ];
 		foreach ( $intFields as $field ) {
 			if ( array_key_exists( $field, $data ) ) {
 				$sanitized[ $field ] = $data[ $field ] !== null ? (int) $data[ $field ] : null;
@@ -303,19 +303,23 @@ class RatePlanController {
 		}
 
 		// Boolean fields.
-		$boolFields = [ 'is_refundable', 'includes_breakfast', 'is_default' ];
+		$boolFields = [ 'is_refundable', 'is_default' ];
 		foreach ( $boolFields as $field ) {
 			if ( array_key_exists( $field, $data ) ) {
 				$sanitized[ $field ] = (bool) $data[ $field ];
 			}
 		}
 
-		// Date fields.
-		$dateFields = [ 'valid_from', 'valid_until' ];
+		// Date fields — frontend sends valid_until, DB column is valid_to.
+		$dateFields = [ 'valid_from' ];
 		foreach ( $dateFields as $field ) {
 			if ( array_key_exists( $field, $data ) ) {
 				$sanitized[ $field ] = $data[ $field ] ? sanitize_text_field( $data[ $field ] ) : null;
 			}
+		}
+
+		if ( array_key_exists( 'valid_until', $data ) ) {
+			$sanitized['valid_to'] = $data['valid_until'] ? sanitize_text_field( $data['valid_until'] ) : null;
 		}
 
 		return $sanitized;

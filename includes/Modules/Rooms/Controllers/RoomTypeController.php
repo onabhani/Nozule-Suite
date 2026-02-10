@@ -144,7 +144,7 @@ class RoomTypeController {
 	 * Admin: list all room types (including inactive).
 	 */
 	public function listAll( WP_REST_Request $request ): WP_REST_Response {
-		$roomTypes = $this->roomService->getAllRoomTypes();
+		$roomTypes = $this->roomService->getAllRoomTypesFresh();
 
 		$data = array_map(
 			fn( RoomType $rt ) => $rt->toPublicArray(),

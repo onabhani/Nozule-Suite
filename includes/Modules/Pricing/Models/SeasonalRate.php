@@ -47,7 +47,6 @@ class SeasonalRate extends BaseModel {
 		'room_type_id',
 		'rate_plan_id',
 		'priority',
-		'min_stay',
 	];
 
 	/**
@@ -56,7 +55,7 @@ class SeasonalRate extends BaseModel {
 	 * @var string[]
 	 */
 	protected static array $floatFields = [
-		'modifier_value',
+		'price_modifier',
 	];
 
 	/**
@@ -108,7 +107,15 @@ class SeasonalRate extends BaseModel {
 	 * Convert to a public-facing array (JSON fields remain decoded).
 	 */
 	public function toPublicArray(): array {
-		return parent::toArray();
+		$data = parent::toArray();
+
+		// Map DB column name → API field name for frontend compatibility.
+		if ( array_key_exists( 'price_modifier', $data ) ) {
+			$data['modifier_value'] = $data['price_modifier'];
+			unset( $data['price_modifier'] );
+		}
+
+		return $data;
 	}
 
 	/**

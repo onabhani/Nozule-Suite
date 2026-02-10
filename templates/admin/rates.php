@@ -161,10 +161,6 @@ if ( ! defined( 'ABSPATH' ) ) {
                             <input type="number" min="0" class="vhm-input" x-model.number="rpForm.max_stay" placeholder="0 = unlimited">
                         </div>
                         <div class="vhm-form-group">
-                            <label><?php esc_html_e( 'Priority', 'venezia-hotel' ); ?></label>
-                            <input type="number" min="0" class="vhm-input" x-model.number="rpForm.priority" placeholder="0">
-                        </div>
-                        <div class="vhm-form-group">
                             <label><?php esc_html_e( 'Status', 'venezia-hotel' ); ?></label>
                             <select class="vhm-input" x-model="rpForm.status">
                                 <option value="active"><?php esc_html_e( 'Active', 'venezia-hotel' ); ?></option>
@@ -236,10 +232,6 @@ if ( ! defined( 'ABSPATH' ) ) {
                             <input type="number" min="0" class="vhm-input" x-model.number="srForm.priority" placeholder="0">
                         </div>
                         <div class="vhm-form-group">
-                            <label><?php esc_html_e( 'Min Stay', 'venezia-hotel' ); ?></label>
-                            <input type="number" min="1" class="vhm-input" x-model.number="srForm.min_stay" placeholder="1">
-                        </div>
-                        <div class="vhm-form-group" style="grid-column: span 2;">
                             <label><?php esc_html_e( 'Status', 'venezia-hotel' ); ?></label>
                             <select class="vhm-input" x-model="srForm.status">
                                 <option value="active"><?php esc_html_e( 'Active', 'venezia-hotel' ); ?></option>
