@@ -832,3 +832,29 @@ msgstr "مثال: 101"
 
 msgid "e.g. 1"
 msgstr "مثال: 1"
+
+msgid "-- Select Channel --"
+msgstr "-- اختر قناة --"
+
+msgid "-- Select Room Type --"
+msgstr "-- اختر نوع الغرفة --"
+
+msgid "Create Channel"
+msgstr "إنشاء قناة"
+
+msgid "Update Channel"
+msgstr "تحديث القناة"
+
+msgid "e.g. 12345678"
+msgstr "مثال: 12345678"
+
+# ---- Reports (JS i18n) ----
+
+msgid "Revenue Report"
+msgstr "تقرير الإيرادات"
+
+msgid "Occupancy Report"
+msgstr "تقرير الإشغال"
+
+msgid "Report"
+msgstr "تقرير"

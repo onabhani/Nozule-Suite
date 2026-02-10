@@ -90,11 +90,16 @@ document.addEventListener('alpine:init', function () {
             },
 
             slugify: function (text) {
-                return text.toString().toLowerCase().trim()
+                var slug = text.toString().toLowerCase().trim()
                     .replace(/[\s_]+/g, '-')
                     .replace(/[^\w\-]+/g, '')
                     .replace(/--+/g, '-')
                     .replace(/^-+|-+$/g, '');
+                // Fallback for non-Latin names (e.g. Arabic)
+                if (!slug) {
+                    slug = 'room-type-' + Date.now();
+                }
+                return slug;
             },
 
             saveRoomType: function () {
