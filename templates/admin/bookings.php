@@ -81,7 +81,7 @@ if ( ! defined( 'ABSPATH' ) ) {
                             <td x-text="formatDate(booking.check_in)"></td>
                             <td x-text="formatDate(booking.check_out)"></td>
                             <td>
-                                <span class="vhm-badge" :class="'vhm-badge-' + booking.status" x-text="booking.status"></span>
+                                <span class="vhm-badge" :class="'vhm-badge-' + booking.status" x-text="VeneziaI18n.t(booking.status)"></span>
                             </td>
                             <td x-text="formatPrice(booking.total_price)"></td>
                             <td>

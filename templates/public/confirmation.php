@@ -47,7 +47,7 @@ if ( ! defined( 'ABSPATH' ) ) {
                     <h3 style="margin:0; font-size:1rem;">
                         <?php esc_html_e( 'Booking', 'venezia-hotel' ); ?> #<span x-text="booking.booking_number"></span>
                     </h3>
-                    <span class="vhm-badge" :class="getStatusClass(booking.status)" x-text="booking.status"></span>
+                    <span class="vhm-badge" :class="getStatusClass(booking.status)" x-text="VeneziaI18n.t(booking.status)"></span>
                 </div>
                 <div class="vhm-card-body">
                     <div style="display:grid; grid-template-columns:1fr 1fr; gap:1rem; font-size:0.875rem;">

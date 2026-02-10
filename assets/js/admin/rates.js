@@ -71,7 +71,7 @@ document.addEventListener('alpine:init', function () {
                     self.seasonalRates = responses[1].data || [];
                 }).catch(function (err) {
                     console.error('Rates load error:', err);
-                    VeneziaUtils.toast(err.message || 'Failed to load rates data', 'error');
+                    VeneziaUtils.toast(err.message || VeneziaI18n.t('failed_load_rates'), 'error');
                 }).finally(function () {
                     self.loading = false;
                 });
@@ -147,24 +147,24 @@ document.addEventListener('alpine:init', function () {
                     self.showRatePlanModal = false;
                     self.loadData();
                     VeneziaUtils.toast(
-                        self.editingRatePlanId ? 'Rate plan updated' : 'Rate plan created',
+                        VeneziaI18n.t(self.editingRatePlanId ? 'rate_plan_updated' : 'rate_plan_created'),
                         'success'
                     );
                 }).catch(function (err) {
-                    VeneziaUtils.toast(err.message || 'Failed to save rate plan', 'error');
+                    VeneziaUtils.toast(err.message || VeneziaI18n.t('failed_save_rate_plan'), 'error');
                 }).finally(function () {
                     self.saving = false;
                 });
             },
 
             deleteRatePlan: function (id) {
-                if (!confirm('Delete this rate plan?')) return;
+                if (!confirm(VeneziaI18n.t('confirm_delete_rate_plan'))) return;
                 var self = this;
                 VeneziaAPI.delete('/admin/rate-plans/' + id).then(function () {
                     self.loadData();
-                    VeneziaUtils.toast('Rate plan deleted', 'success');
+                    VeneziaUtils.toast(VeneziaI18n.t('rate_plan_deleted'), 'success');
                 }).catch(function (err) {
-                    VeneziaUtils.toast(err.message || 'Failed to delete rate plan', 'error');
+                    VeneziaUtils.toast(err.message || VeneziaI18n.t('failed_delete_rate_plan'), 'error');
                 });
             },
 
@@ -224,24 +224,24 @@ document.addEventListener('alpine:init', function () {
                     self.showSeasonalModal = false;
                     self.loadData();
                     VeneziaUtils.toast(
-                        self.editingSeasonalId ? 'Seasonal rate updated' : 'Seasonal rate created',
+                        VeneziaI18n.t(self.editingSeasonalId ? 'seasonal_rate_updated' : 'seasonal_rate_created'),
                         'success'
                     );
                 }).catch(function (err) {
-                    VeneziaUtils.toast(err.message || 'Failed to save seasonal rate', 'error');
+                    VeneziaUtils.toast(err.message || VeneziaI18n.t('failed_save_seasonal_rate'), 'error');
                 }).finally(function () {
                     self.saving = false;
                 });
             },
 
             deleteSeasonalRate: function (id) {
-                if (!confirm('Delete this seasonal rate?')) return;
+                if (!confirm(VeneziaI18n.t('confirm_delete_seasonal_rate'))) return;
                 var self = this;
                 VeneziaAPI.delete('/admin/seasonal-rates/' + id).then(function () {
                     self.loadData();
-                    VeneziaUtils.toast('Seasonal rate deleted', 'success');
+                    VeneziaUtils.toast(VeneziaI18n.t('seasonal_rate_deleted'), 'success');
                 }).catch(function (err) {
-                    VeneziaUtils.toast(err.message || 'Failed to delete seasonal rate', 'error');
+                    VeneziaUtils.toast(err.message || VeneziaI18n.t('failed_delete_seasonal_rate'), 'error');
                 });
             },
 

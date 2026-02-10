@@ -123,12 +123,12 @@ document.addEventListener('alpine:init', function () {
                     self.showCreateModal = false;
                     self.loadChannels();
                     VeneziaUtils.toast(
-                        self.editingChannelId ? 'Channel updated' : 'Channel mapping created',
+                        VeneziaI18n.t(self.editingChannelId ? 'channel_updated' : 'channel_created'),
                         'success'
                     );
                 }).catch(function (err) {
                     VeneziaUtils.toast(
-                        err.message || (self.editingChannelId ? 'Update failed' : 'Failed to create channel'),
+                        err.message || VeneziaI18n.t('failed_save_channel'),
                         'error'
                     );
                 });
@@ -140,22 +140,22 @@ document.addEventListener('alpine:init', function () {
 
                 VeneziaAPI.post('/admin/channels/' + id + '/sync').then(function () {
                     self.loadChannels();
-                    VeneziaUtils.toast('Channel synced successfully', 'success');
+                    VeneziaUtils.toast(VeneziaI18n.t('channel_synced'), 'success');
                 }).catch(function (err) {
-                    VeneziaUtils.toast(err.message || 'Sync failed', 'error');
+                    VeneziaUtils.toast(err.message || VeneziaI18n.t('sync_failed'), 'error');
                 }).finally(function () {
                     self.syncing = null;
                 });
             },
 
             deleteChannel: function (id) {
-                if (!confirm('Delete this channel connection?')) return;
+                if (!confirm(VeneziaI18n.t('confirm_delete_channel'))) return;
                 var self = this;
                 VeneziaAPI.delete('/admin/channels/' + id).then(function () {
                     self.loadChannels();
-                    VeneziaUtils.toast('Channel deleted', 'success');
+                    VeneziaUtils.toast(VeneziaI18n.t('channel_deleted'), 'success');
                 }).catch(function (err) {
-                    VeneziaUtils.toast(err.message || 'Delete failed', 'error');
+                    VeneziaUtils.toast(err.message || VeneziaI18n.t('failed_delete_channel'), 'error');
                 });
             }
         };

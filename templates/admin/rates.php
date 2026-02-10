@@ -63,7 +63,7 @@ if ( ! defined( 'ABSPATH' ) ) {
                             </td>
                             <td x-text="plan.min_stay || '-'"></td>
                             <td>
-                                <span class="vhm-badge" :class="plan.status === 'active' ? 'vhm-badge-confirmed' : 'vhm-badge-cancelled'" x-text="plan.status"></span>
+                                <span class="vhm-badge" :class="plan.status === 'active' ? 'vhm-badge-confirmed' : 'vhm-badge-cancelled'" x-text="VeneziaI18n.t(plan.status)"></span>
                             </td>
                             <td>
                                 <button class="vhm-btn vhm-btn-sm" @click="editRatePlan(plan)"><?php esc_html_e( 'Edit', 'venezia-hotel' ); ?></button>
@@ -106,7 +106,7 @@ if ( ! defined( 'ABSPATH' ) ) {
                             </td>
                             <td x-text="rate.priority"></td>
                             <td>
-                                <span class="vhm-badge" :class="rate.status === 'active' ? 'vhm-badge-confirmed' : 'vhm-badge-cancelled'" x-text="rate.status"></span>
+                                <span class="vhm-badge" :class="rate.status === 'active' ? 'vhm-badge-confirmed' : 'vhm-badge-cancelled'" x-text="VeneziaI18n.t(rate.status)"></span>
                             </td>
                             <td>
                                 <button class="vhm-btn vhm-btn-sm" @click="editSeasonalRate(rate)"><?php esc_html_e( 'Edit', 'venezia-hotel' ); ?></button>
