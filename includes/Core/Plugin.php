@@ -154,33 +154,10 @@ class Plugin {
             VHM_VERSION
         );
 
-        wp_enqueue_script(
-            'alpinejs',
-            'https://cdn.jsdelivr.net/npm/alpinejs@3.x.x/dist/cdn.min.js',
-            [],
-            '3.14.0',
-            [ 'strategy' => 'defer' ]
-        );
-
+        // Core utilities (no Alpine dependency)
         wp_enqueue_script(
             'venezia-api',
             VHM_PLUGIN_URL . 'assets/js/core/api.js',
-            [],
-            VHM_VERSION,
-            true
-        );
-
-        wp_enqueue_script(
-            'venezia-store',
-            VHM_PLUGIN_URL . 'assets/js/core/store.js',
-            [ 'alpinejs' ],
-            VHM_VERSION,
-            true
-        );
-
-        wp_enqueue_script(
-            'venezia-i18n',
-            VHM_PLUGIN_URL . 'assets/js/core/i18n.js',
             [],
             VHM_VERSION,
             true
@@ -194,11 +171,28 @@ class Plugin {
             true
         );
 
-        // Booking widget
+        wp_enqueue_script(
+            'venezia-i18n',
+            VHM_PLUGIN_URL . 'assets/js/core/i18n.js',
+            [],
+            VHM_VERSION,
+            true
+        );
+
+        // Alpine store — registers alpine:init listener
+        wp_enqueue_script(
+            'venezia-store',
+            VHM_PLUGIN_URL . 'assets/js/core/store.js',
+            [ 'venezia-utils' ],
+            VHM_VERSION,
+            true
+        );
+
+        // Component scripts — register alpine:init listeners
         wp_enqueue_script(
             'venezia-booking-widget',
             VHM_PLUGIN_URL . 'assets/js/components/booking-widget.js',
-            [ 'alpinejs', 'venezia-api', 'venezia-store' ],
+            [ 'venezia-api', 'venezia-utils', 'venezia-store' ],
             VHM_VERSION,
             true
         );
@@ -206,8 +200,17 @@ class Plugin {
         wp_enqueue_script(
             'venezia-booking-form',
             VHM_PLUGIN_URL . 'assets/js/components/booking-form.js',
-            [ 'alpinejs', 'venezia-api', 'venezia-store' ],
+            [ 'venezia-api', 'venezia-utils', 'venezia-store' ],
             VHM_VERSION,
+            true
+        );
+
+        // Alpine.js CDN — loaded LAST so alpine:init listeners are ready
+        wp_enqueue_script(
+            'alpinejs',
+            'https://cdn.jsdelivr.net/npm/alpinejs@3.x.x/dist/cdn.min.js',
+            [ 'venezia-store', 'venezia-booking-widget', 'venezia-booking-form' ],
+            '3.14.0',
             true
         );
 

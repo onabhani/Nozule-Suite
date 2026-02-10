@@ -5,23 +5,14 @@ document.addEventListener('alpine:init', function () {
 
     Alpine.data('vhmReports', function () {
         return {
-            activeReport: 'occupancy',
-            dateFrom: VeneziaUtils.dateOffset(-30),
-            dateTo: VeneziaUtils.today(),
-            roomTypeId: '',
-            groupBy: 'daily',
+            reportType: 'revenue',
+            period: 'month',
+            customFrom: VeneziaUtils.dateOffset(-30),
+            customTo: VeneziaUtils.today(),
             loading: false,
-            reportData: null,
-            error: null,
-
-            reports: [
-                { id: 'occupancy', name: 'Occupancy Report' },
-                { id: 'revenue', name: 'Revenue Report' },
-                { id: 'sources', name: 'Booking Sources' },
-                { id: 'guests', name: 'Guest Statistics' },
-                { id: 'forecast', name: 'Forecast' },
-                { id: 'cancellations', name: 'Cancellations' }
-            ],
+            summaryCards: [],
+            chartTitle: 'Revenue Report',
+            reportData: [],
 
             init: function () {
                 this.loadReport();
@@ -30,41 +21,77 @@ document.addEventListener('alpine:init', function () {
             loadReport: function () {
                 var self = this;
                 self.loading = true;
-                self.error = null;
 
-                var params = {
-                    start_date: self.dateFrom,
-                    end_date: self.dateTo
-                };
-                if (self.roomTypeId) params.room_type_id = self.roomTypeId;
-                if (self.activeReport === 'revenue') params.group_by = self.groupBy;
+                var params = self.getDateParams();
 
-                VeneziaAPI.get('/admin/reports/' + self.activeReport, params).then(function (response) {
-                    self.reportData = response.data;
+                VeneziaAPI.get('/admin/reports/' + self.reportType, params).then(function (response) {
+                    var data = response.data || {};
+                    self.reportData = data.rows || data.data || [];
+                    self.summaryCards = data.summary || [];
+                    self.chartTitle = self.getChartTitle();
                 }).catch(function (err) {
-                    self.error = err.message;
+                    VeneziaUtils.toast(err.message || 'Failed to load report', 'error');
+                    self.reportData = [];
+                    self.summaryCards = [];
                 }).finally(function () {
                     self.loading = false;
                 });
             },
 
-            switchReport: function (reportId) {
-                this.activeReport = reportId;
-                this.reportData = null;
-                this.loadReport();
+            getDateParams: function () {
+                var start, end;
+
+                switch (this.period) {
+                    case 'today':
+                        start = end = VeneziaUtils.today();
+                        break;
+                    case 'week':
+                        start = VeneziaUtils.dateOffset(-7);
+                        end = VeneziaUtils.today();
+                        break;
+                    case 'month':
+                        start = VeneziaUtils.dateOffset(-30);
+                        end = VeneziaUtils.today();
+                        break;
+                    case 'quarter':
+                        start = VeneziaUtils.dateOffset(-90);
+                        end = VeneziaUtils.today();
+                        break;
+                    case 'year':
+                        start = VeneziaUtils.dateOffset(-365);
+                        end = VeneziaUtils.today();
+                        break;
+                    case 'custom':
+                        start = this.customFrom;
+                        end = this.customTo;
+                        break;
+                    default:
+                        start = VeneziaUtils.dateOffset(-30);
+                        end = VeneziaUtils.today();
+                }
+
+                return { start_date: start, end_date: end };
             },
 
-            exportReport: function (format) {
+            getChartTitle: function () {
+                var titles = {
+                    'revenue': 'Revenue Report',
+                    'occupancy': 'Occupancy Report',
+                    'sources': 'Booking Sources'
+                };
+                return titles[this.reportType] || 'Report';
+            },
+
+            exportReport: function () {
                 var self = this;
-                format = format || 'csv';
+                var params = self.getDateParams();
                 self.loading = true;
 
                 VeneziaAPI.post('/admin/reports/export', {
-                    report: self.activeReport,
-                    format: format,
-                    start_date: self.dateFrom,
-                    end_date: self.dateTo,
-                    room_type_id: self.roomTypeId
+                    report: self.reportType,
+                    format: 'csv',
+                    start_date: params.start_date,
+                    end_date: params.end_date
                 }).then(function (response) {
                     if (response.data && response.data.download_url) {
                         window.location.href = response.data.download_url;

@@ -59,19 +59,11 @@ class AdminAssets {
         }
 
         // -----------------------------------------------------------------
-        // Scripts
+        // Scripts — loaded in footer, Alpine.js LAST so components register
+        // via alpine:init before Alpine.start() auto-runs.
         // -----------------------------------------------------------------
 
-        // Alpine.js (CDN, deferred)
-        wp_enqueue_script(
-            'alpinejs',
-            'https://cdn.jsdelivr.net/npm/alpinejs@3.x.x/dist/cdn.min.js',
-            [],
-            '3.14.0',
-            [ 'strategy' => 'defer' ]
-        );
-
-        // Core utilities shared with public side
+        // Core utilities (no Alpine dependency — just plain JS)
         wp_enqueue_script(
             'venezia-api',
             VHM_PLUGIN_URL . 'assets/js/core/api.js',
@@ -96,36 +88,49 @@ class AdminAssets {
             true
         );
 
+        // Alpine store — registers alpine:init listener (runs before Alpine)
         wp_enqueue_script(
             'venezia-store',
             VHM_PLUGIN_URL . 'assets/js/core/store.js',
-            [ 'alpinejs' ],
+            [ 'venezia-utils' ],
             VHM_VERSION,
             true
         );
 
-        // Admin-specific scripts
-        wp_enqueue_script(
-            'venezia-admin-dashboard',
-            VHM_PLUGIN_URL . 'assets/js/admin/dashboard.js',
-            [ 'alpinejs', 'venezia-api', 'venezia-store' ],
-            VHM_VERSION,
-            true
-        );
+        // Admin component scripts — each registers an alpine:init listener
+        $admin_scripts = [
+            'venezia-admin-dashboard'       => 'dashboard.js',
+            'venezia-admin-booking-manager'  => 'booking-manager.js',
+            'venezia-admin-calendar-view'    => 'calendar-view.js',
+            'venezia-admin-rooms'            => 'rooms.js',
+            'venezia-admin-inventory'        => 'inventory.js',
+            'venezia-admin-guests'           => 'guests.js',
+            'venezia-admin-rates'            => 'rates.js',
+            'venezia-admin-channels'         => 'channels.js',
+            'venezia-admin-settings'         => 'settings.js',
+            'venezia-admin-reports'          => 'reports.js',
+        ];
 
-        wp_enqueue_script(
-            'venezia-admin-booking-manager',
-            VHM_PLUGIN_URL . 'assets/js/admin/booking-manager.js',
-            [ 'alpinejs', 'venezia-api', 'venezia-store' ],
-            VHM_VERSION,
-            true
-        );
+        $component_handles = [];
+        foreach ( $admin_scripts as $handle => $file ) {
+            wp_enqueue_script(
+                $handle,
+                VHM_PLUGIN_URL . 'assets/js/admin/' . $file,
+                [ 'venezia-api', 'venezia-utils', 'venezia-store' ],
+                VHM_VERSION,
+                true
+            );
+            $component_handles[] = $handle;
+        }
 
+        // Alpine.js CDN — loaded AFTER all component scripts so that
+        // when Alpine auto-starts it fires alpine:init and all listeners
+        // are already registered.
         wp_enqueue_script(
-            'venezia-admin-calendar-view',
-            VHM_PLUGIN_URL . 'assets/js/admin/calendar-view.js',
-            [ 'alpinejs', 'venezia-api', 'venezia-store' ],
-            VHM_VERSION,
+            'alpinejs',
+            'https://cdn.jsdelivr.net/npm/alpinejs@3.x.x/dist/cdn.min.js',
+            array_merge( [ 'venezia-store' ], $component_handles ),
+            '3.14.0',
             true
         );
 

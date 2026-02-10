@@ -1,0 +1,97 @@
+/**
+ * Venezia Hotel Manager - Admin RTL Styles
+ *
+ * Overrides for right-to-left languages (Arabic, Hebrew, etc.)
+ */
+
+/* Layout */
+.vhm-admin-wrap {
+    margin: 20px 0 0 20px;
+    direction: rtl;
+}
+
+.vhm-admin-header {
+    flex-direction: row-reverse;
+}
+
+/* Tables */
+.vhm-table th,
+.vhm-table td {
+    text-align: right;
+}
+
+/* Calendar */
+.vhm-calendar-room-label {
+    border-right: none;
+    border-left: 1px solid #e2e8f0;
+}
+
+.vhm-calendar-header-cell {
+    border-right: none;
+    border-left: 1px solid #e2e8f0;
+}
+
+.vhm-calendar-cell {
+    border-right: none;
+    border-left: 1px solid #f1f5f9;
+}
+
+/* Sidebar */
+.vhm-modal-overlay {
+    justify-content: flex-start;
+}
+
+.vhm-sidebar-panel {
+    box-shadow: 4px 0 15px rgba(0, 0, 0, 0.1);
+    animation: vhm-slide-in-left 0.2s ease-out;
+}
+
+@keyframes vhm-slide-in-left {
+    from { transform: translateX(-100%); }
+    to { transform: translateX(0); }
+}
+
+/* Tabs */
+.vhm-tabs {
+    flex-direction: row-reverse;
+}
+
+/* Buttons */
+.vhm-toast-container {
+    left: 1rem;
+    right: auto;
+}
+
+.vhm-toast button {
+    margin-left: 0;
+    margin-right: 0.5rem;
+}
+
+/* Forms */
+.vhm-form-grid {
+    direction: rtl;
+}
+
+/* Inventory sticky columns */
+.vhm-table td[style*="sticky"],
+.vhm-table th[style*="sticky"] {
+    left: auto !important;
+    right: 0 !important;
+}
+
+/* Pagination */
+.vhm-pagination {
+    flex-direction: row-reverse;
+}
+
+/* Stats grid */
+.vhm-stat-card .stat-label {
+    text-align: right;
+}
+
+/* Responsive */
+@media (max-width: 782px) {
+    .vhm-admin-wrap {
+        margin: 10px;
+    }
+}
