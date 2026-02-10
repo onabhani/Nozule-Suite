@@ -253,7 +253,7 @@ class RestController {
 
     private function registerAdminRoutes(): void {
 
-        $admin_permission = fn() => current_user_can( 'vhm_admin' );
+        $admin_permission = fn() => current_user_can( 'manage_options' );
 
         // --- Room Types CRUD ---
         $this->registerCrudRoutes( 'admin/room-types', RoomTypeController::class, $admin_permission );

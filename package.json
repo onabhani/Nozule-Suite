@@ -3,6 +3,7 @@
     "version": "1.0.0",
     "description": "Venezia Hotel Manager WordPress Plugin",
     "private": true,
+    "author": "hdqah.com (https://hdqah.com)",
     "scripts": {
         "build": "echo 'No build step required - Alpine.js and Tailwind CSS via CDN'"
     },
