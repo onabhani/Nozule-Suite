@@ -13,7 +13,7 @@
  * Requires at least: 6.0
  * Requires PHP:      8.0
  * GitHub Plugin URI: onabhani/Rawaq-Suite
- * GitHub Branch:     main
+ * Primary Branch:    main
  */
 
 if ( ! defined( 'ABSPATH' ) ) {
