@@ -80,7 +80,19 @@ var VeneziaI18n = (function () {
             'failed_delete_channel': 'Failed to delete channel',
             'sync_failed': 'Sync failed',
             'select_room_type_first': 'Please create a room type first',
-            'select_room_type': 'Please select a room type'
+            'select_room_type': 'Please select a room type',
+            'guest_created': 'Guest created successfully',
+            'guest_updated': 'Guest updated successfully',
+            'failed_load_guests': 'Failed to load guests',
+            'failed_load_guest': 'Failed to load guest details',
+            'failed_save_guest': 'Failed to save guest',
+            'fill_required_fields': 'Please fill in all required fields',
+            'male': 'Male',
+            'female': 'Female',
+            'settings_saved': 'Settings saved successfully',
+            'failed_save_settings': 'Failed to save settings',
+            'select_provider_first': 'Please select a provider first',
+            'connection_test_failed': 'Connection test failed'
         },
         ar: {
             'check_in': 'تسجيل الوصول',
@@ -198,6 +210,18 @@ var VeneziaI18n = (function () {
             'sync_failed': 'فشلت المزامنة',
             'select_room_type_first': 'يرجى إنشاء نوع غرفة أولاً',
             'select_room_type': 'يرجى اختيار نوع الغرفة',
+            'guest_created': 'تم إنشاء الضيف بنجاح',
+            'guest_updated': 'تم تحديث بيانات الضيف',
+            'failed_load_guests': 'فشل تحميل قائمة الضيوف',
+            'failed_load_guest': 'فشل تحميل بيانات الضيف',
+            'failed_save_guest': 'فشل حفظ بيانات الضيف',
+            'fill_required_fields': 'يرجى ملء جميع الحقول المطلوبة',
+            'male': 'ذكر',
+            'female': 'أنثى',
+            'settings_saved': 'تم حفظ الإعدادات بنجاح',
+            'failed_save_settings': 'فشل حفظ الإعدادات',
+            'select_provider_first': 'يرجى اختيار مزود الخدمة أولاً',
+            'connection_test_failed': 'فشل اختبار الاتصال',
             'pending': 'قيد الانتظار',
             'confirmed': 'مؤكد',
             'checked_in': 'مسجل وصول',
@@ -260,6 +284,13 @@ var VeneziaI18n = (function () {
          */
         getLocale: function () {
             return currentLocale;
+        },
+
+        /**
+         * Alias for t() — matches WordPress __() convention.
+         */
+        __: function (key, replacements) {
+            return this.t(key, replacements);
         },
 
         /**

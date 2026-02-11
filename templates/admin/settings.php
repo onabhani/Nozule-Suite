@@ -38,6 +38,9 @@ if ( ! defined( 'ABSPATH' ) ) {
                 <button class="vhm-tab" :class="{'active': activeTab === 'policies'}" @click="activeTab = 'policies'">
                     <?php esc_html_e( 'Policies', 'venezia-hotel' ); ?>
                 </button>
+                <button class="vhm-tab" :class="{'active': activeTab === 'integrations'}" @click="activeTab = 'integrations'">
+                    <?php esc_html_e( 'Integrations', 'venezia-hotel' ); ?>
+                </button>
             </div>
 
             <!-- General -->
@@ -183,6 +186,122 @@ if ( ! defined( 'ABSPATH' ) ) {
                             <textarea x-model="settings.policies.terms" rows="6" class="vhm-input"></textarea>
                         </div>
                     </div>
+                </div>
+            </template>
+
+            <!-- Integrations -->
+            <template x-if="activeTab === 'integrations'">
+                <div>
+                    <!-- Enable / Provider -->
+                    <div class="vhm-card" style="margin-bottom:1rem;">
+                        <h2 style="font-size:1.125rem; font-weight:600; margin-bottom:1rem;"><?php esc_html_e( 'ERP / CRM Integration', 'venezia-hotel' ); ?></h2>
+                        <div class="vhm-form-grid" style="max-width:600px;">
+                            <div class="vhm-form-row" style="grid-column: span 2;">
+                                <label style="display:flex; align-items:center; gap:0.5rem; cursor:pointer;">
+                                    <input type="checkbox" x-model="settings.integrations.enabled" style="border-radius:0.25rem;">
+                                    <?php esc_html_e( 'Enable external integrations', 'venezia-hotel' ); ?>
+                                </label>
+                            </div>
+                            <div class="vhm-form-row" style="grid-column: span 2;">
+                                <label class="vhm-label"><?php esc_html_e( 'Integration Provider', 'venezia-hotel' ); ?></label>
+                                <select x-model="settings.integrations.provider" class="vhm-input" style="max-width:300px;">
+                                    <option value="none"><?php esc_html_e( '-- None --', 'venezia-hotel' ); ?></option>
+                                    <option value="odoo"><?php esc_html_e( 'Odoo ERP', 'venezia-hotel' ); ?></option>
+                                    <option value="webhook"><?php esc_html_e( 'Custom Webhook', 'venezia-hotel' ); ?></option>
+                                </select>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Odoo Settings -->
+                    <template x-if="settings.integrations.provider === 'odoo'">
+                        <div class="vhm-card" style="margin-bottom:1rem;">
+                            <h2 style="font-size:1.125rem; font-weight:600; margin-bottom:1rem;"><?php esc_html_e( 'Odoo Connection', 'venezia-hotel' ); ?></h2>
+                            <div class="vhm-form-grid" style="max-width:600px;">
+                                <div class="vhm-form-row" style="grid-column: span 2;">
+                                    <label class="vhm-label"><?php esc_html_e( 'Odoo Server URL', 'venezia-hotel' ); ?></label>
+                                    <input type="url" x-model="settings.integrations.odoo_url" class="vhm-input" placeholder="https://mycompany.odoo.com">
+                                </div>
+                                <div class="vhm-form-row">
+                                    <label class="vhm-label"><?php esc_html_e( 'Database Name', 'venezia-hotel' ); ?></label>
+                                    <input type="text" x-model="settings.integrations.odoo_database" class="vhm-input">
+                                </div>
+                                <div class="vhm-form-row">
+                                    <label class="vhm-label"><?php esc_html_e( 'Username', 'venezia-hotel' ); ?></label>
+                                    <input type="text" x-model="settings.integrations.odoo_username" class="vhm-input">
+                                </div>
+                                <div class="vhm-form-row" style="grid-column: span 2;">
+                                    <label class="vhm-label"><?php esc_html_e( 'API Key', 'venezia-hotel' ); ?></label>
+                                    <input type="password" x-model="settings.integrations.odoo_api_key" class="vhm-input" style="max-width:400px;">
+                                    <p style="margin-top:0.25rem; font-size:0.75rem; color:#6b7280;"><?php esc_html_e( 'Generate from Odoo: Settings > Users > API Keys', 'venezia-hotel' ); ?></p>
+                                </div>
+                            </div>
+                        </div>
+                    </template>
+
+                    <!-- Webhook Settings -->
+                    <template x-if="settings.integrations.provider === 'webhook'">
+                        <div class="vhm-card" style="margin-bottom:1rem;">
+                            <h2 style="font-size:1.125rem; font-weight:600; margin-bottom:1rem;"><?php esc_html_e( 'Webhook Configuration', 'venezia-hotel' ); ?></h2>
+                            <div class="vhm-form-grid" style="max-width:600px;">
+                                <div class="vhm-form-row" style="grid-column: span 2;">
+                                    <label class="vhm-label"><?php esc_html_e( 'Webhook URL', 'venezia-hotel' ); ?></label>
+                                    <input type="url" x-model="settings.integrations.webhook_url" class="vhm-input" placeholder="https://example.com/webhook">
+                                </div>
+                                <div class="vhm-form-row" style="grid-column: span 2;">
+                                    <label class="vhm-label"><?php esc_html_e( 'Signing Secret', 'venezia-hotel' ); ?></label>
+                                    <input type="password" x-model="settings.integrations.webhook_secret" class="vhm-input" style="max-width:400px;">
+                                    <p style="margin-top:0.25rem; font-size:0.75rem; color:#6b7280;"><?php esc_html_e( 'Used to sign payloads with HMAC-SHA256. Leave empty to skip signing.', 'venezia-hotel' ); ?></p>
+                                </div>
+                            </div>
+                        </div>
+                    </template>
+
+                    <!-- Sync Options -->
+                    <template x-if="settings.integrations.provider !== 'none'">
+                        <div class="vhm-card" style="margin-bottom:1rem;">
+                            <h2 style="font-size:1.125rem; font-weight:600; margin-bottom:1rem;"><?php esc_html_e( 'Sync Options', 'venezia-hotel' ); ?></h2>
+                            <div class="vhm-form-grid" style="max-width:500px;">
+                                <div class="vhm-form-row">
+                                    <label style="display:flex; align-items:center; gap:0.5rem; cursor:pointer;">
+                                        <input type="checkbox" x-model="settings.integrations.sync_bookings" style="border-radius:0.25rem;">
+                                        <?php esc_html_e( 'Sync bookings', 'venezia-hotel' ); ?>
+                                    </label>
+                                    <p style="margin-top:0.25rem; font-size:0.75rem; color:#6b7280;"><?php esc_html_e( 'Send booking events (created, confirmed, cancelled, check-in/out)', 'venezia-hotel' ); ?></p>
+                                </div>
+                                <div class="vhm-form-row">
+                                    <label style="display:flex; align-items:center; gap:0.5rem; cursor:pointer;">
+                                        <input type="checkbox" x-model="settings.integrations.sync_contacts" style="border-radius:0.25rem;">
+                                        <?php esc_html_e( 'Sync contacts / guests', 'venezia-hotel' ); ?>
+                                    </label>
+                                    <p style="margin-top:0.25rem; font-size:0.75rem; color:#6b7280;"><?php esc_html_e( 'Create and update guest profiles in the external system', 'venezia-hotel' ); ?></p>
+                                </div>
+                                <div class="vhm-form-row">
+                                    <label style="display:flex; align-items:center; gap:0.5rem; cursor:pointer;">
+                                        <input type="checkbox" x-model="settings.integrations.sync_invoices" style="border-radius:0.25rem;">
+                                        <?php esc_html_e( 'Sync invoices / payments', 'venezia-hotel' ); ?>
+                                    </label>
+                                    <p style="margin-top:0.25rem; font-size:0.75rem; color:#6b7280;"><?php esc_html_e( 'Send payment records to the external accounting system', 'venezia-hotel' ); ?></p>
+                                </div>
+                            </div>
+                        </div>
+                    </template>
+
+                    <!-- Test Connection -->
+                    <template x-if="settings.integrations.provider !== 'none'">
+                        <div class="vhm-card">
+                            <h2 style="font-size:1.125rem; font-weight:600; margin-bottom:1rem;"><?php esc_html_e( 'Connection Test', 'venezia-hotel' ); ?></h2>
+                            <div style="display:flex; align-items:center; gap:1rem; flex-wrap:wrap;">
+                                <button class="vhm-btn vhm-btn-secondary" @click="testConnection()" :disabled="testingConnection">
+                                    <span x-show="!testingConnection"><?php esc_html_e( 'Test Connection', 'venezia-hotel' ); ?></span>
+                                    <span x-show="testingConnection"><?php esc_html_e( 'Testing...', 'venezia-hotel' ); ?></span>
+                                </button>
+                                <template x-if="connectionResult">
+                                    <span :style="connectionResult.success ? 'color:#16a34a' : 'color:#dc2626'" style="font-size:0.875rem;" x-text="connectionResult.message"></span>
+                                </template>
+                            </div>
+                        </div>
+                    </template>
                 </div>
             </template>
 

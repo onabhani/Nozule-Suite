@@ -31,6 +31,7 @@ class SettingsController {
         'pricing',
         'notifications',
         'display',
+        'integrations',
     ];
 
     /**
@@ -229,6 +230,10 @@ class SettingsController {
             'notifications.sms_enabled',
             'notifications.whatsapp_enabled',
             'notifications.admin_email_on_booking',
+            'integrations.enabled',
+            'integrations.sync_bookings',
+            'integrations.sync_contacts',
+            'integrations.sync_invoices',
         ];
 
         $fullKey = $group . '.' . $key;

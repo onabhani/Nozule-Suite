@@ -112,6 +112,19 @@ class BookingsModule extends BaseModule {
 			$this->container->get( CalendarController::class )->registerRoutes();
 		} );
 
+		// Append booking records to guest history responses.
+		add_filter( 'venezia/guests/history', function ( $history, $guest ) {
+			$repo     = $this->container->get( BookingRepository::class );
+			$bookings = $repo->getByGuestId( $guest->id );
+
+			$history['bookings'] = array_map(
+				fn( Models\Booking $b ) => $b->toArray(),
+				$bookings
+			);
+
+			return $history;
+		}, 10, 2 );
+
 		// Expose container via filter for cross-module resolution.
 		add_filter( 'venezia/container/get', function ( $default, string $abstract ) {
 			if ( $this->container->has( $abstract ) ) {

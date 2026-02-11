@@ -65,11 +65,26 @@ const VeneziaAPI = {
         const json = await response.json();
 
         if (!response.ok) {
-            const error = new Error(
-                (json.error && json.error.message) ? json.error.message : 'Request failed'
-            );
-            error.code = json.error ? json.error.code : 'UNKNOWN_ERROR';
+            // Extract the most useful error message from the response.
+            // Server may return {message, errors} or {error: {message, code}}.
+            var msg = 'Request failed';
+            if (json.errors) {
+                // Use the first field-level validation error for clarity.
+                var firstErrors = Object.values(json.errors)[0];
+                if (Array.isArray(firstErrors) && firstErrors.length > 0) {
+                    msg = firstErrors[0];
+                } else if (json.message) {
+                    msg = json.message;
+                }
+            } else if (json.message) {
+                msg = json.message;
+            } else if (json.error && json.error.message) {
+                msg = json.error.message;
+            }
+            const error = new Error(msg);
+            error.code = (json.error ? json.error.code : json.code) || 'UNKNOWN_ERROR';
             error.status = response.status;
+            error.errors = json.errors || null;
             throw error;
         }
 
