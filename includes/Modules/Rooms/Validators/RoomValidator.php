@@ -96,8 +96,8 @@ class RoomValidator extends BaseValidator {
 		return [
 			'room_number' => [
 				'required',
-				'min' => 1,
-				'max' => 20,
+				'minLength' => 1,
+				'maxLength' => 20,
 			],
 			'room_type_id' => [
 				'required',
@@ -119,8 +119,8 @@ class RoomValidator extends BaseValidator {
 	private function updateRules(): array {
 		return [
 			'room_number' => [
-				'min' => 1,
-				'max' => 20,
+				'minLength' => 1,
+				'maxLength' => 20,
 			],
 			'room_type_id' => [
 				'integer',

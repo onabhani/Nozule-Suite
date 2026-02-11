@@ -107,6 +107,21 @@ document.addEventListener('alpine:init', function () {
                 });
             },
 
+            currencySymbols: {
+                'SAR': '﷼', 'AED': 'د.إ', 'QAR': 'ر.ق', 'KWD': 'د.ك',
+                'BHD': 'د.ب', 'OMR': 'ر.ع', 'EGP': 'ج.م', 'JOD': 'د.أ',
+                'USD': '$', 'EUR': '€', 'GBP': '£', 'TRY': '₺',
+                'MAD': 'د.م', 'INR': '₹', 'CNY': '¥', 'JPY': '¥',
+                'CHF': 'CHF', 'CAD': 'C$', 'AUD': 'A$', 'BRL': 'R$'
+            },
+
+            onCurrencyChange: function () {
+                var code = this.settings.currency.default;
+                if (this.currencySymbols[code]) {
+                    this.settings.currency.symbol = this.currencySymbols[code];
+                }
+            },
+
             testConnection: function () {
                 var self = this;
                 var provider = self.settings.integrations.provider;

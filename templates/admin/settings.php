@@ -66,7 +66,59 @@ if ( ! defined( 'ABSPATH' ) ) {
                         </div>
                         <div class="vhm-form-row">
                             <label class="vhm-label"><?php esc_html_e( 'Timezone', 'venezia-hotel' ); ?></label>
-                            <input type="text" x-model="settings.general.timezone" class="vhm-input" placeholder="<?php esc_attr_e( 'e.g. America/New_York', 'venezia-hotel' ); ?>">
+                            <select x-model="settings.general.timezone" class="vhm-input">
+                                <option value=""><?php esc_html_e( '-- Select Timezone --', 'venezia-hotel' ); ?></option>
+                                <optgroup label="<?php esc_attr_e( 'Middle East', 'venezia-hotel' ); ?>">
+                                    <option value="Asia/Riyadh">Asia/Riyadh (UTC+3)</option>
+                                    <option value="Asia/Dubai">Asia/Dubai (UTC+4)</option>
+                                    <option value="Asia/Qatar">Asia/Qatar (UTC+3)</option>
+                                    <option value="Asia/Kuwait">Asia/Kuwait (UTC+3)</option>
+                                    <option value="Asia/Bahrain">Asia/Bahrain (UTC+3)</option>
+                                    <option value="Asia/Muscat">Asia/Muscat (UTC+4)</option>
+                                    <option value="Asia/Baghdad">Asia/Baghdad (UTC+3)</option>
+                                    <option value="Asia/Amman">Asia/Amman (UTC+3)</option>
+                                    <option value="Asia/Beirut">Asia/Beirut (UTC+2)</option>
+                                    <option value="Asia/Jerusalem">Asia/Jerusalem (UTC+2)</option>
+                                    <option value="Africa/Cairo">Africa/Cairo (UTC+2)</option>
+                                </optgroup>
+                                <optgroup label="<?php esc_attr_e( 'Europe', 'venezia-hotel' ); ?>">
+                                    <option value="Europe/London">Europe/London (UTC+0)</option>
+                                    <option value="Europe/Paris">Europe/Paris (UTC+1)</option>
+                                    <option value="Europe/Berlin">Europe/Berlin (UTC+1)</option>
+                                    <option value="Europe/Madrid">Europe/Madrid (UTC+1)</option>
+                                    <option value="Europe/Rome">Europe/Rome (UTC+1)</option>
+                                    <option value="Europe/Istanbul">Europe/Istanbul (UTC+3)</option>
+                                    <option value="Europe/Moscow">Europe/Moscow (UTC+3)</option>
+                                    <option value="Europe/Athens">Europe/Athens (UTC+2)</option>
+                                </optgroup>
+                                <optgroup label="<?php esc_attr_e( 'Asia & Pacific', 'venezia-hotel' ); ?>">
+                                    <option value="Asia/Karachi">Asia/Karachi (UTC+5)</option>
+                                    <option value="Asia/Kolkata">Asia/Kolkata (UTC+5:30)</option>
+                                    <option value="Asia/Bangkok">Asia/Bangkok (UTC+7)</option>
+                                    <option value="Asia/Singapore">Asia/Singapore (UTC+8)</option>
+                                    <option value="Asia/Shanghai">Asia/Shanghai (UTC+8)</option>
+                                    <option value="Asia/Tokyo">Asia/Tokyo (UTC+9)</option>
+                                    <option value="Australia/Sydney">Australia/Sydney (UTC+11)</option>
+                                    <option value="Pacific/Auckland">Pacific/Auckland (UTC+13)</option>
+                                </optgroup>
+                                <optgroup label="<?php esc_attr_e( 'Americas', 'venezia-hotel' ); ?>">
+                                    <option value="America/New_York">America/New_York (UTC-5)</option>
+                                    <option value="America/Chicago">America/Chicago (UTC-6)</option>
+                                    <option value="America/Denver">America/Denver (UTC-7)</option>
+                                    <option value="America/Los_Angeles">America/Los_Angeles (UTC-8)</option>
+                                    <option value="America/Toronto">America/Toronto (UTC-5)</option>
+                                    <option value="America/Sao_Paulo">America/Sao_Paulo (UTC-3)</option>
+                                    <option value="America/Mexico_City">America/Mexico_City (UTC-6)</option>
+                                    <option value="America/Argentina/Buenos_Aires">America/Buenos_Aires (UTC-3)</option>
+                                </optgroup>
+                                <optgroup label="<?php esc_attr_e( 'Africa', 'venezia-hotel' ); ?>">
+                                    <option value="Africa/Casablanca">Africa/Casablanca (UTC+1)</option>
+                                    <option value="Africa/Algiers">Africa/Algiers (UTC+1)</option>
+                                    <option value="Africa/Tunis">Africa/Tunis (UTC+1)</option>
+                                    <option value="Africa/Nairobi">Africa/Nairobi (UTC+3)</option>
+                                    <option value="Africa/Johannesburg">Africa/Johannesburg (UTC+2)</option>
+                                </optgroup>
+                            </select>
                         </div>
                         <div class="vhm-form-row">
                             <label class="vhm-label"><?php esc_html_e( 'Check-in Time', 'venezia-hotel' ); ?></label>
@@ -87,11 +139,32 @@ if ( ! defined( 'ABSPATH' ) ) {
                     <div class="vhm-form-grid" style="max-width:500px;">
                         <div class="vhm-form-row">
                             <label class="vhm-label"><?php esc_html_e( 'Default Currency', 'venezia-hotel' ); ?></label>
-                            <input type="text" x-model="settings.currency.default" class="vhm-input" placeholder="USD">
+                            <select x-model="settings.currency.default" class="vhm-input" @change="onCurrencyChange()">
+                                <option value="SAR">SAR - <?php esc_html_e( 'Saudi Riyal', 'venezia-hotel' ); ?></option>
+                                <option value="AED">AED - <?php esc_html_e( 'UAE Dirham', 'venezia-hotel' ); ?></option>
+                                <option value="QAR">QAR - <?php esc_html_e( 'Qatari Riyal', 'venezia-hotel' ); ?></option>
+                                <option value="KWD">KWD - <?php esc_html_e( 'Kuwaiti Dinar', 'venezia-hotel' ); ?></option>
+                                <option value="BHD">BHD - <?php esc_html_e( 'Bahraini Dinar', 'venezia-hotel' ); ?></option>
+                                <option value="OMR">OMR - <?php esc_html_e( 'Omani Rial', 'venezia-hotel' ); ?></option>
+                                <option value="EGP">EGP - <?php esc_html_e( 'Egyptian Pound', 'venezia-hotel' ); ?></option>
+                                <option value="JOD">JOD - <?php esc_html_e( 'Jordanian Dinar', 'venezia-hotel' ); ?></option>
+                                <option value="USD">USD - <?php esc_html_e( 'US Dollar', 'venezia-hotel' ); ?></option>
+                                <option value="EUR">EUR - <?php esc_html_e( 'Euro', 'venezia-hotel' ); ?></option>
+                                <option value="GBP">GBP - <?php esc_html_e( 'British Pound', 'venezia-hotel' ); ?></option>
+                                <option value="TRY">TRY - <?php esc_html_e( 'Turkish Lira', 'venezia-hotel' ); ?></option>
+                                <option value="MAD">MAD - <?php esc_html_e( 'Moroccan Dirham', 'venezia-hotel' ); ?></option>
+                                <option value="INR">INR - <?php esc_html_e( 'Indian Rupee', 'venezia-hotel' ); ?></option>
+                                <option value="CNY">CNY - <?php esc_html_e( 'Chinese Yuan', 'venezia-hotel' ); ?></option>
+                                <option value="JPY">JPY - <?php esc_html_e( 'Japanese Yen', 'venezia-hotel' ); ?></option>
+                                <option value="CHF">CHF - <?php esc_html_e( 'Swiss Franc', 'venezia-hotel' ); ?></option>
+                                <option value="CAD">CAD - <?php esc_html_e( 'Canadian Dollar', 'venezia-hotel' ); ?></option>
+                                <option value="AUD">AUD - <?php esc_html_e( 'Australian Dollar', 'venezia-hotel' ); ?></option>
+                                <option value="BRL">BRL - <?php esc_html_e( 'Brazilian Real', 'venezia-hotel' ); ?></option>
+                            </select>
                         </div>
                         <div class="vhm-form-row">
                             <label class="vhm-label"><?php esc_html_e( 'Currency Symbol', 'venezia-hotel' ); ?></label>
-                            <input type="text" x-model="settings.currency.symbol" class="vhm-input" placeholder="$">
+                            <input type="text" x-model="settings.currency.symbol" class="vhm-input" readonly>
                         </div>
                         <div class="vhm-form-row">
                             <label class="vhm-label"><?php esc_html_e( 'Symbol Position', 'venezia-hotel' ); ?></label>

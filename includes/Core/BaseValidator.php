@@ -124,6 +124,20 @@ class BaseValidator {
         return null;
     }
 
+    protected function validateMaxLength( string $field, $value, $param ): ?string {
+        if ( is_string( $value ) && strlen( $value ) > $param ) {
+            return sprintf( __( '%s must not exceed %s characters.', 'venezia-hotel' ), $field, $param );
+        }
+        return null;
+    }
+
+    protected function validateMinLength( string $field, $value, $param ): ?string {
+        if ( is_string( $value ) && strlen( $value ) < $param ) {
+            return sprintf( __( '%s must be at least %s characters.', 'venezia-hotel' ), $field, $param );
+        }
+        return null;
+    }
+
     protected function validateIn( string $field, $value, $param ): ?string {
         $allowed = is_array( $param ) ? $param : explode( ',', $param );
         if ( $value && ! in_array( $value, $allowed, true ) ) {
@@ -154,8 +168,8 @@ class BaseValidator {
     }
 
     protected function validateSlug( string $field, $value ): ?string {
-        if ( $value && ! preg_match( '/^[a-z0-9]+(?:-[a-z0-9]+)*$/', $value ) ) {
-            return sprintf( __( '%s must be a valid slug (lowercase letters, numbers, hyphens).', 'venezia-hotel' ), $field );
+        if ( $value && ! preg_match( '/^[a-z0-9]+(?:[-_][a-z0-9]+)*$/', $value ) ) {
+            return sprintf( __( '%s must be a valid slug (lowercase letters, numbers, hyphens, underscores).', 'venezia-hotel' ), $field );
         }
         return null;
     }
