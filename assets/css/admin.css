@@ -357,6 +357,7 @@
     align-items: center;
     padding: 1rem 1.5rem;
     border-bottom: 1px solid #e2e8f0;
+    flex-shrink: 0;
 }
 
 .vhm-modal-header h3 {
@@ -382,6 +383,8 @@
 .vhm-modal-body {
     padding: 1.5rem;
     overflow-y: auto;
+    flex: 1;
+    min-height: 0;
 }
 
 .vhm-modal-footer {
@@ -390,6 +393,7 @@
     gap: 0.5rem;
     padding: 1rem 1.5rem;
     border-top: 1px solid #e2e8f0;
+    flex-shrink: 0;
 }
 
 /* Sidebar panel (slides in from right) */
