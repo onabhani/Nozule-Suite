@@ -88,7 +88,11 @@ var VeneziaI18n = (function () {
             'failed_save_guest': 'Failed to save guest',
             'fill_required_fields': 'Please fill in all required fields',
             'male': 'Male',
-            'female': 'Female'
+            'female': 'Female',
+            'settings_saved': 'Settings saved successfully',
+            'failed_save_settings': 'Failed to save settings',
+            'select_provider_first': 'Please select a provider first',
+            'connection_test_failed': 'Connection test failed'
         },
         ar: {
             'check_in': 'تسجيل الوصول',
@@ -214,6 +218,10 @@ var VeneziaI18n = (function () {
             'fill_required_fields': 'يرجى ملء جميع الحقول المطلوبة',
             'male': 'ذكر',
             'female': 'أنثى',
+            'settings_saved': 'تم حفظ الإعدادات بنجاح',
+            'failed_save_settings': 'فشل حفظ الإعدادات',
+            'select_provider_first': 'يرجى اختيار مزود الخدمة أولاً',
+            'connection_test_failed': 'فشل اختبار الاتصال',
             'pending': 'قيد الانتظار',
             'confirmed': 'مؤكد',
             'checked_in': 'مسجل وصول',
@@ -276,6 +284,13 @@ var VeneziaI18n = (function () {
          */
         getLocale: function () {
             return currentLocale;
+        },
+
+        /**
+         * Alias for t() — matches WordPress __() convention.
+         */
+        __: function (key, replacements) {
+            return this.t(key, replacements);
         },
 
         /**

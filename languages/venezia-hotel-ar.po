@@ -933,3 +933,83 @@ msgstr "تقرير الإشغال"
 
 msgid "Report"
 msgstr "تقرير"
+
+# ---- Integrations ----
+
+msgid "Integrations"
+msgstr "التكاملات"
+
+msgid "ERP / CRM Integration"
+msgstr "تكامل ERP / CRM"
+
+msgid "Enable external integrations"
+msgstr "تفعيل التكاملات الخارجية"
+
+msgid "Integration Provider"
+msgstr "مزود التكامل"
+
+msgid "-- None --"
+msgstr "-- لا شيء --"
+
+msgid "Odoo ERP"
+msgstr "نظام Odoo ERP"
+
+msgid "Custom Webhook"
+msgstr "ويب هوك مخصص"
+
+msgid "Odoo Connection"
+msgstr "اتصال Odoo"
+
+msgid "Odoo Server URL"
+msgstr "رابط خادم Odoo"
+
+msgid "Database Name"
+msgstr "اسم قاعدة البيانات"
+
+msgid "Username"
+msgstr "اسم المستخدم"
+
+msgid "API Key"
+msgstr "مفتاح API"
+
+msgid "Generate from Odoo: Settings > Users > API Keys"
+msgstr "يمكن إنشاؤه من Odoo: الإعدادات > المستخدمين > مفاتيح API"
+
+msgid "Webhook Configuration"
+msgstr "إعدادات الويب هوك"
+
+msgid "Webhook URL"
+msgstr "رابط الويب هوك"
+
+msgid "Signing Secret"
+msgstr "مفتاح التوقيع"
+
+msgid "Used to sign payloads with HMAC-SHA256. Leave empty to skip signing."
+msgstr "يُستخدم لتوقيع البيانات بخوارزمية HMAC-SHA256. اتركه فارغاً لتخطي التوقيع."
+
+msgid "Sync bookings"
+msgstr "مزامنة الحجوزات"
+
+msgid "Send booking events (created, confirmed, cancelled, check-in/out)"
+msgstr "إرسال أحداث الحجز (إنشاء، تأكيد، إلغاء، وصول/مغادرة)"
+
+msgid "Sync contacts / guests"
+msgstr "مزامنة جهات الاتصال / الضيوف"
+
+msgid "Create and update guest profiles in the external system"
+msgstr "إنشاء وتحديث ملفات الضيوف في النظام الخارجي"
+
+msgid "Sync invoices / payments"
+msgstr "مزامنة الفواتير / المدفوعات"
+
+msgid "Send payment records to the external accounting system"
+msgstr "إرسال سجلات الدفع إلى نظام المحاسبة الخارجي"
+
+msgid "Connection Test"
+msgstr "اختبار الاتصال"
+
+msgid "Test Connection"
+msgstr "اختبار الاتصال"
+
+msgid "Testing..."
+msgstr "جاري الاختبار..."

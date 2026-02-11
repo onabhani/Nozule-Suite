@@ -9,6 +9,8 @@ document.addEventListener('alpine:init', function () {
             activeTab: 'general',
             saving: false,
             saved: false,
+            testingConnection: false,
+            connectionResult: null,
             settings: {
                 general: {
                     hotel_name: '',
@@ -41,6 +43,19 @@ document.addEventListener('alpine:init', function () {
                     free_cancellation_hours: 24,
                     cancellation_text: '',
                     terms: ''
+                },
+                integrations: {
+                    enabled: false,
+                    provider: 'none',
+                    odoo_url: '',
+                    odoo_database: '',
+                    odoo_username: '',
+                    odoo_api_key: '',
+                    webhook_url: '',
+                    webhook_secret: '',
+                    sync_bookings: true,
+                    sync_contacts: true,
+                    sync_invoices: true
                 }
             },
 
@@ -60,6 +75,14 @@ document.addEventListener('alpine:init', function () {
                         if (data.booking) self.settings.booking = Object.assign(self.settings.booking, data.booking);
                         if (data.notifications) self.settings.notifications = Object.assign(self.settings.notifications, data.notifications);
                         if (data.policies) self.settings.policies = Object.assign(self.settings.policies, data.policies);
+                        if (data.integrations) self.settings.integrations = Object.assign(self.settings.integrations, data.integrations);
+
+                        // Ensure booleans are actual booleans after loading.
+                        var intg = self.settings.integrations;
+                        intg.enabled = intg.enabled === '1' || intg.enabled === true;
+                        intg.sync_bookings = intg.sync_bookings === '1' || intg.sync_bookings === true;
+                        intg.sync_contacts = intg.sync_contacts === '1' || intg.sync_contacts === true;
+                        intg.sync_invoices = intg.sync_invoices === '1' || intg.sync_invoices === true;
                     }
                 }).catch(function (err) {
                     console.error('Settings load error:', err);
@@ -75,12 +98,42 @@ document.addEventListener('alpine:init', function () {
 
                 VeneziaAPI.post('/admin/settings', self.settings).then(function () {
                     self.saved = true;
-                    VeneziaUtils.toast('Settings saved successfully', 'success');
+                    VeneziaUtils.toast(VeneziaI18n.__('settings_saved'), 'success');
                     setTimeout(function () { self.saved = false; }, 3000);
                 }).catch(function (err) {
-                    VeneziaUtils.toast(err.message || 'Failed to save settings', 'error');
+                    VeneziaUtils.toast(err.message || VeneziaI18n.__('failed_save_settings'), 'error');
                 }).finally(function () {
                     self.saving = false;
+                });
+            },
+
+            testConnection: function () {
+                var self = this;
+                var provider = self.settings.integrations.provider;
+
+                if (provider === 'none') {
+                    VeneziaUtils.toast(VeneziaI18n.__('select_provider_first'), 'warning');
+                    return;
+                }
+
+                // Save settings first so the server has the latest credentials.
+                self.testingConnection = true;
+                self.connectionResult = null;
+
+                VeneziaAPI.post('/admin/settings', self.settings).then(function () {
+                    return VeneziaAPI.post('/admin/integrations/test', { provider: provider });
+                }).then(function (response) {
+                    self.connectionResult = response.data || response;
+                    if (self.connectionResult.success) {
+                        VeneziaUtils.toast(self.connectionResult.message, 'success');
+                    } else {
+                        VeneziaUtils.toast(self.connectionResult.message, 'error');
+                    }
+                }).catch(function (err) {
+                    self.connectionResult = { success: false, message: err.message };
+                    VeneziaUtils.toast(err.message || VeneziaI18n.__('connection_test_failed'), 'error');
+                }).finally(function () {
+                    self.testingConnection = false;
                 });
             }
         };

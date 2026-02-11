@@ -3,7 +3,7 @@
  * Plugin Name:       Venezia Hotel Manager
  * Plugin URI:        https://github.com/onabhani/Rawaq-Suite
  * Description:       A comprehensive hotel booking management system for WordPress. Manage rooms, bookings, guests, pricing, channels, and reports.
- * Version:           1.0.7
+ * Version:           1.0.8
  * Author:            hdqah.com
  * Author URI:        https://hdqah.com
  * License:           GPL-2.0-or-later
@@ -21,7 +21,7 @@ if ( ! defined( 'ABSPATH' ) ) {
 }
 
 // Plugin constants
-define( 'VHM_VERSION', '1.0.7' );
+define( 'VHM_VERSION', '1.0.8' );
 define( 'VHM_PLUGIN_FILE', __FILE__ );
 define( 'VHM_PLUGIN_DIR', plugin_dir_path( __FILE__ ) );
 define( 'VHM_PLUGIN_URL', plugin_dir_url( __FILE__ ) );

@@ -83,6 +83,7 @@ class Plugin {
             \Venezia\Modules\Notifications\NotificationsModule::class,
             \Venezia\Modules\Channels\ChannelsModule::class,
             \Venezia\Modules\Reports\ReportsModule::class,
+            \Venezia\Modules\Integrations\IntegrationsModule::class,
         ];
 
         foreach ( $modules as $module_class ) {
