@@ -71,6 +71,14 @@
 }
 
 /* Calendar */
+.vhm-calendar-table {
+    direction: rtl;
+}
+
+.vhm-calendar-room-col {
+    text-align: right;
+}
+
 .vhm-calendar-room-label {
     border-right: none;
     border-left: 1px solid #e2e8f0;
@@ -84,6 +92,17 @@
 .vhm-calendar-cell {
     border-right: none;
     border-left: 1px solid #f1f5f9;
+}
+
+/* Navigation arrows — flip for RTL */
+.vhm-nav-arrow {
+    display: inline-block;
+    transform: scaleX(-1);
+}
+
+/* Legend — keep RTL direction */
+.vhm-calendar-legend {
+    direction: rtl;
 }
 
 @media (max-width: 782px) {

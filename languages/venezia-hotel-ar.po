@@ -1013,3 +1013,83 @@ msgstr "اختبار الاتصال"
 
 msgid "Testing..."
 msgstr "جاري الاختبار..."
+
+# ---- Settings Dropdowns ----
+
+msgid "-- Select Timezone --"
+msgstr "-- اختر المنطقة الزمنية --"
+
+msgid "Middle East"
+msgstr "الشرق الأوسط"
+
+msgid "Europe"
+msgstr "أوروبا"
+
+msgid "Asia & Pacific"
+msgstr "آسيا والمحيط الهادئ"
+
+msgid "Americas"
+msgstr "الأمريكتين"
+
+msgid "Africa"
+msgstr "أفريقيا"
+
+msgid "Saudi Riyal"
+msgstr "ريال سعودي"
+
+msgid "UAE Dirham"
+msgstr "درهم إماراتي"
+
+msgid "Qatari Riyal"
+msgstr "ريال قطري"
+
+msgid "Kuwaiti Dinar"
+msgstr "دينار كويتي"
+
+msgid "Bahraini Dinar"
+msgstr "دينار بحريني"
+
+msgid "Omani Rial"
+msgstr "ريال عماني"
+
+msgid "Egyptian Pound"
+msgstr "جنيه مصري"
+
+msgid "Jordanian Dinar"
+msgstr "دينار أردني"
+
+msgid "US Dollar"
+msgstr "دولار أمريكي"
+
+msgid "Euro"
+msgstr "يورو"
+
+msgid "British Pound"
+msgstr "جنيه إسترليني"
+
+msgid "Turkish Lira"
+msgstr "ليرة تركية"
+
+msgid "Moroccan Dirham"
+msgstr "درهم مغربي"
+
+msgid "Indian Rupee"
+msgstr "روبية هندية"
+
+msgid "Chinese Yuan"
+msgstr "يوان صيني"
+
+msgid "Japanese Yen"
+msgstr "ين ياباني"
+
+msgid "Swiss Franc"
+msgstr "فرنك سويسري"
+
+msgid "Canadian Dollar"
+msgstr "دولار كندي"
+
+msgid "Australian Dollar"
+msgstr "دولار أسترالي"
+
+msgid "Brazilian Real"
+msgstr "ريال برازيلي"
