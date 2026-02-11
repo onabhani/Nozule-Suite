@@ -246,6 +246,81 @@ msgstr "عرض"
 msgid "No guests found."
 msgstr "لا يوجد ضيوف."
 
+msgid "Add Guest"
+msgstr "إضافة ضيف"
+
+msgid "Edit Guest"
+msgstr "تعديل بيانات الضيف"
+
+msgid "Guest Profile"
+msgstr "ملف الضيف"
+
+msgid "Total Spent"
+msgstr "إجمالي الإنفاق"
+
+msgid "Total Nights"
+msgstr "إجمالي الليالي"
+
+msgid "Personal Information"
+msgstr "المعلومات الشخصية"
+
+msgid "Identity & Address"
+msgstr "الهوية والعنوان"
+
+msgid "Alternative Phone"
+msgstr "هاتف بديل"
+
+msgid "Alt. Phone"
+msgstr "هاتف بديل"
+
+msgid "Gender"
+msgstr "الجنس"
+
+msgid "Male"
+msgstr "ذكر"
+
+msgid "Female"
+msgstr "أنثى"
+
+msgid "Date of Birth"
+msgstr "تاريخ الميلاد"
+
+msgid "Company"
+msgstr "الشركة"
+
+msgid "ID Type"
+msgstr "نوع الهوية"
+
+msgid "Passport"
+msgstr "جواز سفر"
+
+msgid "National ID"
+msgstr "هوية وطنية"
+
+msgid "Driving License"
+msgstr "رخصة قيادة"
+
+msgid "Other"
+msgstr "أخرى"
+
+msgid "ID Number"
+msgstr "رقم الهوية"
+
+msgid "City"
+msgstr "المدينة"
+
+msgid "Address"
+msgstr "العنوان"
+
+msgid "Internal notes about this guest..."
+msgstr "ملاحظات داخلية عن هذا الضيف..."
+
+msgid "Booking History"
+msgstr "سجل الحجوزات"
+
+msgid "No bookings yet."
+msgstr "لا توجد حجوزات بعد."
+
 # ---- Rooms ----
 
 msgid "Add Room Type"
