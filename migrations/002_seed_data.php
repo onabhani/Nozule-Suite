@@ -21,7 +21,7 @@ function nzl_migration_002_seed_data(): void {
     $settings = [
         // General
         [ 'general', 'hotel_name', 'Nozule Hotel' ],
-        [ 'general', 'hotel_name_ar', 'نوزول' ],
+        [ 'general', 'hotel_name_ar', 'نزلي' ],
         [ 'general', 'hotel_email', get_option( 'admin_email', '' ) ],
         [ 'general', 'hotel_phone', '' ],
         [ 'general', 'hotel_address', '' ],

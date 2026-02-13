@@ -18,7 +18,7 @@ msgstr ""
 
 # ---- Plugin Meta ----
 msgid "Nozule"
-msgstr "نوزول"
+msgstr "نزلي"
 
 # ---- Admin Menu (AdminMenu.php) ----
 msgid "Hotel Manager"
@@ -601,7 +601,7 @@ msgstr "مثال: 25 لنسبة 25%"
 
 # ---- Reception Portal ----
 msgid "Reception Portal - Nozule Hotel"
-msgstr "بوابة الاستقبال - نوزول"
+msgstr "بوابة الاستقبال - نزلي"
 
 msgid "Hotel Reception"
 msgstr "استقبال الفندق"
