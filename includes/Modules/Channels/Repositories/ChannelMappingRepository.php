@@ -1,10 +1,10 @@
 <?php
 
-namespace Venezia\Modules\Channels\Repositories;
+namespace Nozule\Modules\Channels\Repositories;
 
-use Venezia\Core\BaseRepository;
-use Venezia\Core\Database;
-use Venezia\Modules\Channels\Models\ChannelMapping;
+use Nozule\Core\BaseRepository;
+use Nozule\Core\Database;
+use Nozule\Modules\Channels\Models\ChannelMapping;
 
 /**
  * Repository for channel mapping CRUD and querying.

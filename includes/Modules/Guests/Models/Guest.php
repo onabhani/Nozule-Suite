@@ -1,8 +1,8 @@
 <?php
 
-namespace Venezia\Modules\Guests\Models;
+namespace Nozule\Modules\Guests\Models;
 
-use Venezia\Core\BaseModel;
+use Nozule\Core\BaseModel;
 
 /**
  * Guest model representing a hotel guest profile.

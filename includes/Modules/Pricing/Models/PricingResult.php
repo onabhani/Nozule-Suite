@@ -1,6 +1,6 @@
 <?php
 
-namespace Venezia\Modules\Pricing\Models;
+namespace Nozule\Modules\Pricing\Models;
 
 /**
  * Value object representing the result of a pricing calculation.

@@ -1,11 +1,11 @@
 /**
- * Venezia Hotel Manager - Admin Rooms
+ * Nozule - Admin Rooms
  *
  * Modal-based CRUD for room types and individual rooms.
  */
 document.addEventListener('alpine:init', function () {
 
-    Alpine.data('vhmRooms', function () {
+    Alpine.data('nzlRooms', function () {
         return {
             loading: true,
             saving: false,
@@ -56,14 +56,14 @@ document.addEventListener('alpine:init', function () {
                 self.loading = true;
 
                 Promise.all([
-                    VeneziaAPI.get('/admin/room-types'),
-                    VeneziaAPI.get('/admin/rooms')
+                    NozuleAPI.get('/admin/room-types'),
+                    NozuleAPI.get('/admin/rooms')
                 ]).then(function (responses) {
                     self.roomTypes = responses[0].data || [];
                     self.rooms = responses[1].data || [];
                 }).catch(function (err) {
                     console.error('Rooms load error:', err);
-                    VeneziaUtils.toast(err.message || VeneziaI18n.t('failed_load_rooms'), 'error');
+                    NozuleUtils.toast(err.message || NozuleI18n.t('failed_load_rooms'), 'error');
                 }).finally(function () {
                     self.loading = false;
                 });
@@ -122,33 +122,33 @@ document.addEventListener('alpine:init', function () {
 
                 var promise;
                 if (self.editingRoomTypeId) {
-                    promise = VeneziaAPI.put('/admin/room-types/' + self.editingRoomTypeId, data);
+                    promise = NozuleAPI.put('/admin/room-types/' + self.editingRoomTypeId, data);
                 } else {
-                    promise = VeneziaAPI.post('/admin/room-types', data);
+                    promise = NozuleAPI.post('/admin/room-types', data);
                 }
 
                 promise.then(function () {
                     self.showRoomTypeModal = false;
                     self.loadData();
-                    VeneziaUtils.toast(
-                        VeneziaI18n.t(self.editingRoomTypeId ? 'room_type_updated' : 'room_type_created'),
+                    NozuleUtils.toast(
+                        NozuleI18n.t(self.editingRoomTypeId ? 'room_type_updated' : 'room_type_created'),
                         'success'
                     );
                 }).catch(function (err) {
-                    VeneziaUtils.toast(err.message || VeneziaI18n.t('failed_save_room_type'), 'error');
+                    NozuleUtils.toast(err.message || NozuleI18n.t('failed_save_room_type'), 'error');
                 }).finally(function () {
                     self.saving = false;
                 });
             },
 
             deleteRoomType: function (id) {
-                if (!confirm(VeneziaI18n.t('confirm_delete_room_type'))) return;
+                if (!confirm(NozuleI18n.t('confirm_delete_room_type'))) return;
                 var self = this;
-                VeneziaAPI.delete('/admin/room-types/' + id).then(function () {
+                NozuleAPI.delete('/admin/room-types/' + id).then(function () {
                     self.loadData();
-                    VeneziaUtils.toast(VeneziaI18n.t('room_type_deleted'), 'success');
+                    NozuleUtils.toast(NozuleI18n.t('room_type_deleted'), 'success');
                 }).catch(function (err) {
-                    VeneziaUtils.toast(err.message || VeneziaI18n.t('failed_delete_room_type'), 'error');
+                    NozuleUtils.toast(err.message || NozuleI18n.t('failed_delete_room_type'), 'error');
                 });
             },
 
@@ -156,7 +156,7 @@ document.addEventListener('alpine:init', function () {
 
             openRoomModal: function () {
                 if (this.roomTypes.length === 0) {
-                    VeneziaUtils.toast(VeneziaI18n.t('select_room_type_first'), 'error');
+                    NozuleUtils.toast(NozuleI18n.t('select_room_type_first'), 'error');
                     return;
                 }
                 this.editingRoomId = null;
@@ -180,7 +180,7 @@ document.addEventListener('alpine:init', function () {
                 var self = this;
                 var roomTypeId = parseInt(self.roomForm.room_type_id, 10);
                 if (!roomTypeId || roomTypeId < 1) {
-                    VeneziaUtils.toast(VeneziaI18n.t('select_room_type'), 'error');
+                    NozuleUtils.toast(NozuleI18n.t('select_room_type'), 'error');
                     return;
                 }
                 var data = {
@@ -200,44 +200,44 @@ document.addEventListener('alpine:init', function () {
 
                 var promise;
                 if (self.editingRoomId) {
-                    promise = VeneziaAPI.put('/admin/rooms/' + self.editingRoomId, data);
+                    promise = NozuleAPI.put('/admin/rooms/' + self.editingRoomId, data);
                 } else {
-                    promise = VeneziaAPI.post('/admin/rooms', data);
+                    promise = NozuleAPI.post('/admin/rooms', data);
                 }
 
                 promise.then(function () {
                     self.showRoomModal = false;
                     self.loadData();
-                    VeneziaUtils.toast(
-                        VeneziaI18n.t(self.editingRoomId ? 'room_updated' : 'room_created'),
+                    NozuleUtils.toast(
+                        NozuleI18n.t(self.editingRoomId ? 'room_updated' : 'room_created'),
                         'success'
                     );
                 }).catch(function (err) {
-                    VeneziaUtils.toast(err.message || VeneziaI18n.t('failed_save_room'), 'error');
+                    NozuleUtils.toast(err.message || NozuleI18n.t('failed_save_room'), 'error');
                 }).finally(function () {
                     self.saving = false;
                 });
             },
 
             deleteRoom: function (id) {
-                if (!confirm(VeneziaI18n.t('confirm_delete_room'))) return;
+                if (!confirm(NozuleI18n.t('confirm_delete_room'))) return;
                 var self = this;
-                VeneziaAPI.delete('/admin/rooms/' + id).then(function () {
+                NozuleAPI.delete('/admin/rooms/' + id).then(function () {
                     self.loadData();
-                    VeneziaUtils.toast(VeneziaI18n.t('room_deleted'), 'success');
+                    NozuleUtils.toast(NozuleI18n.t('room_deleted'), 'success');
                 }).catch(function (err) {
-                    VeneziaUtils.toast(err.message || VeneziaI18n.t('failed_delete_room'), 'error');
+                    NozuleUtils.toast(err.message || NozuleI18n.t('failed_delete_room'), 'error');
                 });
             },
 
             // ---- Helpers ----
 
             statusLabel: function (status) {
-                return VeneziaI18n.t(status);
+                return NozuleI18n.t(status);
             },
 
             formatPrice: function (amount) {
-                return VeneziaUtils.formatPrice(amount);
+                return NozuleUtils.formatPrice(amount);
             }
         };
     });

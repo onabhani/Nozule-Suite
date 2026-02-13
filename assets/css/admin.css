@@ -1,30 +1,30 @@
 /**
- * Venezia Hotel Manager - Admin Styles
+ * Nozule - Admin Styles
  */
 
 /* ============================================
    WP Admin Menu Fix
    ============================================ */
-#toplevel_page_vhm-dashboard + .wp-menu-separator {
+#toplevel_page_nzl-dashboard + .wp-menu-separator {
     display: none !important;
 }
 
 /* ============================================
    Admin Layout
    ============================================ */
-.vhm-admin-wrap {
+.nzl-admin-wrap {
     margin: 20px;
     font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
 }
 
-.vhm-admin-header {
+.nzl-admin-header {
     display: flex;
     justify-content: space-between;
     align-items: center;
     margin-bottom: 1.5rem;
 }
 
-.vhm-admin-header h1 {
+.nzl-admin-header h1 {
     font-size: 1.5rem;
     font-weight: 600;
     color: #1e293b;
@@ -34,14 +34,14 @@
 /* ============================================
    Stats Cards
    ============================================ */
-.vhm-stats-grid {
+.nzl-stats-grid {
     display: grid;
     grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
     gap: 1rem;
     margin-bottom: 1.5rem;
 }
 
-.vhm-stat-card {
+.nzl-stat-card {
     background: #fff;
     border: 1px solid #e2e8f0;
     border-radius: 0.5rem;
@@ -49,7 +49,7 @@
     box-shadow: 0 1px 2px rgba(0, 0, 0, 0.05);
 }
 
-.vhm-stat-card .stat-label {
+.nzl-stat-card .stat-label {
     font-size: 0.75rem;
     font-weight: 500;
     color: #64748b;
@@ -57,25 +57,25 @@
     letter-spacing: 0.05em;
 }
 
-.vhm-stat-card .stat-value {
+.nzl-stat-card .stat-value {
     font-size: 1.5rem;
     font-weight: 700;
     color: #1e293b;
     margin-top: 0.25rem;
 }
 
-.vhm-stat-card .stat-change {
+.nzl-stat-card .stat-change {
     font-size: 0.75rem;
     margin-top: 0.25rem;
 }
 
-.vhm-stat-card .stat-change.positive { color: #10b981; }
-.vhm-stat-card .stat-change.negative { color: #ef4444; }
+.nzl-stat-card .stat-change.positive { color: #10b981; }
+.nzl-stat-card .stat-change.negative { color: #ef4444; }
 
 /* ============================================
    Admin Tables — ensure horizontal scroll
    ============================================ */
-.vhm-table-wrap {
+.nzl-table-wrap {
     background: #fff;
     border: 1px solid #e2e8f0;
     border-radius: 0.5rem;
@@ -84,12 +84,12 @@
     box-shadow: 0 1px 2px rgba(0, 0, 0, 0.05);
 }
 
-.vhm-table {
+.nzl-table {
     width: 100%;
     border-collapse: collapse;
 }
 
-.vhm-table th {
+.nzl-table th {
     background: #f8fafc;
     padding: 0.75rem 1rem;
     text-align: left;
@@ -101,25 +101,25 @@
     border-bottom: 1px solid #e2e8f0;
 }
 
-.vhm-table td {
+.nzl-table td {
     padding: 0.75rem 1rem;
     font-size: 0.875rem;
     color: #334155;
     border-bottom: 1px solid #f1f5f9;
 }
 
-.vhm-table tr:hover td {
+.nzl-table tr:hover td {
     background-color: #f8fafc;
 }
 
-.vhm-table tr:last-child td {
+.nzl-table tr:last-child td {
     border-bottom: none;
 }
 
 /* ============================================
    Calendar Grid
    ============================================ */
-.vhm-calendar-grid {
+.nzl-calendar-grid {
     display: grid;
     border: 1px solid #e2e8f0;
     border-radius: 0.5rem;
@@ -127,7 +127,7 @@
     background: #fff;
 }
 
-.vhm-calendar-header-cell {
+.nzl-calendar-header-cell {
     padding: 0.5rem;
     text-align: center;
     font-size: 0.75rem;
@@ -138,16 +138,16 @@
     border-right: 1px solid #e2e8f0;
 }
 
-.vhm-calendar-header-cell.is-today {
+.nzl-calendar-header-cell.is-today {
     background: #eff6ff;
     color: #1e40af;
 }
 
-.vhm-calendar-header-cell.is-weekend {
+.nzl-calendar-header-cell.is-weekend {
     background: #fef2f2;
 }
 
-.vhm-calendar-room-label {
+.nzl-calendar-room-label {
     padding: 0.5rem 0.75rem;
     font-size: 0.813rem;
     font-weight: 500;
@@ -158,7 +158,7 @@
     white-space: nowrap;
 }
 
-.vhm-calendar-cell {
+.nzl-calendar-cell {
     padding: 0.25rem;
     border-bottom: 1px solid #f1f5f9;
     border-right: 1px solid #f1f5f9;
@@ -167,11 +167,11 @@
     transition: background-color 0.15s;
 }
 
-.vhm-calendar-cell:hover {
+.nzl-calendar-cell:hover {
     opacity: 0.8;
 }
 
-.vhm-calendar-booking {
+.nzl-calendar-booking {
     font-size: 0.625rem;
     padding: 0.125rem 0.25rem;
     border-radius: 0.25rem;
@@ -181,19 +181,19 @@
 }
 
 /* Calendar table layout (used by calendar.php template) */
-.vhm-calendar-table {
+.nzl-calendar-table {
     border-collapse: collapse;
     width: 100%;
     table-layout: fixed;
     direction: ltr;
 }
-.vhm-calendar-table th,
-.vhm-calendar-table td {
+.nzl-calendar-table th,
+.nzl-calendar-table td {
     border: 1px solid #e2e8f0;
     text-align: center;
     vertical-align: middle;
 }
-.vhm-calendar-room-col {
+.nzl-calendar-room-col {
     min-width: 120px;
     max-width: 160px;
     padding: 0.5rem 0.75rem;
@@ -201,7 +201,7 @@
     background: #f8fafc;
     font-size: 0.813rem;
 }
-.vhm-calendar-date-col {
+.nzl-calendar-date-col {
     min-width: 48px;
     padding: 0.375rem 0.25rem;
     font-size: 0.75rem;
@@ -209,7 +209,7 @@
     color: #64748b;
     background: #f8fafc;
 }
-.vhm-calendar-date-col.vhm-today {
+.nzl-calendar-date-col.nzl-today {
     background: #eff6ff;
     color: #1e40af;
 }
@@ -217,14 +217,14 @@
 /* ============================================
    Admin Tabs
    ============================================ */
-.vhm-tabs {
+.nzl-tabs {
     display: flex;
     border-bottom: 2px solid #e2e8f0;
     margin-bottom: 1.5rem;
     gap: 0;
 }
 
-.vhm-tab {
+.nzl-tab {
     padding: 0.75rem 1.25rem;
     font-size: 0.875rem;
     font-weight: 500;
@@ -239,11 +239,11 @@
     border-right: none;
 }
 
-.vhm-tab:hover {
+.nzl-tab:hover {
     color: #334155;
 }
 
-.vhm-tab.active {
+.nzl-tab.active {
     color: #1e40af;
     border-bottom-color: #1e40af;
 }
@@ -251,7 +251,7 @@
 /* ============================================
    Admin Filters Bar
    ============================================ */
-.vhm-filters {
+.nzl-filters {
     display: flex;
     flex-wrap: wrap;
     gap: 0.75rem;
@@ -263,20 +263,20 @@
     margin-bottom: 1rem;
 }
 
-.vhm-filters .vhm-filter-group {
+.nzl-filters .nzl-filter-group {
     display: flex;
     flex-direction: column;
     gap: 0.25rem;
 }
 
-.vhm-filters .vhm-filter-group label {
+.nzl-filters .nzl-filter-group label {
     font-size: 0.75rem;
     font-weight: 500;
     color: #64748b;
 }
 
-.vhm-filters .vhm-filter-group select,
-.vhm-filters .vhm-filter-group input {
+.nzl-filters .nzl-filter-group select,
+.nzl-filters .nzl-filter-group input {
     padding: 0.375rem 0.75rem;
     font-size: 0.875rem;
     border: 1px solid #e2e8f0;
@@ -287,7 +287,7 @@
 /* ============================================
    Admin Pagination
    ============================================ */
-.vhm-pagination {
+.nzl-pagination {
     display: flex;
     justify-content: space-between;
     align-items: center;
@@ -295,17 +295,17 @@
     border-top: 1px solid #e2e8f0;
 }
 
-.vhm-pagination .page-info {
+.nzl-pagination .page-info {
     font-size: 0.875rem;
     color: #64748b;
 }
 
-.vhm-pagination .page-buttons {
+.nzl-pagination .page-buttons {
     display: flex;
     gap: 0.25rem;
 }
 
-.vhm-pagination .page-btn {
+.nzl-pagination .page-btn {
     padding: 0.375rem 0.75rem;
     font-size: 0.875rem;
     border: 1px solid #e2e8f0;
@@ -315,13 +315,13 @@
     cursor: pointer;
 }
 
-.vhm-pagination .page-btn.active {
+.nzl-pagination .page-btn.active {
     background: #1e40af;
     color: #fff;
     border-color: #1e40af;
 }
 
-.vhm-pagination .page-btn:disabled {
+.nzl-pagination .page-btn:disabled {
     opacity: 0.5;
     cursor: not-allowed;
 }
@@ -329,7 +329,7 @@
 /* ============================================
    Admin Modal / Sidebar
    ============================================ */
-.vhm-modal-overlay {
+.nzl-modal-overlay {
     position: fixed;
     inset: 0;
     background: rgba(0, 0, 0, 0.5);
@@ -340,7 +340,7 @@
 }
 
 /* Centered modal dialog */
-.vhm-modal {
+.nzl-modal {
     background: #fff;
     border-radius: 0.5rem;
     box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
@@ -351,7 +351,7 @@
     flex-direction: column;
 }
 
-.vhm-modal-header {
+.nzl-modal-header {
     display: flex;
     justify-content: space-between;
     align-items: center;
@@ -360,13 +360,13 @@
     flex-shrink: 0;
 }
 
-.vhm-modal-header h3 {
+.nzl-modal-header h3 {
     margin: 0;
     font-size: 1.15rem;
     font-weight: 600;
 }
 
-.vhm-modal-close {
+.nzl-modal-close {
     background: none;
     border: none;
     font-size: 1.5rem;
@@ -376,18 +376,18 @@
     line-height: 1;
 }
 
-.vhm-modal-close:hover {
+.nzl-modal-close:hover {
     color: #334155;
 }
 
-.vhm-modal-body {
+.nzl-modal-body {
     padding: 1.5rem;
     overflow-y: auto;
     flex: 1;
     min-height: 0;
 }
 
-.vhm-modal-footer {
+.nzl-modal-footer {
     display: flex;
     justify-content: flex-end;
     gap: 0.5rem;
@@ -397,27 +397,27 @@
 }
 
 /* Sidebar panel (slides in from right) */
-.vhm-sidebar-panel {
+.nzl-sidebar-panel {
     width: 480px;
     max-width: 100%;
     background: #fff;
     height: 100%;
     overflow-y: auto;
     box-shadow: -4px 0 15px rgba(0, 0, 0, 0.1);
-    animation: vhm-slide-in-right 0.2s ease-out;
+    animation: nzl-slide-in-right 0.2s ease-out;
 }
 
-.vhm-modal-overlay:has(.vhm-sidebar-panel) {
+.nzl-modal-overlay:has(.nzl-sidebar-panel) {
     justify-content: flex-end;
     align-items: stretch;
 }
 
-@keyframes vhm-slide-in-right {
+@keyframes nzl-slide-in-right {
     from { transform: translateX(100%); }
     to { transform: translateX(0); }
 }
 
-.vhm-sidebar-header {
+.nzl-sidebar-header {
     display: flex;
     justify-content: space-between;
     align-items: center;
@@ -429,14 +429,14 @@
     z-index: 1;
 }
 
-.vhm-sidebar-body {
+.nzl-sidebar-body {
     padding: 1.5rem;
 }
 
 /* ============================================
    Admin Loading
    ============================================ */
-.vhm-admin-loading {
+.nzl-admin-loading {
     display: flex;
     justify-content: center;
     align-items: center;
@@ -447,7 +447,7 @@
 /* ============================================
    Cards
    ============================================ */
-.vhm-card {
+.nzl-card {
     background: #fff;
     border: 1px solid #e2e8f0;
     border-radius: 0.5rem;
@@ -458,7 +458,7 @@
 /* ============================================
    Buttons
    ============================================ */
-.vhm-btn {
+.nzl-btn {
     display: inline-flex;
     align-items: center;
     gap: 0.375rem;
@@ -475,50 +475,50 @@
     white-space: nowrap;
 }
 
-.vhm-btn:hover {
+.nzl-btn:hover {
     background: #f8fafc;
     border-color: #cbd5e1;
 }
 
-.vhm-btn:disabled {
+.nzl-btn:disabled {
     opacity: 0.5;
     cursor: not-allowed;
 }
 
-.vhm-btn-primary {
+.nzl-btn-primary {
     background: #1e40af;
     color: #fff;
     border-color: #1e40af;
 }
 
-.vhm-btn-primary:hover {
+.nzl-btn-primary:hover {
     background: #1d4ed8;
     border-color: #1d4ed8;
 }
 
-.vhm-btn-success {
+.nzl-btn-success {
     background: #059669;
     color: #fff;
     border-color: #059669;
 }
 
-.vhm-btn-success:hover {
+.nzl-btn-success:hover {
     background: #059669;
     border-color: #04855e;
 }
 
-.vhm-btn-danger {
+.nzl-btn-danger {
     background: #dc2626;
     color: #fff;
     border-color: #dc2626;
 }
 
-.vhm-btn-danger:hover {
+.nzl-btn-danger:hover {
     background: #dc2626;
     border-color: #c42020;
 }
 
-.vhm-btn-sm {
+.nzl-btn-sm {
     padding: 0.3rem 0.625rem;
     font-size: 0.8rem;
 }
@@ -526,7 +526,7 @@
 /* ============================================
    Badges
    ============================================ */
-.vhm-badge {
+.nzl-badge {
     display: inline-block;
     padding: 0.15rem 0.5rem;
     font-size: 0.75rem;
@@ -537,22 +537,22 @@
     color: #475569;
 }
 
-.vhm-badge-confirmed {
+.nzl-badge-confirmed {
     background: #dcfce7;
     color: #166534;
 }
 
-.vhm-badge-pending {
+.nzl-badge-pending {
     background: #fef9c3;
     color: #854d0e;
 }
 
-.vhm-badge-cancelled {
+.nzl-badge-cancelled {
     background: #fee2e2;
     color: #991b1b;
 }
 
-.vhm-badge-checked_in {
+.nzl-badge-checked_in {
     background: #dbeafe;
     color: #1e40af;
 }
@@ -560,7 +560,7 @@
 /* ============================================
    Form Elements
    ============================================ */
-.vhm-label {
+.nzl-label {
     display: block;
     font-size: 0.85rem;
     font-weight: 500;
@@ -568,7 +568,7 @@
     color: #475569;
 }
 
-.vhm-input {
+.nzl-input {
     width: 100%;
     padding: 0.5rem 0.75rem;
     border: 1px solid #cbd5e1;
@@ -580,33 +580,33 @@
     color: #1e293b;
 }
 
-.vhm-input:focus {
+.nzl-input:focus {
     outline: none;
     border-color: #3b82f6;
     box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.1);
 }
 
-select.vhm-input {
+select.nzl-input {
     appearance: auto;
     background-image: none;
 }
 
-textarea.vhm-input {
+textarea.nzl-input {
     resize: vertical;
 }
 
-.vhm-form-grid {
+.nzl-form-grid {
     display: grid;
     grid-template-columns: 1fr 1fr;
     gap: 0.75rem;
 }
 
-.vhm-form-group {
+.nzl-form-group {
     display: flex;
     flex-direction: column;
 }
 
-.vhm-form-group label {
+.nzl-form-group label {
     display: block;
     font-size: 0.85rem;
     font-weight: 500;
@@ -614,7 +614,7 @@ textarea.vhm-input {
     color: #475569;
 }
 
-.vhm-form-row {
+.nzl-form-row {
     display: flex;
     gap: 0.75rem;
     align-items: flex-end;
@@ -623,13 +623,13 @@ textarea.vhm-input {
 /* ============================================
    Links
    ============================================ */
-.vhm-link {
+.nzl-link {
     color: #1e40af;
     text-decoration: none;
     font-weight: 500;
 }
 
-.vhm-link:hover {
+.nzl-link:hover {
     color: #1e3a8a;
     text-decoration: underline;
 }
@@ -637,30 +637,30 @@ textarea.vhm-input {
 /* ============================================
    Spinners
    ============================================ */
-.vhm-spinner {
+.nzl-spinner {
     display: inline-block;
     width: 1.25rem;
     height: 1.25rem;
     border: 2px solid #e2e8f0;
     border-top-color: #1e40af;
     border-radius: 50%;
-    animation: vhm-spin 0.6s linear infinite;
+    animation: nzl-spin 0.6s linear infinite;
 }
 
-.vhm-spinner-lg {
+.nzl-spinner-lg {
     width: 2rem;
     height: 2rem;
     border-width: 3px;
 }
 
-@keyframes vhm-spin {
+@keyframes nzl-spin {
     to { transform: rotate(360deg); }
 }
 
 /* ============================================
    Toast Notifications
    ============================================ */
-.vhm-toast-container {
+.nzl-toast-container {
     position: fixed;
     top: 2rem;
     right: 1rem;
@@ -671,7 +671,7 @@ textarea.vhm-input {
     max-width: 360px;
 }
 
-.vhm-toast {
+.nzl-toast {
     display: flex;
     align-items: center;
     justify-content: space-between;
@@ -681,26 +681,26 @@ textarea.vhm-input {
     background: #334155;
     color: #fff;
     box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
-    animation: vhm-toast-in 0.25s ease-out;
+    animation: nzl-toast-in 0.25s ease-out;
 }
 
-.vhm-toast-success {
+.nzl-toast-success {
     background: #059669;
 }
 
-.vhm-toast-error {
+.nzl-toast-error {
     background: #dc2626;
 }
 
-.vhm-toast-warning {
+.nzl-toast-warning {
     background: #d97706;
 }
 
-.vhm-toast-info {
+.nzl-toast-info {
     background: #2563eb;
 }
 
-.vhm-toast button {
+.nzl-toast button {
     background: none;
     border: none;
     color: inherit;
@@ -711,11 +711,11 @@ textarea.vhm-input {
     opacity: 0.8;
 }
 
-.vhm-toast button:hover {
+.nzl-toast button:hover {
     opacity: 1;
 }
 
-@keyframes vhm-toast-in {
+@keyframes nzl-toast-in {
     from { transform: translateX(100%); opacity: 0; }
     to { transform: translateX(0); opacity: 1; }
 }
@@ -723,7 +723,7 @@ textarea.vhm-input {
 /* ============================================
    Report Chart
    ============================================ */
-.vhm-report-chart {
+.nzl-report-chart {
     min-height: 300px;
     background: #f8fafc;
     border-radius: 0.5rem;
@@ -736,7 +736,7 @@ textarea.vhm-input {
 /* ============================================
    Booking Detail Grid
    ============================================ */
-.vhm-booking-detail-grid {
+.nzl-booking-detail-grid {
     display: grid;
     grid-template-columns: 1fr 1fr;
     gap: 1rem;
@@ -746,40 +746,40 @@ textarea.vhm-input {
    Responsive Admin  — Tablet (≤ 960px)
    ============================================ */
 @media (max-width: 960px) {
-    .vhm-admin-wrap {
+    .nzl-admin-wrap {
         margin: 10px;
     }
 
     /* Header: let buttons wrap below title */
-    .vhm-admin-header {
+    .nzl-admin-header {
         flex-wrap: wrap;
         gap: 0.75rem;
     }
 
     /* Stats: 2-column on tablets */
-    .vhm-stats-grid {
+    .nzl-stats-grid {
         grid-template-columns: repeat(2, 1fr);
     }
 
     /* Sidebar panel: narrower */
-    .vhm-sidebar-panel {
+    .nzl-sidebar-panel {
         width: 100%;
     }
 
     /* Tables: smaller padding */
-    .vhm-table th,
-    .vhm-table td {
+    .nzl-table th,
+    .nzl-table td {
         padding: 0.5rem 0.75rem;
         font-size: 0.813rem;
     }
 
     /* Calendar table: let it scroll */
-    .vhm-calendar-table {
+    .nzl-calendar-table {
         table-layout: auto;
     }
 
     /* Filters: let items wrap */
-    .vhm-filters {
+    .nzl-filters {
         flex-direction: column;
     }
 }
@@ -788,179 +788,179 @@ textarea.vhm-input {
    Responsive Admin  — Mobile (≤ 600px)
    ============================================ */
 @media (max-width: 600px) {
-    .vhm-admin-wrap {
+    .nzl-admin-wrap {
         margin: 6px;
     }
 
-    .vhm-admin-header {
+    .nzl-admin-header {
         flex-direction: column;
         align-items: stretch;
         gap: 0.5rem;
     }
 
-    .vhm-admin-header h1 {
+    .nzl-admin-header h1 {
         font-size: 1.25rem;
     }
 
     /* Stats: single column on phones */
-    .vhm-stats-grid {
+    .nzl-stats-grid {
         grid-template-columns: 1fr;
     }
 
-    .vhm-stat-card {
+    .nzl-stat-card {
         padding: 1rem;
     }
 
-    .vhm-stat-card .stat-value {
+    .nzl-stat-card .stat-value {
         font-size: 1.25rem;
     }
 
     /* Tables: even tighter */
-    .vhm-table th,
-    .vhm-table td {
+    .nzl-table th,
+    .nzl-table td {
         padding: 0.375rem 0.5rem;
         font-size: 0.75rem;
     }
 
-    .vhm-table th {
+    .nzl-table th {
         letter-spacing: 0;
         text-transform: none;
     }
 
     /* Buttons inside tables */
-    .vhm-table .vhm-btn-sm {
+    .nzl-table .nzl-btn-sm {
         padding: 0.25rem 0.5rem;
         font-size: 0.7rem;
     }
 
     /* Tabs: scrollable horizontal */
-    .vhm-tabs {
+    .nzl-tabs {
         overflow-x: auto;
         -webkit-overflow-scrolling: touch;
         white-space: nowrap;
         gap: 0;
     }
 
-    .vhm-tab {
+    .nzl-tab {
         padding: 0.5rem 0.75rem;
         font-size: 0.813rem;
         flex-shrink: 0;
     }
 
     /* Pagination: stack info above buttons */
-    .vhm-pagination {
+    .nzl-pagination {
         flex-direction: column;
         gap: 0.5rem;
         align-items: center;
     }
 
     /* Modals: full-width */
-    .vhm-modal {
+    .nzl-modal {
         width: 100% !important;
         max-width: 100% !important;
         border-radius: 0;
         max-height: 100vh;
     }
 
-    .vhm-modal-overlay {
+    .nzl-modal-overlay {
         align-items: flex-end;
     }
 
-    .vhm-modal-body {
+    .nzl-modal-body {
         padding: 1rem;
     }
 
-    .vhm-modal-header,
-    .vhm-modal-footer {
+    .nzl-modal-header,
+    .nzl-modal-footer {
         padding: 0.75rem 1rem;
     }
 
     /* Form grids: single column on mobile */
-    .vhm-form-grid {
+    .nzl-form-grid {
         grid-template-columns: 1fr !important;
     }
 
-    .vhm-form-grid > * {
+    .nzl-form-grid > * {
         grid-column: span 1 !important;
     }
 
     /* Calendar: tighter cells */
-    .vhm-calendar-room-col {
+    .nzl-calendar-room-col {
         min-width: 80px;
         max-width: 100px;
         font-size: 0.7rem;
         padding: 0.375rem 0.5rem;
     }
 
-    .vhm-calendar-date-col {
+    .nzl-calendar-date-col {
         min-width: 36px;
         font-size: 0.65rem;
         padding: 0.25rem;
     }
 
-    .vhm-calendar-cell {
+    .nzl-calendar-cell {
         min-height: 1.5rem;
     }
 
     /* Channel cards */
-    .vhm-card {
+    .nzl-card {
         padding: 1rem;
     }
 
     /* Sidebar */
-    .vhm-sidebar-header {
+    .nzl-sidebar-header {
         padding: 0.75rem 1rem;
     }
 
-    .vhm-sidebar-body {
+    .nzl-sidebar-body {
         padding: 1rem;
     }
 
     /* Reports min-height */
-    .vhm-report-chart {
+    .nzl-report-chart {
         min-height: 200px !important;
     }
 
     /* Filters: full width inputs */
-    .vhm-filters .vhm-filter-group {
+    .nzl-filters .nzl-filter-group {
         width: 100%;
     }
 
-    .vhm-filters .vhm-filter-group select,
-    .vhm-filters .vhm-filter-group input {
+    .nzl-filters .nzl-filter-group select,
+    .nzl-filters .nzl-filter-group input {
         width: 100%;
     }
 
     /* Form rows: stack vertically */
-    .vhm-form-row {
+    .nzl-form-row {
         flex-direction: column;
         align-items: stretch;
     }
 
     /* Toast: full width on mobile */
-    .vhm-toast-container {
+    .nzl-toast-container {
         right: 0.5rem;
         left: 0.5rem;
         max-width: none;
     }
 
     /* Modal footer: stack buttons */
-    .vhm-modal-footer {
+    .nzl-modal-footer {
         flex-direction: column-reverse;
     }
 
-    .vhm-modal-footer .vhm-btn {
+    .nzl-modal-footer .nzl-btn {
         width: 100%;
         justify-content: center;
     }
 
     /* Booking detail grid */
-    .vhm-booking-detail-grid {
+    .nzl-booking-detail-grid {
         grid-template-columns: 1fr !important;
     }
 
     /* Badges: slightly smaller */
-    .vhm-badge {
+    .nzl-badge {
         font-size: 0.688rem;
         padding: 0.1rem 0.375rem;
     }
@@ -970,26 +970,26 @@ textarea.vhm-input {
    Responsive Admin  — Small phones (≤ 400px)
    ============================================ */
 @media (max-width: 400px) {
-    .vhm-admin-header h1 {
+    .nzl-admin-header h1 {
         font-size: 1.1rem;
     }
 
-    .vhm-btn {
+    .nzl-btn {
         padding: 0.375rem 0.625rem;
         font-size: 0.75rem;
     }
 
-    .vhm-table th,
-    .vhm-table td {
+    .nzl-table th,
+    .nzl-table td {
         padding: 0.25rem 0.375rem;
         font-size: 0.688rem;
     }
 
-    .vhm-stat-card .stat-label {
+    .nzl-stat-card .stat-label {
         font-size: 0.688rem;
     }
 
-    .vhm-stat-card .stat-value {
+    .nzl-stat-card .stat-value {
         font-size: 1.1rem;
     }
 }

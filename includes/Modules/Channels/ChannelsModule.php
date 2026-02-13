@@ -1,16 +1,16 @@
 <?php
 
-namespace Venezia\Modules\Channels;
+namespace Nozule\Modules\Channels;
 
-use Venezia\Core\BaseModule;
-use Venezia\Core\Container;
-use Venezia\Core\Database;
-use Venezia\Core\EventDispatcher;
-use Venezia\Core\Logger;
-use Venezia\Modules\Channels\Controllers\ChannelController;
-use Venezia\Modules\Channels\Repositories\ChannelMappingRepository;
-use Venezia\Modules\Channels\Services\ChannelService;
-use Venezia\Modules\Channels\Validators\ChannelMappingValidator;
+use Nozule\Core\BaseModule;
+use Nozule\Core\Container;
+use Nozule\Core\Database;
+use Nozule\Core\EventDispatcher;
+use Nozule\Core\Logger;
+use Nozule\Modules\Channels\Controllers\ChannelController;
+use Nozule\Modules\Channels\Repositories\ChannelMappingRepository;
+use Nozule\Modules\Channels\Services\ChannelService;
+use Nozule\Modules\Channels\Validators\ChannelMappingValidator;
 
 /**
  * Channels module bootstrap.
@@ -91,7 +91,7 @@ class ChannelsModule extends BaseModule {
 
         // Schedule periodic channel sync via WP-Cron.
         add_action( 'init', [ $this, 'scheduleCronEvents' ] );
-        add_action( 'vhm_channel_sync', [ $this, 'runScheduledSync' ] );
+        add_action( 'nzl_channel_sync', [ $this, 'runScheduledSync' ] );
 
         // Listen for inventory changes to trigger real-time channel updates.
         $events = $this->container->get( EventDispatcher::class );
@@ -113,8 +113,8 @@ class ChannelsModule extends BaseModule {
      * Schedule the recurring channel sync cron event.
      */
     public function scheduleCronEvents(): void {
-        if ( ! wp_next_scheduled( 'vhm_channel_sync' ) ) {
-            wp_schedule_event( time(), 'hourly', 'vhm_channel_sync' );
+        if ( ! wp_next_scheduled( 'nzl_channel_sync' ) ) {
+            wp_schedule_event( time(), 'hourly', 'nzl_channel_sync' );
         }
     }
 

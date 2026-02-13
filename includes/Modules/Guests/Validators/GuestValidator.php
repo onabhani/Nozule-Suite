@@ -1,9 +1,9 @@
 <?php
 
-namespace Venezia\Modules\Guests\Validators;
+namespace Nozule\Modules\Guests\Validators;
 
-use Venezia\Core\BaseValidator;
-use Venezia\Modules\Guests\Repositories\GuestRepository;
+use Nozule\Core\BaseValidator;
+use Nozule\Modules\Guests\Repositories\GuestRepository;
 
 /**
  * Validator for guest profile data.
@@ -45,7 +45,7 @@ class GuestValidator extends BaseValidator {
         if ( isset( $data['email'] ) ) {
             $existing = $this->repository->findByEmail( $data['email'] );
             if ( $existing && $existing->id !== $guest_id ) {
-                $this->errors['email'][] = __( 'A guest with this email address already exists.', 'venezia-hotel' );
+                $this->errors['email'][] = __( 'A guest with this email address already exists.', 'nozule' );
                 $valid = false;
             }
         }
@@ -124,7 +124,7 @@ class GuestValidator extends BaseValidator {
         $existing = $this->repository->findByEmail( $value );
 
         if ( $existing ) {
-            return __( 'A guest with this email address already exists.', 'venezia-hotel' );
+            return __( 'A guest with this email address already exists.', 'nozule' );
         }
 
         return null;

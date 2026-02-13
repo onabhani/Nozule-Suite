@@ -1,6 +1,6 @@
 <?php
 
-namespace Venezia\Core;
+namespace Nozule\Core;
 
 /**
  * Plugin deactivation handler.
@@ -12,9 +12,9 @@ class Deactivator {
      */
     public static function deactivate(): void {
         // Clear scheduled events
-        wp_clear_scheduled_hook( 'vhm_daily_maintenance' );
-        wp_clear_scheduled_hook( 'vhm_send_reminders' );
-        wp_clear_scheduled_hook( 'vhm_sync_channels' );
+        wp_clear_scheduled_hook( 'nzl_daily_maintenance' );
+        wp_clear_scheduled_hook( 'nzl_send_reminders' );
+        wp_clear_scheduled_hook( 'nzl_sync_channels' );
 
         // Flush rewrite rules
         flush_rewrite_rules();

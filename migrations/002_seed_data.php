@@ -7,10 +7,10 @@ if ( ! defined( 'ABSPATH' ) ) {
     exit;
 }
 
-function vhm_migration_002_seed_data(): void {
+function nzl_migration_002_seed_data(): void {
     global $wpdb;
 
-    $table = $wpdb->prefix . 'vhm_settings';
+    $table = $wpdb->prefix . 'nzl_settings';
 
     // Check if settings already exist
     $existing = $wpdb->get_var( "SELECT COUNT(*) FROM {$table}" );
@@ -20,8 +20,8 @@ function vhm_migration_002_seed_data(): void {
 
     $settings = [
         // General
-        [ 'general', 'hotel_name', 'Venezia Hotel' ],
-        [ 'general', 'hotel_name_ar', 'فندق فينيسيا' ],
+        [ 'general', 'hotel_name', 'Nozule Hotel' ],
+        [ 'general', 'hotel_name_ar', 'نوزول' ],
         [ 'general', 'hotel_email', get_option( 'admin_email', '' ) ],
         [ 'general', 'hotel_phone', '' ],
         [ 'general', 'hotel_address', '' ],
@@ -38,7 +38,7 @@ function vhm_migration_002_seed_data(): void {
 
         // Booking
         [ 'bookings', 'require_approval', '0' ],
-        [ 'bookings', 'number_prefix', 'VHM' ],
+        [ 'bookings', 'number_prefix', 'NZL' ],
         [ 'bookings', 'min_advance_days', '0' ],
         [ 'bookings', 'max_advance_days', '365' ],
         [ 'bookings', 'default_check_in_time', '14:00' ],

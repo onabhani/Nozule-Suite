@@ -1,8 +1,8 @@
 <?php
 
-namespace Venezia\Modules\Rooms\Models;
+namespace Nozule\Modules\Rooms\Models;
 
-use Venezia\Core\BaseModel;
+use Nozule\Core\BaseModel;
 
 /**
  * Room Inventory model.

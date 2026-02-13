@@ -1,8 +1,8 @@
 <?php
 
-namespace Venezia\Modules\Notifications\Services;
+namespace Nozule\Modules\Notifications\Services;
 
-use Venezia\Core\SettingsManager;
+use Nozule\Core\SettingsManager;
 
 /**
  * Service for rendering notification templates with variable substitution.
@@ -140,7 +140,7 @@ class TemplateService {
 		 * @param string $template_id The template identifier.
 		 * @param array  $vars        The template variables.
 		 */
-		$rendered = apply_filters( 'venezia/notifications/template_rendered', [
+		$rendered = apply_filters( 'nozule/notifications/template_rendered', [
 			'subject'   => $subject,
 			'body'      => $body,
 			'body_html' => $body_html,
@@ -175,7 +175,7 @@ class TemplateService {
 		 *
 		 * @param array $templates Array of templates keyed by type.
 		 */
-		return apply_filters( 'venezia/notifications/available_templates', $templates );
+		return apply_filters( 'nozule/notifications/available_templates', $templates );
 	}
 
 	/**
@@ -185,35 +185,35 @@ class TemplateService {
 	 */
 	public function getAvailableVariables(): array {
 		return [
-			'{guest_name}'        => __( 'Full name of the guest', 'venezia-hotel' ),
-			'{guest_first_name}'  => __( 'First name of the guest', 'venezia-hotel' ),
-			'{guest_last_name}'   => __( 'Last name of the guest', 'venezia-hotel' ),
-			'{guest_email}'       => __( 'Email address of the guest', 'venezia-hotel' ),
-			'{guest_phone}'       => __( 'Phone number of the guest', 'venezia-hotel' ),
-			'{booking_number}'    => __( 'Unique booking reference number', 'venezia-hotel' ),
-			'{check_in}'          => __( 'Check-in date', 'venezia-hotel' ),
-			'{check_out}'         => __( 'Check-out date', 'venezia-hotel' ),
-			'{nights}'            => __( 'Number of nights', 'venezia-hotel' ),
-			'{adults}'            => __( 'Number of adults', 'venezia-hotel' ),
-			'{children}'          => __( 'Number of children', 'venezia-hotel' ),
-			'{room_type}'         => __( 'Room type name', 'venezia-hotel' ),
-			'{room_number}'       => __( 'Assigned room number', 'venezia-hotel' ),
-			'{rate_plan}'         => __( 'Rate plan name', 'venezia-hotel' ),
-			'{total_price}'       => __( 'Total booking price', 'venezia-hotel' ),
-			'{currency}'          => __( 'Currency code', 'venezia-hotel' ),
-			'{amount_paid}'       => __( 'Amount already paid', 'venezia-hotel' ),
-			'{balance_due}'       => __( 'Remaining balance', 'venezia-hotel' ),
-			'{hotel_name}'        => __( 'Hotel name', 'venezia-hotel' ),
-			'{hotel_email}'       => __( 'Hotel email address', 'venezia-hotel' ),
-			'{hotel_phone}'       => __( 'Hotel phone number', 'venezia-hotel' ),
-			'{hotel_address}'     => __( 'Hotel address', 'venezia-hotel' ),
-			'{booking_status}'    => __( 'Current booking status', 'venezia-hotel' ),
-			'{payment_status}'    => __( 'Current payment status', 'venezia-hotel' ),
-			'{special_requests}'  => __( 'Guest special requests', 'venezia-hotel' ),
-			'{confirmation_url}'  => __( 'Booking confirmation URL', 'venezia-hotel' ),
-			'{cancellation_url}'  => __( 'Booking cancellation URL', 'venezia-hotel' ),
-			'{current_date}'      => __( 'Current date', 'venezia-hotel' ),
-			'{current_year}'      => __( 'Current year', 'venezia-hotel' ),
+			'{guest_name}'        => __( 'Full name of the guest', 'nozule' ),
+			'{guest_first_name}'  => __( 'First name of the guest', 'nozule' ),
+			'{guest_last_name}'   => __( 'Last name of the guest', 'nozule' ),
+			'{guest_email}'       => __( 'Email address of the guest', 'nozule' ),
+			'{guest_phone}'       => __( 'Phone number of the guest', 'nozule' ),
+			'{booking_number}'    => __( 'Unique booking reference number', 'nozule' ),
+			'{check_in}'          => __( 'Check-in date', 'nozule' ),
+			'{check_out}'         => __( 'Check-out date', 'nozule' ),
+			'{nights}'            => __( 'Number of nights', 'nozule' ),
+			'{adults}'            => __( 'Number of adults', 'nozule' ),
+			'{children}'          => __( 'Number of children', 'nozule' ),
+			'{room_type}'         => __( 'Room type name', 'nozule' ),
+			'{room_number}'       => __( 'Assigned room number', 'nozule' ),
+			'{rate_plan}'         => __( 'Rate plan name', 'nozule' ),
+			'{total_price}'       => __( 'Total booking price', 'nozule' ),
+			'{currency}'          => __( 'Currency code', 'nozule' ),
+			'{amount_paid}'       => __( 'Amount already paid', 'nozule' ),
+			'{balance_due}'       => __( 'Remaining balance', 'nozule' ),
+			'{hotel_name}'        => __( 'Hotel name', 'nozule' ),
+			'{hotel_email}'       => __( 'Hotel email address', 'nozule' ),
+			'{hotel_phone}'       => __( 'Hotel phone number', 'nozule' ),
+			'{hotel_address}'     => __( 'Hotel address', 'nozule' ),
+			'{booking_status}'    => __( 'Current booking status', 'nozule' ),
+			'{payment_status}'    => __( 'Current payment status', 'nozule' ),
+			'{special_requests}'  => __( 'Guest special requests', 'nozule' ),
+			'{confirmation_url}'  => __( 'Booking confirmation URL', 'nozule' ),
+			'{cancellation_url}'  => __( 'Booking cancellation URL', 'nozule' ),
+			'{current_date}'      => __( 'Current date', 'nozule' ),
+			'{current_year}'      => __( 'Current year', 'nozule' ),
 		];
 	}
 

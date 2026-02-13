@@ -1,6 +1,6 @@
 <?php
 
-namespace Venezia\Modules\Bookings\Exceptions;
+namespace Nozule\Modules\Bookings\Exceptions;
 
 /**
  * Thrown when a booking cannot be created due to insufficient room availability.

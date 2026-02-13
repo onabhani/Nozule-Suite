@@ -1,9 +1,9 @@
 <?php
 
-namespace Venezia\Modules\Bookings\Controllers;
+namespace Nozule\Modules\Bookings\Controllers;
 
-use Venezia\Modules\Bookings\Models\Booking;
-use Venezia\Modules\Bookings\Repositories\BookingRepository;
+use Nozule\Modules\Bookings\Models\Booking;
+use Nozule\Modules\Bookings\Repositories\BookingRepository;
 
 /**
  * REST controller for the calendar/timeline view.
@@ -11,13 +11,13 @@ use Venezia\Modules\Bookings\Repositories\BookingRepository;
  * Provides booking data for visual calendar rendering, returning
  * bookings that overlap with the requested date range.
  *
- * Route namespace: venezia/v1
+ * Route namespace: nozule/v1
  */
 class CalendarController {
 
 	private BookingRepository $bookingRepository;
 
-	private const NAMESPACE = 'venezia/v1';
+	private const NAMESPACE = 'nozule/v1';
 
 	public function __construct( BookingRepository $bookingRepository ) {
 		$this->bookingRepository = $bookingRepository;
@@ -36,13 +36,13 @@ class CalendarController {
 				'start' => [
 					'required'          => true,
 					'type'              => 'string',
-					'description'       => __( 'Start date (Y-m-d).', 'venezia-hotel' ),
+					'description'       => __( 'Start date (Y-m-d).', 'nozule' ),
 					'sanitize_callback' => 'sanitize_text_field',
 				],
 				'end' => [
 					'required'          => true,
 					'type'              => 'string',
-					'description'       => __( 'End date (Y-m-d).', 'venezia-hotel' ),
+					'description'       => __( 'End date (Y-m-d).', 'nozule' ),
 					'sanitize_callback' => 'sanitize_text_field',
 				],
 			],
@@ -70,14 +70,14 @@ class CalendarController {
 		if ( ! strtotime( $start ) || ! strtotime( $end ) ) {
 			return new \WP_REST_Response( [
 				'success' => false,
-				'message' => __( 'Invalid date format. Use Y-m-d.', 'venezia-hotel' ),
+				'message' => __( 'Invalid date format. Use Y-m-d.', 'nozule' ),
 			], 400 );
 		}
 
 		if ( strtotime( $end ) < strtotime( $start ) ) {
 			return new \WP_REST_Response( [
 				'success' => false,
-				'message' => __( 'End date must be after start date.', 'venezia-hotel' ),
+				'message' => __( 'End date must be after start date.', 'nozule' ),
 			], 400 );
 		}
 

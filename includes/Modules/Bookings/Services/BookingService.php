@@ -1,20 +1,20 @@
 <?php
 
-namespace Venezia\Modules\Bookings\Services;
+namespace Nozule\Modules\Bookings\Services;
 
-use Venezia\Core\SettingsManager;
-use Venezia\Modules\Bookings\Exceptions\InvalidStateException;
-use Venezia\Modules\Bookings\Exceptions\NoAvailabilityException;
-use Venezia\Modules\Bookings\Models\Booking;
-use Venezia\Modules\Bookings\Models\BookingLog;
-use Venezia\Modules\Bookings\Models\Payment;
-use Venezia\Modules\Bookings\Repositories\BookingRepository;
-use Venezia\Modules\Bookings\Repositories\PaymentRepository;
-use Venezia\Modules\Bookings\Validators\BookingValidator;
-use Venezia\Modules\Guests\Services\GuestService;
-use Venezia\Modules\Rooms\Services\AvailabilityService;
-use Venezia\Modules\Pricing\Services\PricingService;
-use Venezia\Modules\Notifications\Services\NotificationService;
+use Nozule\Core\SettingsManager;
+use Nozule\Modules\Bookings\Exceptions\InvalidStateException;
+use Nozule\Modules\Bookings\Exceptions\NoAvailabilityException;
+use Nozule\Modules\Bookings\Models\Booking;
+use Nozule\Modules\Bookings\Models\BookingLog;
+use Nozule\Modules\Bookings\Models\Payment;
+use Nozule\Modules\Bookings\Repositories\BookingRepository;
+use Nozule\Modules\Bookings\Repositories\PaymentRepository;
+use Nozule\Modules\Bookings\Validators\BookingValidator;
+use Nozule\Modules\Guests\Services\GuestService;
+use Nozule\Modules\Rooms\Services\AvailabilityService;
+use Nozule\Modules\Pricing\Services\PricingService;
+use Nozule\Modules\Notifications\Services\NotificationService;
 
 /**
  * Central booking business-logic service.
@@ -86,7 +86,7 @@ class BookingService {
 
 		if ( ! $this->availabilityService->isAvailable( $roomTypeId, $checkIn, $checkOut ) ) {
 			throw new NoAvailabilityException(
-				__( 'No rooms available for the selected room type and dates.', 'venezia-hotel' )
+				__( 'No rooms available for the selected room type and dates.', 'nozule' )
 			);
 		}
 
@@ -134,7 +134,7 @@ class BookingService {
 			] );
 
 			if ( ! $booking ) {
-				throw new \RuntimeException( __( 'Failed to create booking record.', 'venezia-hotel' ) );
+				throw new \RuntimeException( __( 'Failed to create booking record.', 'nozule' ) );
 			}
 
 			// Increment guest booking count.
@@ -172,7 +172,7 @@ class BookingService {
 		 * @param Booking $booking The new booking.
 		 * @param array   $data    Original input data.
 		 */
-		do_action( 'venezia/booking/created', $booking, $data );
+		do_action( 'nozule/booking/created', $booking, $data );
 
 		return $booking;
 	}
@@ -190,7 +190,7 @@ class BookingService {
 		if ( ! $booking->isPending() ) {
 			throw new InvalidStateException(
 				sprintf(
-					__( 'Cannot confirm booking %s: current status is "%s".', 'venezia-hotel' ),
+					__( 'Cannot confirm booking %s: current status is "%s".', 'nozule' ),
 					$booking->booking_number,
 					$booking->status
 				)
@@ -207,7 +207,7 @@ class BookingService {
 		$this->bookingRepository->createLog( [
 			'booking_id' => $bookingId,
 			'action'     => BookingLog::ACTION_CONFIRMED,
-			'details'    => __( 'Booking confirmed.', 'venezia-hotel' ),
+			'details'    => __( 'Booking confirmed.', 'nozule' ),
 			'user_id'    => $userId ?: null,
 			'ip_address' => self::getClientIP(),
 		] );
@@ -218,7 +218,7 @@ class BookingService {
 			'guest_id'       => $booking->guest_id,
 		] );
 
-		do_action( 'venezia/booking/confirmed', $bookingId );
+		do_action( 'nozule/booking/confirmed', $bookingId );
 
 		return $this->bookingRepository->findOrFail( $bookingId );
 	}
@@ -239,7 +239,7 @@ class BookingService {
 		if ( ! $booking->isCancellable() ) {
 			throw new InvalidStateException(
 				sprintf(
-					__( 'Cannot cancel booking %s: current status is "%s".', 'venezia-hotel' ),
+					__( 'Cannot cancel booking %s: current status is "%s".', 'nozule' ),
 					$booking->booking_number,
 					$booking->status
 				)
@@ -268,7 +268,7 @@ class BookingService {
 			$this->bookingRepository->createLog( [
 				'booking_id' => $bookingId,
 				'action'     => BookingLog::ACTION_CANCELLED,
-				'details'    => $reason ?: __( 'Booking cancelled.', 'venezia-hotel' ),
+				'details'    => $reason ?: __( 'Booking cancelled.', 'nozule' ),
 				'user_id'    => $userId ?: null,
 				'ip_address' => self::getClientIP(),
 			] );
@@ -286,7 +286,7 @@ class BookingService {
 			'reason'         => $reason,
 		] );
 
-		do_action( 'venezia/booking/cancelled', $bookingId, $reason );
+		do_action( 'nozule/booking/cancelled', $bookingId, $reason );
 
 		return $this->bookingRepository->findOrFail( $bookingId );
 	}
@@ -304,7 +304,7 @@ class BookingService {
 		if ( ! $booking->isConfirmed() ) {
 			throw new InvalidStateException(
 				sprintf(
-					__( 'Cannot check in booking %s: current status is "%s".', 'venezia-hotel' ),
+					__( 'Cannot check in booking %s: current status is "%s".', 'nozule' ),
 					$booking->booking_number,
 					$booking->status
 				)
@@ -322,9 +322,9 @@ class BookingService {
 
 		$this->bookingRepository->update( $bookingId, $updateData );
 
-		$details = __( 'Guest checked in.', 'venezia-hotel' );
+		$details = __( 'Guest checked in.', 'nozule' );
 		if ( $roomId !== null ) {
-			$details .= ' ' . sprintf( __( 'Assigned to room ID %d.', 'venezia-hotel' ), $roomId );
+			$details .= ' ' . sprintf( __( 'Assigned to room ID %d.', 'nozule' ), $roomId );
 		}
 
 		$this->bookingRepository->createLog( [
@@ -341,7 +341,7 @@ class BookingService {
 			'guest_id'       => $booking->guest_id,
 		] );
 
-		do_action( 'venezia/booking/checked_in', $bookingId, $roomId );
+		do_action( 'nozule/booking/checked_in', $bookingId, $roomId );
 
 		return $this->bookingRepository->findOrFail( $bookingId );
 	}
@@ -358,7 +358,7 @@ class BookingService {
 		if ( ! $booking->isCheckedIn() ) {
 			throw new InvalidStateException(
 				sprintf(
-					__( 'Cannot check out booking %s: current status is "%s".', 'venezia-hotel' ),
+					__( 'Cannot check out booking %s: current status is "%s".', 'nozule' ),
 					$booking->booking_number,
 					$booking->status
 				)
@@ -380,7 +380,7 @@ class BookingService {
 		$this->bookingRepository->createLog( [
 			'booking_id' => $bookingId,
 			'action'     => BookingLog::ACTION_CHECKED_OUT,
-			'details'    => __( 'Guest checked out.', 'venezia-hotel' ),
+			'details'    => __( 'Guest checked out.', 'nozule' ),
 			'user_id'    => get_current_user_id() ?: null,
 			'ip_address' => self::getClientIP(),
 		] );
@@ -391,7 +391,7 @@ class BookingService {
 			'guest_id'       => $booking->guest_id,
 		] );
 
-		do_action( 'venezia/booking/checked_out', $bookingId );
+		do_action( 'nozule/booking/checked_out', $bookingId );
 
 		return $this->bookingRepository->findOrFail( $bookingId );
 	}
@@ -456,7 +456,7 @@ class BookingService {
 				$this->bookingRepository->createLog( [
 					'booking_id' => $booking->id,
 					'action'     => BookingLog::ACTION_NO_SHOW,
-					'details'    => __( 'Automatically marked as no-show by system.', 'venezia-hotel' ),
+					'details'    => __( 'Automatically marked as no-show by system.', 'nozule' ),
 					'user_id'    => null,
 					'ip_address' => null,
 				] );
@@ -469,13 +469,13 @@ class BookingService {
 					'guest_id'       => $booking->guest_id,
 				] );
 
-				do_action( 'venezia/booking/no_show', $booking->id );
+				do_action( 'nozule/booking/no_show', $booking->id );
 
 				$count++;
 			} catch ( \Throwable $e ) {
 				$this->bookingRepository->rollback();
 				// Log and continue with next booking.
-				do_action( 'venezia/log', 'error', 'Failed to mark no-show for booking ' . $booking->id, [
+				do_action( 'nozule/log', 'error', 'Failed to mark no-show for booking ' . $booking->id, [
 					'error' => $e->getMessage(),
 				] );
 			}
@@ -518,7 +518,7 @@ class BookingService {
 		] );
 
 		if ( ! $payment ) {
-			throw new \RuntimeException( __( 'Failed to record payment.', 'venezia-hotel' ) );
+			throw new \RuntimeException( __( 'Failed to record payment.', 'nozule' ) );
 		}
 
 		// Recalculate total paid and update booking.
@@ -542,7 +542,7 @@ class BookingService {
 			'ip_address' => self::getClientIP(),
 		] );
 
-		do_action( 'venezia/booking/payment_added', $bookingId, $payment );
+		do_action( 'nozule/booking/payment_added', $bookingId, $payment );
 
 		return $payment;
 	}
@@ -553,7 +553,7 @@ class BookingService {
 	 * Generate a unique booking number in the format PREFIX-YYYY-NNNNN.
 	 */
 	public function generateBookingNumber(): string {
-		$prefix   = $this->settings->get( 'bookings.number_prefix', 'VHM' );
+		$prefix   = $this->settings->get( 'bookings.number_prefix', 'NZL' );
 		$year     = (int) current_time( 'Y' );
 		$sequence = $this->bookingRepository->getNextSequence( $prefix, $year );
 

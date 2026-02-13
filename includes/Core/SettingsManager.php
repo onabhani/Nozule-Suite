@@ -1,6 +1,6 @@
 <?php
 
-namespace Venezia\Core;
+namespace Nozule\Core;
 
 /**
  * Settings Manager for plugin configuration.

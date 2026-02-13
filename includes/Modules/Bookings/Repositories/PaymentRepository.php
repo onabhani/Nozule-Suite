@@ -1,10 +1,10 @@
 <?php
 
-namespace Venezia\Modules\Bookings\Repositories;
+namespace Nozule\Modules\Bookings\Repositories;
 
-use Venezia\Core\BaseRepository;
-use Venezia\Core\Database;
-use Venezia\Modules\Bookings\Models\Payment;
+use Nozule\Core\BaseRepository;
+use Nozule\Core\Database;
+use Nozule\Modules\Bookings\Models\Payment;
 
 /**
  * Repository for payment database operations.

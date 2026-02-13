@@ -1,8 +1,8 @@
 <?php
 
-namespace Venezia\Modules\Pricing\Validators;
+namespace Nozule\Modules\Pricing\Validators;
 
-use Venezia\Core\BaseValidator;
+use Nozule\Core\BaseValidator;
 
 /**
  * Validator for seasonal rate create and update operations.
@@ -160,7 +160,7 @@ class SeasonalRateValidator extends BaseValidator {
 		if ( $startDate && $endDate && $startDate > $endDate ) {
 			$this->errors['end_date'][] = __(
 				'The end date must be on or after the start date.',
-				'venezia-hotel'
+				'nozule'
 			);
 		}
 	}
@@ -186,7 +186,7 @@ class SeasonalRateValidator extends BaseValidator {
 		if ( ! is_array( $daysOfWeek ) ) {
 			$this->errors['days_of_week'][] = __(
 				'Days of week must be an array of day numbers.',
-				'venezia-hotel'
+				'nozule'
 			);
 			return;
 		}
@@ -195,7 +195,7 @@ class SeasonalRateValidator extends BaseValidator {
 			if ( ! is_int( $day ) && ! ctype_digit( (string) $day ) ) {
 				$this->errors['days_of_week'][] = __(
 					'Each day must be an integer.',
-					'venezia-hotel'
+					'nozule'
 				);
 				return;
 			}
@@ -204,7 +204,7 @@ class SeasonalRateValidator extends BaseValidator {
 			if ( $dayInt < 1 || $dayInt > 7 ) {
 				$this->errors['days_of_week'][] = sprintf(
 					/* translators: %d: invalid day number */
-					__( 'Invalid day number %d. Must be between 1 (Monday) and 7 (Sunday).', 'venezia-hotel' ),
+					__( 'Invalid day number %d. Must be between 1 (Monday) and 7 (Sunday).', 'nozule' ),
 					$dayInt
 				);
 				return;

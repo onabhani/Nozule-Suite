@@ -1,10 +1,10 @@
 <?php
 
-namespace Venezia\Modules\Pricing\Repositories;
+namespace Nozule\Modules\Pricing\Repositories;
 
-use Venezia\Core\BaseRepository;
-use Venezia\Core\Database;
-use Venezia\Modules\Pricing\Models\RatePlan;
+use Nozule\Core\BaseRepository;
+use Nozule\Core\Database;
+use Nozule\Modules\Pricing\Models\RatePlan;
 
 /**
  * Repository for rate plan CRUD and querying.

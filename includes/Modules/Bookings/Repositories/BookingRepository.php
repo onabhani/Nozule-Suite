@@ -1,11 +1,11 @@
 <?php
 
-namespace Venezia\Modules\Bookings\Repositories;
+namespace Nozule\Modules\Bookings\Repositories;
 
-use Venezia\Core\BaseRepository;
-use Venezia\Core\Database;
-use Venezia\Modules\Bookings\Models\Booking;
-use Venezia\Modules\Bookings\Models\BookingLog;
+use Nozule\Core\BaseRepository;
+use Nozule\Core\Database;
+use Nozule\Modules\Bookings\Models\Booking;
+use Nozule\Modules\Bookings\Models\BookingLog;
 
 /**
  * Repository for booking database operations.

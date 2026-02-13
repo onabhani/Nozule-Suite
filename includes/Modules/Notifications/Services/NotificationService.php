@@ -1,12 +1,12 @@
 <?php
 
-namespace Venezia\Modules\Notifications\Services;
+namespace Nozule\Modules\Notifications\Services;
 
-use Venezia\Core\Database;
-use Venezia\Core\Logger;
-use Venezia\Core\SettingsManager;
-use Venezia\Modules\Notifications\Models\Notification;
-use Venezia\Modules\Notifications\Repositories\NotificationRepository;
+use Nozule\Core\Database;
+use Nozule\Core\Logger;
+use Nozule\Core\SettingsManager;
+use Nozule\Modules\Notifications\Models\Notification;
+use Nozule\Modules\Notifications\Repositories\NotificationRepository;
 
 /**
  * Main notification service handling queuing, processing, and sending.
@@ -141,7 +141,7 @@ class NotificationService {
 		 * @param Notification $notification The queued notification.
 		 * @param object       $booking      The associated booking.
 		 */
-		do_action( 'venezia/notifications/queued', $notification, $booking );
+		do_action( 'nozule/notifications/queued', $notification, $booking );
 
 		return $notification;
 	}
@@ -190,7 +190,7 @@ class NotificationService {
 		 *
 		 * @param array $result Processing results.
 		 */
-		do_action( 'venezia/notifications/queue_processed', $result );
+		do_action( 'nozule/notifications/queue_processed', $result );
 
 		return $result;
 	}
@@ -235,7 +235,7 @@ class NotificationService {
 				 *
 				 * @param Notification $notification The sent notification.
 				 */
-				do_action( 'venezia/notifications/sent', $notification );
+				do_action( 'nozule/notifications/sent', $notification );
 
 				return true;
 			}
@@ -243,7 +243,7 @@ class NotificationService {
 			// Sending returned false without an exception.
 			$this->repository->incrementAttemptAndRequeue(
 				$notification->id,
-				__( 'Send method returned false.', 'venezia-hotel' )
+				__( 'Send method returned false.', 'nozule' )
 			);
 
 			return false;
@@ -265,7 +265,7 @@ class NotificationService {
 			 * @param Notification $notification The failed notification.
 			 * @param \Throwable   $e            The exception that caused the failure.
 			 */
-			do_action( 'venezia/notifications/failed', $notification, $e );
+			do_action( 'nozule/notifications/failed', $notification, $e );
 
 			return false;
 		}
@@ -318,7 +318,7 @@ class NotificationService {
 		 * @param array        $args         The email arguments.
 		 * @param Notification $notification  The notification being sent.
 		 */
-		$args = apply_filters( 'venezia/notifications/email_args', [
+		$args = apply_filters( 'nozule/notifications/email_args', [
 			'to'      => $to,
 			'subject' => $subject,
 			'body'    => $body,
@@ -337,9 +337,9 @@ class NotificationService {
 	 * Send a notification via SMS.
 	 *
 	 * This is a placeholder for SMS gateway integration. To implement, either:
-	 * - Hook into 'venezia/notifications/send_sms' action.
+	 * - Hook into 'nozule/notifications/send_sms' action.
 	 * - Extend this class and override this method.
-	 * - Use the 'venezia/notifications/sms_handler' filter to provide a callback.
+	 * - Use the 'nozule/notifications/sms_handler' filter to provide a callback.
 	 *
 	 * @param Notification $notification The notification to send.
 	 * @return bool True if sent successfully.
@@ -353,7 +353,7 @@ class NotificationService {
 		 * @param callable|null $handler      The SMS handler callback.
 		 * @param Notification  $notification The notification to send.
 		 */
-		$handler = apply_filters( 'venezia/notifications/sms_handler', null, $notification );
+		$handler = apply_filters( 'nozule/notifications/sms_handler', null, $notification );
 
 		if ( is_callable( $handler ) ) {
 			return (bool) call_user_func( $handler, $notification );
@@ -372,7 +372,7 @@ class NotificationService {
 		 *
 		 * @param Notification $notification The notification to send.
 		 */
-		do_action( 'venezia/notifications/send_sms', $notification );
+		do_action( 'nozule/notifications/send_sms', $notification );
 
 		return false;
 	}
@@ -381,9 +381,9 @@ class NotificationService {
 	 * Send a notification via WhatsApp.
 	 *
 	 * This is a placeholder for WhatsApp Business API integration. To implement, either:
-	 * - Hook into 'venezia/notifications/send_whatsapp' action.
+	 * - Hook into 'nozule/notifications/send_whatsapp' action.
 	 * - Extend this class and override this method.
-	 * - Use the 'venezia/notifications/whatsapp_handler' filter to provide a callback.
+	 * - Use the 'nozule/notifications/whatsapp_handler' filter to provide a callback.
 	 *
 	 * @param Notification $notification The notification to send.
 	 * @return bool True if sent successfully.
@@ -397,7 +397,7 @@ class NotificationService {
 		 * @param callable|null $handler      The WhatsApp handler callback.
 		 * @param Notification  $notification The notification to send.
 		 */
-		$handler = apply_filters( 'venezia/notifications/whatsapp_handler', null, $notification );
+		$handler = apply_filters( 'nozule/notifications/whatsapp_handler', null, $notification );
 
 		if ( is_callable( $handler ) ) {
 			return (bool) call_user_func( $handler, $notification );
@@ -416,7 +416,7 @@ class NotificationService {
 		 *
 		 * @param Notification $notification The notification to send.
 		 */
-		do_action( 'venezia/notifications/send_whatsapp', $notification );
+		do_action( 'nozule/notifications/send_whatsapp', $notification );
 
 		return false;
 	}
@@ -436,7 +436,7 @@ class NotificationService {
 		 * @param callable|null $handler      The push handler callback.
 		 * @param Notification  $notification The notification to send.
 		 */
-		$handler = apply_filters( 'venezia/notifications/push_handler', null, $notification );
+		$handler = apply_filters( 'nozule/notifications/push_handler', null, $notification );
 
 		if ( is_callable( $handler ) ) {
 			return (bool) call_user_func( $handler, $notification );
@@ -451,7 +451,7 @@ class NotificationService {
 		 *
 		 * @param Notification $notification The notification to send.
 		 */
-		do_action( 'venezia/notifications/send_push', $notification );
+		do_action( 'nozule/notifications/send_push', $notification );
 
 		return false;
 	}
@@ -459,7 +459,7 @@ class NotificationService {
 	/**
 	 * Send scheduled reminders for bookings arriving or departing tomorrow.
 	 *
-	 * This method is typically called by the WordPress cron event 'vhm_send_reminders'.
+	 * This method is typically called by the WordPress cron event 'nzl_send_reminders'.
 	 *
 	 * @return array{ check_in: int, check_out: int }
 	 */
@@ -516,7 +516,7 @@ class NotificationService {
 		 *
 		 * @param array $result Summary of reminders sent.
 		 */
-		do_action( 'venezia/notifications/reminders_sent', $result );
+		do_action( 'nozule/notifications/reminders_sent', $result );
 
 		return $result;
 	}
@@ -625,7 +625,7 @@ class NotificationService {
 		 * @param string $type    The notification type.
 		 * @param string $channel The notification channel.
 		 */
-		return (bool) apply_filters( 'venezia/notifications/is_enabled', true, $type, $channel );
+		return (bool) apply_filters( 'nozule/notifications/is_enabled', true, $type, $channel );
 	}
 
 	/**
@@ -726,7 +726,7 @@ class NotificationService {
 		 * @param object $booking The booking data.
 		 * @param object|null $guest The guest data.
 		 */
-		return apply_filters( 'venezia/notifications/template_vars', $vars, $booking, $guest );
+		return apply_filters( 'nozule/notifications/template_vars', $vars, $booking, $guest );
 	}
 
 	/**

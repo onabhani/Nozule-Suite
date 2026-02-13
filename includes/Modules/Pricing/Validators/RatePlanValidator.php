@@ -1,9 +1,9 @@
 <?php
 
-namespace Venezia\Modules\Pricing\Validators;
+namespace Nozule\Modules\Pricing\Validators;
 
-use Venezia\Core\BaseValidator;
-use Venezia\Modules\Pricing\Repositories\RatePlanRepository;
+use Nozule\Core\BaseValidator;
+use Nozule\Modules\Pricing\Repositories\RatePlanRepository;
 
 /**
  * Validator for rate plan create and update operations.
@@ -163,7 +163,7 @@ class RatePlanValidator extends BaseValidator {
 		if ( $code && ! $this->repository->isCodeUnique( $code, $excludeId ) ) {
 			$this->errors['code'][] = __(
 				'This code is already in use by another rate plan.',
-				'venezia-hotel'
+				'nozule'
 			);
 		}
 	}
@@ -178,7 +178,7 @@ class RatePlanValidator extends BaseValidator {
 		if ( $from && $until && $from > $until ) {
 			$this->errors['valid_until'][] = __(
 				'The end date must be on or after the start date.',
-				'venezia-hotel'
+				'nozule'
 			);
 		}
 	}
@@ -193,7 +193,7 @@ class RatePlanValidator extends BaseValidator {
 		if ( $minStay !== null && $maxStay !== null && (int) $maxStay > 0 && (int) $minStay > (int) $maxStay ) {
 			$this->errors['min_stay'][] = __(
 				'Minimum stay cannot exceed maximum stay.',
-				'venezia-hotel'
+				'nozule'
 			);
 		}
 	}

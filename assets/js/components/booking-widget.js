@@ -1,5 +1,5 @@
 /**
- * Venezia Hotel Manager - Booking Search Widget
+ * Nozule - Booking Search Widget
  *
  * Alpine.js component for searching room availability.
  */
@@ -17,7 +17,7 @@ document.addEventListener('alpine:init', function () {
 
             get nights() {
                 if (!this.checkIn || !this.checkOut) return 0;
-                return VeneziaUtils.calculateNights(this.checkIn, this.checkOut);
+                return NozuleUtils.calculateNights(this.checkIn, this.checkOut);
             },
 
             get canSearch() {
@@ -25,11 +25,11 @@ document.addEventListener('alpine:init', function () {
             },
 
             get minCheckIn() {
-                return VeneziaUtils.today();
+                return NozuleUtils.today();
             },
 
             get minCheckOut() {
-                if (!this.checkIn) return VeneziaUtils.dateOffset(1);
+                if (!this.checkIn) return NozuleUtils.dateOffset(1);
                 var d = new Date(this.checkIn);
                 d.setDate(d.getDate() + 1);
                 return d.toISOString().split('T')[0];
@@ -53,7 +53,7 @@ document.addEventListener('alpine:init', function () {
                 self.loading = true;
                 self.error = null;
 
-                VeneziaAPI.get('/availability', {
+                NozuleAPI.get('/availability', {
                     check_in: self.checkIn,
                     check_out: self.checkOut,
                     adults: self.adults,
@@ -82,7 +82,7 @@ document.addEventListener('alpine:init', function () {
             },
 
             formatPrice: function (amount) {
-                return VeneziaUtils.formatPrice(amount);
+                return NozuleUtils.formatPrice(amount);
             }
         };
     });

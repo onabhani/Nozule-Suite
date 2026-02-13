@@ -1,6 +1,6 @@
 <?php
 
-namespace Venezia\Core;
+namespace Nozule\Core;
 
 /**
  * Database wrapper for custom tables.
@@ -25,7 +25,7 @@ class Database {
      * Get table name with prefix.
      */
     public function table( string $name ): string {
-        return $this->wpdb->prefix . 'vhm_' . $name;
+        return $this->wpdb->prefix . 'nzl_' . $name;
     }
 
     /**

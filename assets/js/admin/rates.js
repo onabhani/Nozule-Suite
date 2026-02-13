@@ -1,11 +1,11 @@
 /**
- * Venezia Hotel Manager - Admin Rates & Pricing
+ * Nozule - Admin Rates & Pricing
  *
  * Modal-based CRUD for rate plans and seasonal rates.
  */
 document.addEventListener('alpine:init', function () {
 
-    Alpine.data('vhmRates', function () {
+    Alpine.data('nzlRates', function () {
         return {
             loading: true,
             saving: false,
@@ -64,14 +64,14 @@ document.addEventListener('alpine:init', function () {
                 self.loading = true;
 
                 Promise.all([
-                    VeneziaAPI.get('/admin/rate-plans'),
-                    VeneziaAPI.get('/admin/seasonal-rates')
+                    NozuleAPI.get('/admin/rate-plans'),
+                    NozuleAPI.get('/admin/seasonal-rates')
                 ]).then(function (responses) {
                     self.ratePlans = responses[0].data || [];
                     self.seasonalRates = responses[1].data || [];
                 }).catch(function (err) {
                     console.error('Rates load error:', err);
-                    VeneziaUtils.toast(err.message || VeneziaI18n.t('failed_load_rates'), 'error');
+                    NozuleUtils.toast(err.message || NozuleI18n.t('failed_load_rates'), 'error');
                 }).finally(function () {
                     self.loading = false;
                 });
@@ -79,7 +79,7 @@ document.addEventListener('alpine:init', function () {
 
             loadRoomTypes: function () {
                 var self = this;
-                VeneziaAPI.get('/admin/room-types').then(function (response) {
+                NozuleAPI.get('/admin/room-types').then(function (response) {
                     self.roomTypes = response.data || [];
                 }).catch(function () {
                     // Non-critical, seasonal rate form will still work with manual ID
@@ -138,33 +138,33 @@ document.addEventListener('alpine:init', function () {
 
                 var promise;
                 if (self.editingRatePlanId) {
-                    promise = VeneziaAPI.put('/admin/rate-plans/' + self.editingRatePlanId, data);
+                    promise = NozuleAPI.put('/admin/rate-plans/' + self.editingRatePlanId, data);
                 } else {
-                    promise = VeneziaAPI.post('/admin/rate-plans', data);
+                    promise = NozuleAPI.post('/admin/rate-plans', data);
                 }
 
                 promise.then(function () {
                     self.showRatePlanModal = false;
                     self.loadData();
-                    VeneziaUtils.toast(
-                        VeneziaI18n.t(self.editingRatePlanId ? 'rate_plan_updated' : 'rate_plan_created'),
+                    NozuleUtils.toast(
+                        NozuleI18n.t(self.editingRatePlanId ? 'rate_plan_updated' : 'rate_plan_created'),
                         'success'
                     );
                 }).catch(function (err) {
-                    VeneziaUtils.toast(err.message || VeneziaI18n.t('failed_save_rate_plan'), 'error');
+                    NozuleUtils.toast(err.message || NozuleI18n.t('failed_save_rate_plan'), 'error');
                 }).finally(function () {
                     self.saving = false;
                 });
             },
 
             deleteRatePlan: function (id) {
-                if (!confirm(VeneziaI18n.t('confirm_delete_rate_plan'))) return;
+                if (!confirm(NozuleI18n.t('confirm_delete_rate_plan'))) return;
                 var self = this;
-                VeneziaAPI.delete('/admin/rate-plans/' + id).then(function () {
+                NozuleAPI.delete('/admin/rate-plans/' + id).then(function () {
                     self.loadData();
-                    VeneziaUtils.toast(VeneziaI18n.t('rate_plan_deleted'), 'success');
+                    NozuleUtils.toast(NozuleI18n.t('rate_plan_deleted'), 'success');
                 }).catch(function (err) {
-                    VeneziaUtils.toast(err.message || VeneziaI18n.t('failed_delete_rate_plan'), 'error');
+                    NozuleUtils.toast(err.message || NozuleI18n.t('failed_delete_rate_plan'), 'error');
                 });
             },
 
@@ -215,41 +215,41 @@ document.addEventListener('alpine:init', function () {
 
                 var promise;
                 if (self.editingSeasonalId) {
-                    promise = VeneziaAPI.put('/admin/seasonal-rates/' + self.editingSeasonalId, data);
+                    promise = NozuleAPI.put('/admin/seasonal-rates/' + self.editingSeasonalId, data);
                 } else {
-                    promise = VeneziaAPI.post('/admin/seasonal-rates', data);
+                    promise = NozuleAPI.post('/admin/seasonal-rates', data);
                 }
 
                 promise.then(function () {
                     self.showSeasonalModal = false;
                     self.loadData();
-                    VeneziaUtils.toast(
-                        VeneziaI18n.t(self.editingSeasonalId ? 'seasonal_rate_updated' : 'seasonal_rate_created'),
+                    NozuleUtils.toast(
+                        NozuleI18n.t(self.editingSeasonalId ? 'seasonal_rate_updated' : 'seasonal_rate_created'),
                         'success'
                     );
                 }).catch(function (err) {
-                    VeneziaUtils.toast(err.message || VeneziaI18n.t('failed_save_seasonal_rate'), 'error');
+                    NozuleUtils.toast(err.message || NozuleI18n.t('failed_save_seasonal_rate'), 'error');
                 }).finally(function () {
                     self.saving = false;
                 });
             },
 
             deleteSeasonalRate: function (id) {
-                if (!confirm(VeneziaI18n.t('confirm_delete_seasonal_rate'))) return;
+                if (!confirm(NozuleI18n.t('confirm_delete_seasonal_rate'))) return;
                 var self = this;
-                VeneziaAPI.delete('/admin/seasonal-rates/' + id).then(function () {
+                NozuleAPI.delete('/admin/seasonal-rates/' + id).then(function () {
                     self.loadData();
-                    VeneziaUtils.toast(VeneziaI18n.t('seasonal_rate_deleted'), 'success');
+                    NozuleUtils.toast(NozuleI18n.t('seasonal_rate_deleted'), 'success');
                 }).catch(function (err) {
-                    VeneziaUtils.toast(err.message || VeneziaI18n.t('failed_delete_seasonal_rate'), 'error');
+                    NozuleUtils.toast(err.message || NozuleI18n.t('failed_delete_seasonal_rate'), 'error');
                 });
             },
 
             // ---- Helpers ----
 
             formatDate: function (date) {
-                if (typeof VeneziaUtils !== 'undefined' && VeneziaUtils.formatDate) {
-                    return VeneziaUtils.formatDate(date);
+                if (typeof NozuleUtils !== 'undefined' && NozuleUtils.formatDate) {
+                    return NozuleUtils.formatDate(date);
                 }
                 return date || '';
             }

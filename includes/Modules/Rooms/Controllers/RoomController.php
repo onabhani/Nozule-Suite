@@ -1,9 +1,9 @@
 <?php
 
-namespace Venezia\Modules\Rooms\Controllers;
+namespace Nozule\Modules\Rooms\Controllers;
 
-use Venezia\Modules\Rooms\Models\Room;
-use Venezia\Modules\Rooms\Services\RoomService;
+use Nozule\Modules\Rooms\Models\Room;
+use Nozule\Modules\Rooms\Services\RoomService;
 use WP_REST_Request;
 use WP_REST_Response;
 use WP_REST_Server;
@@ -12,12 +12,12 @@ use WP_REST_Server;
  * REST controller for individual room administration.
  *
  * Routes (all admin-only):
- *   GET    /venezia/v1/admin/rooms            List rooms (filterable)
- *   GET    /venezia/v1/admin/rooms/{id}       Get single room
- *   POST   /venezia/v1/admin/rooms            Create room
- *   PUT    /venezia/v1/admin/rooms/{id}       Update room
- *   DELETE /venezia/v1/admin/rooms/{id}       Delete room
- *   PATCH  /venezia/v1/admin/rooms/{id}/status  Update room status
+ *   GET    /nozule/v1/admin/rooms            List rooms (filterable)
+ *   GET    /nozule/v1/admin/rooms/{id}       Get single room
+ *   POST   /nozule/v1/admin/rooms            Create room
+ *   PUT    /nozule/v1/admin/rooms/{id}       Update room
+ *   DELETE /nozule/v1/admin/rooms/{id}       Delete room
+ *   PATCH  /nozule/v1/admin/rooms/{id}/status  Update room status
  */
 class RoomController {
 
@@ -31,7 +31,7 @@ class RoomController {
 	 * Register REST routes.
 	 */
 	public function registerRoutes(): void {
-		$namespace = 'venezia/v1';
+		$namespace = 'nozule/v1';
 
 		// List and create rooms.
 		register_rest_route( $namespace, '/admin/rooms', [
@@ -121,7 +121,7 @@ class RoomController {
 		if ( ! $room ) {
 			return new WP_REST_Response( [
 				'success' => false,
-				'message' => __( 'Room not found.', 'venezia-hotel' ),
+				'message' => __( 'Room not found.', 'nozule' ),
 			], 404 );
 		}
 
@@ -142,14 +142,14 @@ class RoomController {
 		if ( $result instanceof Room ) {
 			return new WP_REST_Response( [
 				'success' => true,
-				'message' => __( 'Room created successfully.', 'venezia-hotel' ),
+				'message' => __( 'Room created successfully.', 'nozule' ),
 				'data'    => $result->toArray(),
 			], 201 );
 		}
 
 		return new WP_REST_Response( [
 			'success' => false,
-			'message' => __( 'Validation failed.', 'venezia-hotel' ),
+			'message' => __( 'Validation failed.', 'nozule' ),
 			'errors'  => $result,
 		], 422 );
 	}
@@ -166,7 +166,7 @@ class RoomController {
 		if ( $result instanceof Room ) {
 			return new WP_REST_Response( [
 				'success' => true,
-				'message' => __( 'Room updated successfully.', 'venezia-hotel' ),
+				'message' => __( 'Room updated successfully.', 'nozule' ),
 				'data'    => $result->toArray(),
 			], 200 );
 		}
@@ -181,7 +181,7 @@ class RoomController {
 
 		return new WP_REST_Response( [
 			'success' => false,
-			'message' => __( 'Validation failed.', 'venezia-hotel' ),
+			'message' => __( 'Validation failed.', 'nozule' ),
 			'errors'  => $result,
 		], 422 );
 	}
@@ -196,7 +196,7 @@ class RoomController {
 		if ( $result === true ) {
 			return new WP_REST_Response( [
 				'success' => true,
-				'message' => __( 'Room deleted successfully.', 'venezia-hotel' ),
+				'message' => __( 'Room deleted successfully.', 'nozule' ),
 			], 200 );
 		}
 
@@ -204,7 +204,7 @@ class RoomController {
 
 		return new WP_REST_Response( [
 			'success' => false,
-			'message' => __( 'Failed to delete room.', 'venezia-hotel' ),
+			'message' => __( 'Failed to delete room.', 'nozule' ),
 			'errors'  => $result,
 		], $statusCode );
 	}
@@ -219,7 +219,7 @@ class RoomController {
 		if ( ! $status ) {
 			return new WP_REST_Response( [
 				'success' => false,
-				'message' => __( 'Status is required.', 'venezia-hotel' ),
+				'message' => __( 'Status is required.', 'nozule' ),
 			], 422 );
 		}
 
@@ -228,14 +228,14 @@ class RoomController {
 		if ( $result instanceof Room ) {
 			return new WP_REST_Response( [
 				'success' => true,
-				'message' => __( 'Room status updated.', 'venezia-hotel' ),
+				'message' => __( 'Room status updated.', 'nozule' ),
 				'data'    => $result->toArray(),
 			], 200 );
 		}
 
 		return new WP_REST_Response( [
 			'success' => false,
-			'message' => __( 'Failed to update room status.', 'venezia-hotel' ),
+			'message' => __( 'Failed to update room status.', 'nozule' ),
 			'errors'  => $result,
 		], 422 );
 	}
@@ -288,17 +288,17 @@ class RoomController {
 	}
 
 	/**
-	 * Permission callback: require vhm_admin capability.
+	 * Permission callback: require nzl_admin capability.
 	 */
 	public function checkAdminPermission( WP_REST_Request $request ): bool {
-		return current_user_can( 'manage_options' ) || current_user_can( 'vhm_admin' );
+		return current_user_can( 'manage_options' ) || current_user_can( 'nzl_admin' );
 	}
 
 	/**
-	 * Permission callback: require vhm_staff or vhm_admin capability.
+	 * Permission callback: require nzl_staff or nzl_admin capability.
 	 */
 	public function checkStaffPermission( WP_REST_Request $request ): bool {
-		return current_user_can( 'manage_options' ) || current_user_can( 'vhm_admin' ) || current_user_can( 'vhm_staff' );
+		return current_user_can( 'manage_options' ) || current_user_can( 'nzl_admin' ) || current_user_can( 'nzl_staff' );
 	}
 
 	// Standard CRUD aliases (used by RestController admin routes)

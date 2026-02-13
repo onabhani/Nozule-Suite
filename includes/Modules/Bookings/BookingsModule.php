@@ -1,24 +1,24 @@
 <?php
 
-namespace Venezia\Modules\Bookings;
+namespace Nozule\Modules\Bookings;
 
-use Venezia\Core\BaseModule;
-use Venezia\Core\Container;
-use Venezia\Core\Database;
-use Venezia\Core\SettingsManager;
-use Venezia\Modules\Bookings\Controllers\AdminBookingController;
-use Venezia\Modules\Bookings\Controllers\BookingController;
-use Venezia\Modules\Bookings\Controllers\CalendarController;
-use Venezia\Modules\Bookings\Controllers\DashboardController;
-use Venezia\Modules\Bookings\Repositories\BookingRepository;
-use Venezia\Modules\Bookings\Repositories\PaymentRepository;
-use Venezia\Modules\Bookings\Services\BookingService;
-use Venezia\Modules\Bookings\Validators\BookingValidator;
-use Venezia\Modules\Guests\Services\GuestService;
-use Venezia\Modules\Notifications\Services\NotificationService;
-use Venezia\Modules\Pricing\Services\PricingService;
-use Venezia\Modules\Rooms\Repositories\RoomRepository;
-use Venezia\Modules\Rooms\Services\AvailabilityService;
+use Nozule\Core\BaseModule;
+use Nozule\Core\Container;
+use Nozule\Core\Database;
+use Nozule\Core\SettingsManager;
+use Nozule\Modules\Bookings\Controllers\AdminBookingController;
+use Nozule\Modules\Bookings\Controllers\BookingController;
+use Nozule\Modules\Bookings\Controllers\CalendarController;
+use Nozule\Modules\Bookings\Controllers\DashboardController;
+use Nozule\Modules\Bookings\Repositories\BookingRepository;
+use Nozule\Modules\Bookings\Repositories\PaymentRepository;
+use Nozule\Modules\Bookings\Services\BookingService;
+use Nozule\Modules\Bookings\Validators\BookingValidator;
+use Nozule\Modules\Guests\Services\GuestService;
+use Nozule\Modules\Notifications\Services\NotificationService;
+use Nozule\Modules\Pricing\Services\PricingService;
+use Nozule\Modules\Rooms\Repositories\RoomRepository;
+use Nozule\Modules\Rooms\Services\AvailabilityService;
 
 /**
  * Bookings module bootstrap.
@@ -113,7 +113,7 @@ class BookingsModule extends BaseModule {
 		} );
 
 		// Append booking records to guest history responses.
-		add_filter( 'venezia/guests/history', function ( $history, $guest ) {
+		add_filter( 'nozule/guests/history', function ( $history, $guest ) {
 			$repo     = $this->container->get( BookingRepository::class );
 			$bookings = $repo->getByGuestId( $guest->id );
 
@@ -126,7 +126,7 @@ class BookingsModule extends BaseModule {
 		}, 10, 2 );
 
 		// Expose container via filter for cross-module resolution.
-		add_filter( 'venezia/container/get', function ( $default, string $abstract ) {
+		add_filter( 'nozule/container/get', function ( $default, string $abstract ) {
 			if ( $this->container->has( $abstract ) ) {
 				return $this->container->get( $abstract );
 			}

@@ -1,90 +1,90 @@
 /**
- * Venezia Hotel Manager - Admin RTL Styles
+ * Nozule - Admin RTL Styles
  *
  * Overrides for right-to-left languages (Arabic, Hebrew, etc.)
  *
- * NOTE: direction: rtl on .vhm-admin-wrap already reverses flex layouts.
+ * NOTE: direction: rtl on .nzl-admin-wrap already reverses flex layouts.
  * Do NOT add flex-direction: row-reverse — that would double-reverse them.
  */
 
 /* Layout */
-.vhm-admin-wrap {
+.nzl-admin-wrap {
     margin: 20px;
     direction: rtl;
 }
 
 /* Tables */
-.vhm-table th,
-.vhm-table td {
+.nzl-table th,
+.nzl-table td {
     text-align: right;
 }
 
 /* Calendar — force LTR handled by main CSS; RTL room-col fix */
-.vhm-calendar-room-label {
+.nzl-calendar-room-label {
     border-right: none;
     border-left: 1px solid #e2e8f0;
 }
 
-.vhm-calendar-header-cell {
+.nzl-calendar-header-cell {
     border-right: none;
     border-left: 1px solid #e2e8f0;
 }
 
-.vhm-calendar-cell {
+.nzl-calendar-cell {
     border-right: none;
     border-left: 1px solid #f1f5f9;
 }
 
-.vhm-calendar-room-col {
+.nzl-calendar-room-col {
     text-align: right;
 }
 
 /* Modal / Sidebar — sidebar slides from LEFT in RTL */
-.vhm-modal-overlay:has(.vhm-sidebar-panel) {
+.nzl-modal-overlay:has(.nzl-sidebar-panel) {
     justify-content: flex-start;
 }
 
-.vhm-sidebar-panel {
+.nzl-sidebar-panel {
     box-shadow: 4px 0 15px rgba(0, 0, 0, 0.1);
-    animation: vhm-slide-in-left 0.2s ease-out;
+    animation: nzl-slide-in-left 0.2s ease-out;
 }
 
-@keyframes vhm-slide-in-left {
+@keyframes nzl-slide-in-left {
     from { transform: translateX(-100%); }
     to { transform: translateX(0); }
 }
 
 /* Toast — position on LEFT in RTL */
-.vhm-toast-container {
+.nzl-toast-container {
     left: 1rem;
     right: auto;
 }
 
-.vhm-toast button {
+.nzl-toast button {
     margin-left: 0;
     margin-right: 0.5rem;
 }
 
 /* Forms */
-.vhm-form-group label,
-.vhm-label {
+.nzl-form-group label,
+.nzl-label {
     text-align: right;
 }
 
 /* Stat labels */
-.vhm-stat-card .stat-label {
+.nzl-stat-card .stat-label {
     text-align: right;
 }
 
 /* Select dropdown — ensure arrow is on correct side */
-select.vhm-input {
+select.nzl-input {
     background-position: left 0.5rem center;
     padding-left: 2rem;
     padding-right: 0.75rem;
 }
 
 /* Navigation arrows — flip in RTL */
-.vhm-nav-arrow {
+.nzl-nav-arrow {
     display: inline-block;
     transform: scaleX(-1);
 }
@@ -93,7 +93,7 @@ select.vhm-input {
    Responsive RTL — Tablet (≤ 960px)
    ============================================ */
 @media (max-width: 960px) {
-    .vhm-admin-wrap {
+    .nzl-admin-wrap {
         margin: 10px;
     }
 }
@@ -102,34 +102,34 @@ select.vhm-input {
    Responsive RTL — Mobile (≤ 600px)
    ============================================ */
 @media (max-width: 600px) {
-    .vhm-admin-wrap {
+    .nzl-admin-wrap {
         margin: 6px;
     }
 
-    .vhm-admin-header {
+    .nzl-admin-header {
         flex-direction: column;
         align-items: stretch;
     }
 
     /* Pagination: stack vertically */
-    .vhm-pagination {
+    .nzl-pagination {
         flex-direction: column;
         align-items: center;
     }
 
     /* Toast: full width on mobile */
-    .vhm-toast-container {
+    .nzl-toast-container {
         left: 0.5rem;
         right: 0.5rem;
         max-width: none;
     }
 
     /* Modal footer: stack buttons */
-    .vhm-modal-footer {
+    .nzl-modal-footer {
         flex-direction: column-reverse;
     }
 
-    .vhm-modal-footer .vhm-btn {
+    .nzl-modal-footer .nzl-btn {
         width: 100%;
         justify-content: center;
     }
@@ -139,7 +139,7 @@ select.vhm-input {
    Responsive RTL — Small phones (≤ 400px)
    ============================================ */
 @media (max-width: 400px) {
-    .vhm-admin-header h1 {
+    .nzl-admin-header h1 {
         font-size: 1.1rem;
     }
 }

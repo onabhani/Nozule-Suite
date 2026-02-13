@@ -1,15 +1,15 @@
 <?php
 
-namespace Venezia\Modules\Notifications;
+namespace Nozule\Modules\Notifications;
 
-use Venezia\Core\BaseModule;
-use Venezia\Core\Container;
-use Venezia\Core\Database;
-use Venezia\Core\Logger;
-use Venezia\Core\SettingsManager;
-use Venezia\Modules\Notifications\Repositories\NotificationRepository;
-use Venezia\Modules\Notifications\Services\NotificationService;
-use Venezia\Modules\Notifications\Services\TemplateService;
+use Nozule\Core\BaseModule;
+use Nozule\Core\Container;
+use Nozule\Core\Database;
+use Nozule\Core\Logger;
+use Nozule\Core\SettingsManager;
+use Nozule\Modules\Notifications\Repositories\NotificationRepository;
+use Nozule\Modules\Notifications\Services\NotificationService;
+use Nozule\Modules\Notifications\Services\TemplateService;
 
 /**
  * Notifications module bootstrap.
@@ -67,20 +67,20 @@ class NotificationsModule extends BaseModule {
 	 */
 	private function registerHooks(): void {
 		// Listen for booking events to trigger notifications.
-		add_action( 'venezia/bookings/created', [ $this, 'onBookingCreated' ], 10, 1 );
-		add_action( 'venezia/bookings/confirmed', [ $this, 'onBookingConfirmed' ], 10, 1 );
-		add_action( 'venezia/bookings/cancelled', [ $this, 'onBookingCancelled' ], 10, 1 );
-		add_action( 'venezia/bookings/checked_out', [ $this, 'onBookingCheckedOut' ], 10, 1 );
-		add_action( 'venezia/payments/received', [ $this, 'onPaymentReceived' ], 10, 2 );
+		add_action( 'nozule/bookings/created', [ $this, 'onBookingCreated' ], 10, 1 );
+		add_action( 'nozule/bookings/confirmed', [ $this, 'onBookingConfirmed' ], 10, 1 );
+		add_action( 'nozule/bookings/cancelled', [ $this, 'onBookingCancelled' ], 10, 1 );
+		add_action( 'nozule/bookings/checked_out', [ $this, 'onBookingCheckedOut' ], 10, 1 );
+		add_action( 'nozule/payments/received', [ $this, 'onPaymentReceived' ], 10, 2 );
 
 		// Process the notification queue via cron.
-		add_action( 'venezia/cron/process_notifications', [ $this, 'processQueue' ] );
+		add_action( 'nozule/cron/process_notifications', [ $this, 'processQueue' ] );
 
 		// Schedule the queue processor if not already scheduled.
 		add_action( 'init', [ $this, 'scheduleQueueProcessor' ] );
 
 		// Clean up old notifications during daily maintenance.
-		add_action( 'vhm_daily_maintenance', [ $this, 'cleanOldNotifications' ], 20 );
+		add_action( 'nzl_daily_maintenance', [ $this, 'cleanOldNotifications' ], 20 );
 	}
 
 	/**
@@ -164,8 +164,8 @@ class NotificationsModule extends BaseModule {
 		// Register the custom cron interval.
 		add_filter( 'cron_schedules', [ $this, 'addCronInterval' ] );
 
-		if ( ! wp_next_scheduled( 'venezia/cron/process_notifications' ) ) {
-			wp_schedule_event( time(), 'five_minutes', 'venezia/cron/process_notifications' );
+		if ( ! wp_next_scheduled( 'nozule/cron/process_notifications' ) ) {
+			wp_schedule_event( time(), 'five_minutes', 'nozule/cron/process_notifications' );
 		}
 	}
 
@@ -179,7 +179,7 @@ class NotificationsModule extends BaseModule {
 		if ( ! isset( $schedules['five_minutes'] ) ) {
 			$schedules['five_minutes'] = [
 				'interval' => 300,
-				'display'  => __( 'Every Five Minutes', 'venezia-hotel' ),
+				'display'  => __( 'Every Five Minutes', 'nozule' ),
 			];
 		}
 

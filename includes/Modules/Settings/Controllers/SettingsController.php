@@ -1,20 +1,20 @@
 <?php
 
-namespace Venezia\Modules\Settings\Controllers;
+namespace Nozule\Modules\Settings\Controllers;
 
-use Venezia\Core\CacheManager;
-use Venezia\Core\SettingsManager;
+use Nozule\Core\CacheManager;
+use Nozule\Core\SettingsManager;
 
 /**
  * REST API controller for plugin settings.
  *
- * Admin endpoints require the 'vhm_admin' capability.
+ * Admin endpoints require the 'nzl_admin' capability.
  * The public endpoint exposes a safe subset of settings
  * without authentication for front-end consumption.
  */
 class SettingsController {
 
-    private const NAMESPACE = 'venezia/v1';
+    private const NAMESPACE = 'nozule/v1';
 
     private SettingsManager $settings;
     private CacheManager $cache;
@@ -89,10 +89,10 @@ class SettingsController {
     }
 
     /**
-     * Permission check: current user must have 'vhm_admin' capability.
+     * Permission check: current user must have 'nzl_admin' capability.
      */
     public function checkAdminPermission(): bool {
-        return current_user_can( 'vhm_admin' );
+        return current_user_can( 'nzl_admin' );
     }
 
     /**
@@ -127,7 +127,7 @@ class SettingsController {
 
         if ( empty( $body ) || ! is_array( $body ) ) {
             return new \WP_REST_Response(
-                [ 'message' => __( 'Request body must be a JSON object with setting groups.', 'venezia-hotel' ) ],
+                [ 'message' => __( 'Request body must be a JSON object with setting groups.', 'nozule' ) ],
                 400
             );
         }
@@ -137,7 +137,7 @@ class SettingsController {
             if ( ! in_array( $group, self::SETTING_GROUPS, true ) ) {
                 $errors[] = sprintf(
                     /* translators: %s: settings group name */
-                    __( 'Unknown settings group: %s', 'venezia-hotel' ),
+                    __( 'Unknown settings group: %s', 'nozule' ),
                     $group
                 );
                 continue;
@@ -146,7 +146,7 @@ class SettingsController {
             if ( ! is_array( $values ) ) {
                 $errors[] = sprintf(
                     /* translators: %s: settings group name */
-                    __( 'Settings group "%s" must be an object.', 'venezia-hotel' ),
+                    __( 'Settings group "%s" must be an object.', 'nozule' ),
                     $group
                 );
                 continue;
@@ -162,7 +162,7 @@ class SettingsController {
                 } else {
                     $errors[] = sprintf(
                         /* translators: %s: setting key */
-                        __( 'Failed to update setting: %s', 'venezia-hotel' ),
+                        __( 'Failed to update setting: %s', 'nozule' ),
                         $settingKey
                     );
                 }
@@ -175,7 +175,7 @@ class SettingsController {
         $response = [
             'message'  => sprintf(
                 /* translators: %d: number of updated settings */
-                __( '%d setting(s) updated successfully.', 'venezia-hotel' ),
+                __( '%d setting(s) updated successfully.', 'nozule' ),
                 count( $updated )
             ),
             'updated'  => $updated,
@@ -301,7 +301,7 @@ class SettingsController {
                 'required'          => false,
                 'type'              => 'string',
                 'sanitize_callback' => 'sanitize_text_field',
-                'description'       => __( 'Filter by settings group.', 'venezia-hotel' ),
+                'description'       => __( 'Filter by settings group.', 'nozule' ),
             ],
         ];
     }

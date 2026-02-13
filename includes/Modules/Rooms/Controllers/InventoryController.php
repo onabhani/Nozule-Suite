@@ -1,10 +1,10 @@
 <?php
 
-namespace Venezia\Modules\Rooms\Controllers;
+namespace Nozule\Modules\Rooms\Controllers;
 
-use Venezia\Modules\Rooms\Models\RoomInventory;
-use Venezia\Modules\Rooms\Repositories\InventoryRepository;
-use Venezia\Modules\Rooms\Services\RoomService;
+use Nozule\Modules\Rooms\Models\RoomInventory;
+use Nozule\Modules\Rooms\Repositories\InventoryRepository;
+use Nozule\Modules\Rooms\Services\RoomService;
 use WP_REST_Request;
 use WP_REST_Response;
 use WP_REST_Server;
@@ -13,9 +13,9 @@ use WP_REST_Server;
  * REST controller for room inventory management (admin only).
  *
  * Routes:
- *   GET  /venezia/v1/admin/inventory                  Get inventory grid for a date range
- *   POST /venezia/v1/admin/inventory/bulk-update       Bulk update inventory
- *   POST /venezia/v1/admin/inventory/initialize        Initialize inventory for a room type
+ *   GET  /nozule/v1/admin/inventory                  Get inventory grid for a date range
+ *   POST /nozule/v1/admin/inventory/bulk-update       Bulk update inventory
+ *   POST /nozule/v1/admin/inventory/initialize        Initialize inventory for a room type
  */
 class InventoryController {
 
@@ -34,7 +34,7 @@ class InventoryController {
 	 * Register REST routes.
 	 */
 	public function registerRoutes(): void {
-		$namespace = 'venezia/v1';
+		$namespace = 'nozule/v1';
 
 		// Get inventory for a date range (room_type_id optional — returns all types if omitted).
 		register_rest_route( $namespace, '/admin/inventory', [
@@ -98,7 +98,7 @@ class InventoryController {
 				'success' => false,
 				'error'   => [
 					'code'    => 'MISSING_DATES',
-					'message' => __( 'start_date and end_date are required.', 'venezia-hotel' ),
+					'message' => __( 'start_date and end_date are required.', 'nozule' ),
 				],
 			], 400 );
 		}
@@ -164,14 +164,14 @@ class InventoryController {
 		if ( ! $roomTypeId || ! $startDate || ! $endDate ) {
 			return new WP_REST_Response( [
 				'success' => false,
-				'message' => __( 'room_type_id, start_date, and end_date are required.', 'venezia-hotel' ),
+				'message' => __( 'room_type_id, start_date, and end_date are required.', 'nozule' ),
 			], 422 );
 		}
 
 		if ( strtotime( $endDate ) < strtotime( $startDate ) ) {
 			return new WP_REST_Response( [
 				'success' => false,
-				'message' => __( 'end_date must be on or after start_date.', 'venezia-hotel' ),
+				'message' => __( 'end_date must be on or after start_date.', 'nozule' ),
 			], 422 );
 		}
 
@@ -189,7 +189,7 @@ class InventoryController {
 		if ( empty( $updateData ) ) {
 			return new WP_REST_Response( [
 				'success' => false,
-				'message' => __( 'No fields provided for update.', 'venezia-hotel' ),
+				'message' => __( 'No fields provided for update.', 'nozule' ),
 			], 422 );
 		}
 
@@ -212,13 +212,13 @@ class InventoryController {
 		if ( $success ) {
 			return new WP_REST_Response( [
 				'success' => true,
-				'message' => __( 'Inventory updated successfully.', 'venezia-hotel' ),
+				'message' => __( 'Inventory updated successfully.', 'nozule' ),
 			], 200 );
 		}
 
 		return new WP_REST_Response( [
 			'success' => false,
-			'message' => __( 'Failed to update inventory.', 'venezia-hotel' ),
+			'message' => __( 'Failed to update inventory.', 'nozule' ),
 		], 500 );
 	}
 
@@ -235,7 +235,7 @@ class InventoryController {
 		if ( ! $roomTypeId || ! $startDate || ! $endDate ) {
 			return new WP_REST_Response( [
 				'success' => false,
-				'message' => __( 'room_type_id, start_date, and end_date are required.', 'venezia-hotel' ),
+				'message' => __( 'room_type_id, start_date, and end_date are required.', 'nozule' ),
 			], 422 );
 		}
 
@@ -243,7 +243,7 @@ class InventoryController {
 		if ( ! $roomType ) {
 			return new WP_REST_Response( [
 				'success' => false,
-				'message' => __( 'Room type not found.', 'venezia-hotel' ),
+				'message' => __( 'Room type not found.', 'nozule' ),
 			], 404 );
 		}
 
@@ -252,7 +252,7 @@ class InventoryController {
 		return new WP_REST_Response( [
 			'success' => true,
 			'message' => sprintf(
-				__( 'Inventory initialized: %d new day(s) created.', 'venezia-hotel' ),
+				__( 'Inventory initialized: %d new day(s) created.', 'nozule' ),
 				$created
 			),
 			'data'    => [
@@ -269,9 +269,9 @@ class InventoryController {
 	}
 
 	/**
-	 * Permission callback: require manage_options or vhm_staff capability.
+	 * Permission callback: require manage_options or nzl_staff capability.
 	 */
 	public function checkStaffPermission( WP_REST_Request $request ): bool {
-		return current_user_can( 'manage_options' ) || current_user_can( 'vhm_staff' );
+		return current_user_can( 'manage_options' ) || current_user_can( 'nzl_staff' );
 	}
 }

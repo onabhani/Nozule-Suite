@@ -1,10 +1,10 @@
 <?php
 
-namespace Venezia\Modules\Channels\Validators;
+namespace Nozule\Modules\Channels\Validators;
 
-use Venezia\Core\BaseValidator;
-use Venezia\Modules\Channels\Repositories\ChannelMappingRepository;
-use Venezia\Modules\Channels\Services\ChannelService;
+use Nozule\Core\BaseValidator;
+use Nozule\Modules\Channels\Repositories\ChannelMappingRepository;
+use Nozule\Modules\Channels\Services\ChannelService;
 
 /**
  * Validator for channel mapping data.
@@ -35,7 +35,7 @@ class ChannelMappingValidator extends BaseValidator {
             $registered = $this->channelService->getRegisteredConnectors();
             if ( ! isset( $registered[ $data['channel_name'] ] ) ) {
                 $this->errors['channel_name'][] = sprintf(
-                    __( 'Unknown channel "%s". Available channels: %s.', 'venezia-hotel' ),
+                    __( 'Unknown channel "%s". Available channels: %s.', 'nozule' ),
                     $data['channel_name'],
                     implode( ', ', array_keys( $registered ) )
                 );
@@ -48,7 +48,7 @@ class ChannelMappingValidator extends BaseValidator {
             if ( $this->isDuplicateMapping( $data ) ) {
                 $this->errors['channel_name'][] = __(
                     'A mapping for this channel and room type already exists.',
-                    'venezia-hotel'
+                    'nozule'
                 );
                 $valid = false;
             }
@@ -72,7 +72,7 @@ class ChannelMappingValidator extends BaseValidator {
             $registered = $this->channelService->getRegisteredConnectors();
             if ( ! isset( $registered[ $data['channel_name'] ] ) ) {
                 $this->errors['channel_name'][] = sprintf(
-                    __( 'Unknown channel "%s". Available channels: %s.', 'venezia-hotel' ),
+                    __( 'Unknown channel "%s". Available channels: %s.', 'nozule' ),
                     $data['channel_name'],
                     implode( ', ', array_keys( $registered ) )
                 );
@@ -93,7 +93,7 @@ class ChannelMappingValidator extends BaseValidator {
                 if ( $this->isDuplicateMapping( $checkData, $mappingId ) ) {
                     $this->errors['channel_name'][] = __(
                         'A mapping for this channel and room type already exists.',
-                        'venezia-hotel'
+                        'nozule'
                     );
                     $valid = false;
                 }
@@ -105,7 +105,7 @@ class ChannelMappingValidator extends BaseValidator {
             $allowed = [ 'active', 'inactive', 'error' ];
             if ( ! in_array( $data['status'], $allowed, true ) ) {
                 $this->errors['status'][] = sprintf(
-                    __( 'Status must be one of: %s.', 'venezia-hotel' ),
+                    __( 'Status must be one of: %s.', 'nozule' ),
                     implode( ', ', $allowed )
                 );
                 $valid = false;

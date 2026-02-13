@@ -1,19 +1,19 @@
 <?php
 
-namespace Venezia\Modules\Reports\Controllers;
+namespace Nozule\Modules\Reports\Controllers;
 
-use Venezia\Modules\Reports\Services\ReportService;
-use Venezia\Modules\Reports\Services\ExportService;
+use Nozule\Modules\Reports\Services\ReportService;
+use Nozule\Modules\Reports\Services\ExportService;
 
 /**
  * REST API controller for hotel reports.
  *
- * All endpoints require the 'vhm_admin' capability and are
- * registered under the venezia/v1/admin/reports namespace.
+ * All endpoints require the 'nzl_admin' capability and are
+ * registered under the nozule/v1/admin/reports namespace.
  */
 class ReportController {
 
-    private const NAMESPACE = 'venezia/v1';
+    private const NAMESPACE = 'nozule/v1';
 
     private ReportService $reportService;
     private ExportService $exportService;
@@ -36,7 +36,7 @@ class ReportController {
                     'required'          => false,
                     'type'              => 'integer',
                     'sanitize_callback' => 'absint',
-                    'description'       => __( 'Filter by room type ID.', 'venezia-hotel' ),
+                    'description'       => __( 'Filter by room type ID.', 'nozule' ),
                 ],
             ] ),
         ] );
@@ -52,7 +52,7 @@ class ReportController {
                     'default'           => 'daily',
                     'enum'              => [ 'daily', 'weekly', 'monthly' ],
                     'sanitize_callback' => 'sanitize_text_field',
-                    'description'       => __( 'Group results by period.', 'venezia-hotel' ),
+                    'description'       => __( 'Group results by period.', 'nozule' ),
                 ],
             ] ),
         ] );
@@ -100,10 +100,10 @@ class ReportController {
     }
 
     /**
-     * Permission check: current user must have 'vhm_admin' capability.
+     * Permission check: current user must have 'nzl_admin' capability.
      */
     public function checkAdminPermission(): bool {
-        return current_user_can( 'vhm_admin' );
+        return current_user_can( 'nzl_admin' );
     }
 
     /**
@@ -211,12 +211,12 @@ class ReportController {
 
         if ( $reportData === null ) {
             return new \WP_REST_Response(
-                [ 'message' => __( 'Invalid report type.', 'venezia-hotel' ) ],
+                [ 'message' => __( 'Invalid report type.', 'nozule' ) ],
                 400
             );
         }
 
-        $filename = 'venezia-' . $reportType . '-' . $startDate . '-to-' . $endDate;
+        $filename = 'nozule-' . $reportType . '-' . $startDate . '-to-' . $endDate;
 
         if ( $format === 'json' ) {
             $this->exportService->exportJSON( $reportData, $filename );
@@ -299,7 +299,7 @@ class ReportController {
                 'format'            => 'date',
                 'sanitize_callback' => 'sanitize_text_field',
                 'validate_callback' => [ $this, 'validateDate' ],
-                'description'       => __( 'Start date in Y-m-d format.', 'venezia-hotel' ),
+                'description'       => __( 'Start date in Y-m-d format.', 'nozule' ),
             ],
             'end_date' => [
                 'required'          => true,
@@ -307,7 +307,7 @@ class ReportController {
                 'format'            => 'date',
                 'sanitize_callback' => 'sanitize_text_field',
                 'validate_callback' => [ $this, 'validateDate' ],
-                'description'       => __( 'End date in Y-m-d format.', 'venezia-hotel' ),
+                'description'       => __( 'End date in Y-m-d format.', 'nozule' ),
             ],
         ], $extra );
     }
@@ -324,7 +324,7 @@ class ReportController {
                     'type'              => 'string',
                     'enum'              => [ 'occupancy', 'revenue', 'sources', 'guests', 'forecast', 'cancellations' ],
                     'sanitize_callback' => 'sanitize_text_field',
-                    'description'       => __( 'The type of report to export.', 'venezia-hotel' ),
+                    'description'       => __( 'The type of report to export.', 'nozule' ),
                 ],
                 'format' => [
                     'required'          => false,
@@ -332,13 +332,13 @@ class ReportController {
                     'default'           => 'csv',
                     'enum'              => [ 'csv', 'json' ],
                     'sanitize_callback' => 'sanitize_text_field',
-                    'description'       => __( 'Export format.', 'venezia-hotel' ),
+                    'description'       => __( 'Export format.', 'nozule' ),
                 ],
                 'room_type_id' => [
                     'required'          => false,
                     'type'              => 'integer',
                     'sanitize_callback' => 'absint',
-                    'description'       => __( 'Room type filter (for occupancy report).', 'venezia-hotel' ),
+                    'description'       => __( 'Room type filter (for occupancy report).', 'nozule' ),
                 ],
                 'group_by' => [
                     'required'          => false,
@@ -346,7 +346,7 @@ class ReportController {
                     'default'           => 'daily',
                     'enum'              => [ 'daily', 'weekly', 'monthly' ],
                     'sanitize_callback' => 'sanitize_text_field',
-                    'description'       => __( 'Group by period (for revenue report).', 'venezia-hotel' ),
+                    'description'       => __( 'Group by period (for revenue report).', 'nozule' ),
                 ],
             ]
         );
@@ -368,7 +368,7 @@ class ReportController {
                 'rest_invalid_param',
                 sprintf(
                     /* translators: %s: parameter name */
-                    __( '%s must be a valid date in Y-m-d format.', 'venezia-hotel' ),
+                    __( '%s must be a valid date in Y-m-d format.', 'nozule' ),
                     $param
                 ),
                 [ 'status' => 400 ]

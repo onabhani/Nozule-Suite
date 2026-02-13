@@ -1,8 +1,8 @@
 <?php
 
-namespace Venezia\Modules\Channels\Services;
+namespace Nozule\Modules\Channels\Services;
 
-use Venezia\Modules\Channels\Models\SyncResult;
+use Nozule\Modules\Channels\Models\SyncResult;
 
 /**
  * Expedia channel connector.
@@ -37,7 +37,7 @@ class ExpediaConnector extends AbstractChannelConnector {
 
         if ( empty( $apiKey ) || empty( $propertyId ) ) {
             return SyncResult::failure(
-                __( 'Expedia API key and property ID are required.', 'venezia-hotel' )
+                __( 'Expedia API key and property ID are required.', 'nozule' )
             );
         }
 
@@ -47,7 +47,7 @@ class ExpediaConnector extends AbstractChannelConnector {
 
         return SyncResult::success(
             sprintf(
-                __( 'Availability sync to Expedia is not yet implemented. %d items queued.', 'venezia-hotel' ),
+                __( 'Availability sync to Expedia is not yet implemented. %d items queued.', 'nozule' ),
                 count( $inventory )
             ),
             0
@@ -63,7 +63,7 @@ class ExpediaConnector extends AbstractChannelConnector {
 
         if ( empty( $apiKey ) || empty( $propertyId ) ) {
             return SyncResult::failure(
-                __( 'Expedia API key and property ID are required.', 'venezia-hotel' )
+                __( 'Expedia API key and property ID are required.', 'nozule' )
             );
         }
 
@@ -71,7 +71,7 @@ class ExpediaConnector extends AbstractChannelConnector {
 
         return SyncResult::success(
             sprintf(
-                __( 'Rate sync to Expedia is not yet implemented. %d items queued.', 'venezia-hotel' ),
+                __( 'Rate sync to Expedia is not yet implemented. %d items queued.', 'nozule' ),
                 count( $rates )
             ),
             0
@@ -147,31 +147,31 @@ class ExpediaConnector extends AbstractChannelConnector {
         return [
             [
                 'key'      => 'api_key',
-                'label'    => __( 'API Key', 'venezia-hotel' ),
+                'label'    => __( 'API Key', 'nozule' ),
                 'type'     => 'password',
                 'required' => true,
             ],
             [
                 'key'      => 'api_secret',
-                'label'    => __( 'API Secret', 'venezia-hotel' ),
+                'label'    => __( 'API Secret', 'nozule' ),
                 'type'     => 'password',
                 'required' => true,
             ],
             [
                 'key'      => 'property_id',
-                'label'    => __( 'Property ID', 'venezia-hotel' ),
+                'label'    => __( 'Property ID', 'nozule' ),
                 'type'     => 'text',
                 'required' => true,
             ],
             [
                 'key'      => 'api_endpoint',
-                'label'    => __( 'API Endpoint', 'venezia-hotel' ),
+                'label'    => __( 'API Endpoint', 'nozule' ),
                 'type'     => 'url',
                 'required' => false,
             ],
             [
                 'key'      => 'use_sandbox',
-                'label'    => __( 'Use Sandbox Environment', 'venezia-hotel' ),
+                'label'    => __( 'Use Sandbox Environment', 'nozule' ),
                 'type'     => 'checkbox',
                 'required' => false,
             ],

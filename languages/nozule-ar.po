@@ -1,9 +1,9 @@
-# Arabic translation for Venezia Hotel Manager
+# Arabic translation for Nozule
 # Copyright (C) 2026 Rawaq Suite
 # This file is distributed under the GPL-2.0-or-later.
 msgid ""
 msgstr ""
-"Project-Id-Version: Venezia Hotel Manager 1.0.1\n"
+"Project-Id-Version: Nozule 1.0.1\n"
 "Report-Msgid-Bugs-To: \n"
 "POT-Creation-Date: 2026-02-10 00:00+0000\n"
 "PO-Revision-Date: 2026-02-10 00:00+0000\n"
@@ -17,8 +17,8 @@ msgstr ""
 
 # ---- Plugin Meta ----
 
-msgid "Venezia Hotel Manager"
-msgstr "مدير فندق فينيسيا"
+msgid "Nozule"
+msgstr "نوزول"
 
 # ---- Admin Menu (AdminMenu.php) ----
 
@@ -686,8 +686,8 @@ msgstr "مثال: 25 لنسبة 25%"
 
 # ---- Reception Portal ----
 
-msgid "Reception Portal - Venezia Hotel"
-msgstr "بوابة الاستقبال - فندق فينيسيا"
+msgid "Reception Portal - Nozule Hotel"
+msgstr "بوابة الاستقبال - نوزول"
 
 msgid "Hotel Reception"
 msgstr "استقبال الفندق"

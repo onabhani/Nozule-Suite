@@ -1,9 +1,9 @@
 <?php
 
-namespace Venezia\Modules\Rooms\Validators;
+namespace Nozule\Modules\Rooms\Validators;
 
-use Venezia\Core\BaseValidator;
-use Venezia\Modules\Rooms\Repositories\RoomTypeRepository;
+use Nozule\Core\BaseValidator;
+use Nozule\Modules\Rooms\Repositories\RoomTypeRepository;
 
 /**
  * Validator for room type create and update operations.
@@ -135,7 +135,7 @@ class RoomTypeValidator extends BaseValidator {
 	 */
 	private function validateSlugUniqueness( string $slug, ?int $excludeId ): void {
 		if ( $slug && ! $this->roomTypeRepository->isSlugUnique( $slug, $excludeId ) ) {
-			$this->errors['slug'][] = __( 'This slug is already in use by another room type.', 'venezia-hotel' );
+			$this->errors['slug'][] = __( 'This slug is already in use by another room type.', 'nozule' );
 		}
 	}
 
@@ -149,7 +149,7 @@ class RoomTypeValidator extends BaseValidator {
 		if ( $base !== null && $max !== null && (int) $base > (int) $max ) {
 			$this->errors['base_occupancy'][] = __(
 				'Base occupancy cannot exceed maximum occupancy.',
-				'venezia-hotel'
+				'nozule'
 			);
 		}
 	}

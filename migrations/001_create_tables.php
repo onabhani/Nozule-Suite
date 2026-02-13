@@ -7,7 +7,7 @@ if ( ! defined( 'ABSPATH' ) ) {
     exit;
 }
 
-function vhm_migration_001_create_tables(): void {
+function nzl_migration_001_create_tables(): void {
     global $wpdb;
 
     $charset_collate = $wpdb->get_charset_collate();
@@ -16,7 +16,7 @@ function vhm_migration_001_create_tables(): void {
     require_once ABSPATH . 'wp-admin/includes/upgrade.php';
 
     // Room Types
-    $sql = "CREATE TABLE {$prefix}vhm_room_types (
+    $sql = "CREATE TABLE {$prefix}nzl_room_types (
         id BIGINT UNSIGNED NOT NULL AUTO_INCREMENT,
         name VARCHAR(255) NOT NULL,
         name_ar VARCHAR(255) NOT NULL,
@@ -41,7 +41,7 @@ function vhm_migration_001_create_tables(): void {
     dbDelta( $sql );
 
     // Rooms
-    $sql = "CREATE TABLE {$prefix}vhm_rooms (
+    $sql = "CREATE TABLE {$prefix}nzl_rooms (
         id BIGINT UNSIGNED NOT NULL AUTO_INCREMENT,
         room_type_id BIGINT UNSIGNED NOT NULL,
         room_number VARCHAR(20) NOT NULL,
@@ -59,7 +59,7 @@ function vhm_migration_001_create_tables(): void {
     dbDelta( $sql );
 
     // Room Inventory
-    $sql = "CREATE TABLE {$prefix}vhm_room_inventory (
+    $sql = "CREATE TABLE {$prefix}nzl_room_inventory (
         id BIGINT UNSIGNED NOT NULL AUTO_INCREMENT,
         room_type_id BIGINT UNSIGNED NOT NULL,
         date DATE NOT NULL,
@@ -80,7 +80,7 @@ function vhm_migration_001_create_tables(): void {
     dbDelta( $sql );
 
     // Rate Plans
-    $sql = "CREATE TABLE {$prefix}vhm_rate_plans (
+    $sql = "CREATE TABLE {$prefix}nzl_rate_plans (
         id BIGINT UNSIGNED NOT NULL AUTO_INCREMENT,
         room_type_id BIGINT UNSIGNED DEFAULT NULL,
         name VARCHAR(255) NOT NULL,
@@ -108,7 +108,7 @@ function vhm_migration_001_create_tables(): void {
     dbDelta( $sql );
 
     // Seasonal Rates
-    $sql = "CREATE TABLE {$prefix}vhm_seasonal_rates (
+    $sql = "CREATE TABLE {$prefix}nzl_seasonal_rates (
         id BIGINT UNSIGNED NOT NULL AUTO_INCREMENT,
         rate_plan_id BIGINT UNSIGNED DEFAULT NULL,
         room_type_id BIGINT UNSIGNED DEFAULT NULL,
@@ -129,7 +129,7 @@ function vhm_migration_001_create_tables(): void {
     dbDelta( $sql );
 
     // Guests
-    $sql = "CREATE TABLE {$prefix}vhm_guests (
+    $sql = "CREATE TABLE {$prefix}nzl_guests (
         id BIGINT UNSIGNED NOT NULL AUTO_INCREMENT,
         wp_user_id BIGINT UNSIGNED DEFAULT NULL,
         first_name VARCHAR(100) NOT NULL,
@@ -163,7 +163,7 @@ function vhm_migration_001_create_tables(): void {
     dbDelta( $sql );
 
     // Bookings
-    $sql = "CREATE TABLE {$prefix}vhm_bookings (
+    $sql = "CREATE TABLE {$prefix}nzl_bookings (
         id BIGINT UNSIGNED NOT NULL AUTO_INCREMENT,
         booking_number VARCHAR(20) NOT NULL,
         guest_id BIGINT UNSIGNED NOT NULL,
@@ -218,7 +218,7 @@ function vhm_migration_001_create_tables(): void {
     dbDelta( $sql );
 
     // Booking Logs
-    $sql = "CREATE TABLE {$prefix}vhm_booking_logs (
+    $sql = "CREATE TABLE {$prefix}nzl_booking_logs (
         id BIGINT UNSIGNED NOT NULL AUTO_INCREMENT,
         booking_id BIGINT UNSIGNED NOT NULL,
         action VARCHAR(30) NOT NULL,
@@ -239,7 +239,7 @@ function vhm_migration_001_create_tables(): void {
     dbDelta( $sql );
 
     // Payments
-    $sql = "CREATE TABLE {$prefix}vhm_payments (
+    $sql = "CREATE TABLE {$prefix}nzl_payments (
         id BIGINT UNSIGNED NOT NULL AUTO_INCREMENT,
         booking_id BIGINT UNSIGNED NOT NULL,
         amount DECIMAL(10,2) NOT NULL,
@@ -262,7 +262,7 @@ function vhm_migration_001_create_tables(): void {
     dbDelta( $sql );
 
     // Notifications
-    $sql = "CREATE TABLE {$prefix}vhm_notifications (
+    $sql = "CREATE TABLE {$prefix}nzl_notifications (
         id BIGINT UNSIGNED NOT NULL AUTO_INCREMENT,
         booking_id BIGINT UNSIGNED DEFAULT NULL,
         guest_id BIGINT UNSIGNED DEFAULT NULL,
@@ -291,7 +291,7 @@ function vhm_migration_001_create_tables(): void {
     dbDelta( $sql );
 
     // Channel Mappings
-    $sql = "CREATE TABLE {$prefix}vhm_channel_mappings (
+    $sql = "CREATE TABLE {$prefix}nzl_channel_mappings (
         id BIGINT UNSIGNED NOT NULL AUTO_INCREMENT,
         channel VARCHAR(30) NOT NULL,
         room_type_id BIGINT UNSIGNED NOT NULL,
@@ -314,7 +314,7 @@ function vhm_migration_001_create_tables(): void {
     dbDelta( $sql );
 
     // Settings
-    $sql = "CREATE TABLE {$prefix}vhm_settings (
+    $sql = "CREATE TABLE {$prefix}nzl_settings (
         id BIGINT UNSIGNED NOT NULL AUTO_INCREMENT,
         option_group VARCHAR(100) NOT NULL DEFAULT 'general',
         option_key VARCHAR(191) NOT NULL,

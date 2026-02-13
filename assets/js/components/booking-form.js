@@ -1,5 +1,5 @@
 /**
- * Venezia Hotel Manager - Booking Form Component
+ * Nozule - Booking Form Component
  *
  * Alpine.js component for the guest details and booking confirmation form.
  */
@@ -39,16 +39,16 @@ document.addEventListener('alpine:init', function () {
                 this.errors = {};
 
                 if (!this.guest.first_name.trim()) {
-                    this.errors.first_name = VeneziaI18n.t('first_name') + ' is required';
+                    this.errors.first_name = NozuleI18n.t('first_name') + ' is required';
                 }
                 if (!this.guest.last_name.trim()) {
-                    this.errors.last_name = VeneziaI18n.t('last_name') + ' is required';
+                    this.errors.last_name = NozuleI18n.t('last_name') + ' is required';
                 }
                 if (!this.guest.email.trim() || !this.guest.email.includes('@')) {
-                    this.errors.email = VeneziaI18n.t('email') + ' is required';
+                    this.errors.email = NozuleI18n.t('email') + ' is required';
                 }
                 if (!this.guest.phone.trim()) {
-                    this.errors.phone = VeneziaI18n.t('phone') + ' is required';
+                    this.errors.phone = NozuleI18n.t('phone') + ' is required';
                 }
 
                 return Object.keys(this.errors).length === 0;
@@ -92,7 +92,7 @@ document.addEventListener('alpine:init', function () {
                     source: 'direct'
                 };
 
-                VeneziaAPI.post('/bookings', data).then(function (response) {
+                NozuleAPI.post('/bookings', data).then(function (response) {
                     self.booking = response.data;
                     Alpine.store('booking').setConfirmation(response.data);
                     Alpine.store('booking').selection = null;
@@ -106,11 +106,11 @@ document.addEventListener('alpine:init', function () {
             },
 
             formatPrice: function (amount) {
-                return VeneziaUtils.formatPrice(amount);
+                return NozuleUtils.formatPrice(amount);
             },
 
             formatDate: function (date) {
-                return VeneziaUtils.formatDate(date);
+                return NozuleUtils.formatDate(date);
             }
         };
     });

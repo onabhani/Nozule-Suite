@@ -1,6 +1,6 @@
 <?php
 
-namespace Venezia\Modules\Reports\Services;
+namespace Nozule\Modules\Reports\Services;
 
 /**
  * Service for exporting report data to CSV and JSON formats.

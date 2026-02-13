@@ -1,8 +1,8 @@
 <?php
 
-namespace Venezia\Modules\Bookings\Models;
+namespace Nozule\Modules\Bookings\Models;
 
-use Venezia\Core\BaseModel;
+use Nozule\Core\BaseModel;
 
 /**
  * Booking model.
@@ -10,7 +10,7 @@ use Venezia\Core\BaseModel;
  * Represents a single hotel reservation with computed balance tracking.
  *
  * @property int         $id
- * @property string      $booking_number    Unique reference (e.g. VHM-2025-00001).
+ * @property string      $booking_number    Unique reference (e.g. NZL-2025-00001).
  * @property int         $guest_id
  * @property int         $room_type_id
  * @property int|null    $room_id           Assigned physical room (may be null until check-in).

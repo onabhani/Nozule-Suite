@@ -1,22 +1,22 @@
 <?php
 
-namespace Venezia\API;
+namespace Nozule\API;
 
-use Venezia\Core\Container;
-use Venezia\Modules\Rooms\Controllers\RoomTypeController;
-use Venezia\Modules\Rooms\Controllers\RoomController;
-use Venezia\Modules\Rooms\Controllers\InventoryController;
-use Venezia\Modules\Bookings\Controllers\AvailabilityController;
-use Venezia\Modules\Bookings\Controllers\BookingController;
-use Venezia\Modules\Bookings\Controllers\AdminBookingController;
-use Venezia\Modules\Bookings\Controllers\DashboardController;
-use Venezia\Modules\Bookings\Controllers\CalendarController;
-use Venezia\Modules\Guests\Controllers\GuestController;
-use Venezia\Modules\Pricing\Controllers\RatePlanController;
-use Venezia\Modules\Pricing\Controllers\SeasonalRateController;
-use Venezia\Modules\Settings\Controllers\SettingsController;
-use Venezia\Modules\Reports\Controllers\ReportController;
-use Venezia\Modules\Channels\Controllers\ChannelController;
+use Nozule\Core\Container;
+use Nozule\Modules\Rooms\Controllers\RoomTypeController;
+use Nozule\Modules\Rooms\Controllers\RoomController;
+use Nozule\Modules\Rooms\Controllers\InventoryController;
+use Nozule\Modules\Bookings\Controllers\AvailabilityController;
+use Nozule\Modules\Bookings\Controllers\BookingController;
+use Nozule\Modules\Bookings\Controllers\AdminBookingController;
+use Nozule\Modules\Bookings\Controllers\DashboardController;
+use Nozule\Modules\Bookings\Controllers\CalendarController;
+use Nozule\Modules\Guests\Controllers\GuestController;
+use Nozule\Modules\Pricing\Controllers\RatePlanController;
+use Nozule\Modules\Pricing\Controllers\SeasonalRateController;
+use Nozule\Modules\Settings\Controllers\SettingsController;
+use Nozule\Modules\Reports\Controllers\ReportController;
+use Nozule\Modules\Channels\Controllers\ChannelController;
 use WP_REST_Request;
 use WP_REST_Response;
 use WP_Error;
@@ -24,13 +24,13 @@ use WP_Error;
 /**
  * Main REST route registrar.
  *
- * Registers all module routes under the venezia/v1 namespace and delegates
+ * Registers all module routes under the nozule/v1 namespace and delegates
  * request handling to the appropriate module controller resolved from the
  * dependency-injection container.
  */
 class RestController {
 
-    private const NAMESPACE = 'venezia/v1';
+    private const NAMESPACE = 'nozule/v1';
 
     private Container $container;
 
@@ -127,12 +127,12 @@ class RestController {
     }
 
     // ------------------------------------------------------------------
-    // Staff endpoints (require vhm_staff capability)
+    // Staff endpoints (require nzl_staff capability)
     // ------------------------------------------------------------------
 
     private function registerStaffRoutes(): void {
 
-        $staff_permission = fn() => current_user_can( 'manage_options' ) || current_user_can( 'vhm_staff' );
+        $staff_permission = fn() => current_user_can( 'manage_options' ) || current_user_can( 'nzl_staff' );
 
         // --- Bookings management ---
 
@@ -248,7 +248,7 @@ class RestController {
     }
 
     // ------------------------------------------------------------------
-    // Admin endpoints (require vhm_admin capability)
+    // Admin endpoints (require nzl_admin capability)
     // ------------------------------------------------------------------
 
     private function registerAdminRoutes(): void {

@@ -1,9 +1,9 @@
 <?php
 
-namespace Venezia\Modules\Guests\Repositories;
+namespace Nozule\Modules\Guests\Repositories;
 
-use Venezia\Core\BaseRepository;
-use Venezia\Modules\Guests\Models\Guest;
+use Nozule\Core\BaseRepository;
+use Nozule\Modules\Guests\Models\Guest;
 
 /**
  * Repository for guest database operations.

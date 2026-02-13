@@ -1,10 +1,10 @@
 <?php
 
-namespace Venezia\Modules\Rooms\Repositories;
+namespace Nozule\Modules\Rooms\Repositories;
 
-use Venezia\Core\BaseRepository;
-use Venezia\Core\Database;
-use Venezia\Modules\Rooms\Models\Room;
+use Nozule\Core\BaseRepository;
+use Nozule\Core\Database;
+use Nozule\Modules\Rooms\Models\Room;
 
 /**
  * Repository for individual room CRUD and querying.

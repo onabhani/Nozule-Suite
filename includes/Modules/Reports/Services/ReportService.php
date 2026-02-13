@@ -1,9 +1,9 @@
 <?php
 
-namespace Venezia\Modules\Reports\Services;
+namespace Nozule\Modules\Reports\Services;
 
-use Venezia\Core\Database;
-use Venezia\Core\CacheManager;
+use Nozule\Core\Database;
+use Nozule\Core\CacheManager;
 
 /**
  * Service for generating hotel operational reports.

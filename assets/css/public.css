@@ -1,5 +1,5 @@
 /**
- * Venezia Hotel Manager - Public Styles
+ * Nozule - Public Styles
  *
  * Minimal custom styles. Most styling via Tailwind utility classes in templates.
  */
@@ -8,43 +8,43 @@
    CSS Custom Properties
    ============================================ */
 :root {
-    --vhm-primary: #1e40af;
-    --vhm-primary-light: #3b82f6;
-    --vhm-primary-dark: #1e3a8a;
-    --vhm-secondary: #f59e0b;
-    --vhm-secondary-light: #fbbf24;
-    --vhm-success: #10b981;
-    --vhm-danger: #ef4444;
-    --vhm-warning: #f59e0b;
-    --vhm-info: #3b82f6;
-    --vhm-gray: #6b7280;
-    --vhm-light: #f9fafb;
-    --vhm-border: #e5e7eb;
-    --vhm-radius: 0.5rem;
-    --vhm-shadow: 0 1px 3px 0 rgba(0, 0, 0, 0.1), 0 1px 2px -1px rgba(0, 0, 0, 0.1);
-    --vhm-shadow-lg: 0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -4px rgba(0, 0, 0, 0.1);
-    --vhm-transition: 150ms cubic-bezier(0.4, 0, 0.2, 1);
+    --nzl-primary: #1e40af;
+    --nzl-primary-light: #3b82f6;
+    --nzl-primary-dark: #1e3a8a;
+    --nzl-secondary: #f59e0b;
+    --nzl-secondary-light: #fbbf24;
+    --nzl-success: #10b981;
+    --nzl-danger: #ef4444;
+    --nzl-warning: #f59e0b;
+    --nzl-info: #3b82f6;
+    --nzl-gray: #6b7280;
+    --nzl-light: #f9fafb;
+    --nzl-border: #e5e7eb;
+    --nzl-radius: 0.5rem;
+    --nzl-shadow: 0 1px 3px 0 rgba(0, 0, 0, 0.1), 0 1px 2px -1px rgba(0, 0, 0, 0.1);
+    --nzl-shadow-lg: 0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -4px rgba(0, 0, 0, 0.1);
+    --nzl-transition: 150ms cubic-bezier(0.4, 0, 0.2, 1);
 }
 
 /* ============================================
    Base Widget Styles
    ============================================ */
-.vhm-widget {
+.nzl-widget {
     font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
     line-height: 1.5;
     color: #1f2937;
 }
 
-.vhm-widget *,
-.vhm-widget *::before,
-.vhm-widget *::after {
+.nzl-widget *,
+.nzl-widget *::before,
+.nzl-widget *::after {
     box-sizing: border-box;
 }
 
 /* ============================================
    Form Elements
    ============================================ */
-.vhm-input {
+.nzl-input {
     display: block;
     width: 100%;
     padding: 0.5rem 0.75rem;
@@ -52,22 +52,22 @@
     line-height: 1.5;
     color: #374151;
     background-color: #fff;
-    border: 1px solid var(--vhm-border);
-    border-radius: var(--vhm-radius);
-    transition: border-color var(--vhm-transition), box-shadow var(--vhm-transition);
+    border: 1px solid var(--nzl-border);
+    border-radius: var(--nzl-radius);
+    transition: border-color var(--nzl-transition), box-shadow var(--nzl-transition);
 }
 
-.vhm-input:focus {
+.nzl-input:focus {
     outline: none;
-    border-color: var(--vhm-primary-light);
+    border-color: var(--nzl-primary-light);
     box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.1);
 }
 
-.vhm-input.is-error {
-    border-color: var(--vhm-danger);
+.nzl-input.is-error {
+    border-color: var(--nzl-danger);
 }
 
-.vhm-label {
+.nzl-label {
     display: block;
     margin-bottom: 0.25rem;
     font-size: 0.875rem;
@@ -75,16 +75,16 @@
     color: #374151;
 }
 
-.vhm-error-text {
+.nzl-error-text {
     margin-top: 0.25rem;
     font-size: 0.75rem;
-    color: var(--vhm-danger);
+    color: var(--nzl-danger);
 }
 
 /* ============================================
    Buttons
    ============================================ */
-.vhm-btn {
+.nzl-btn {
     display: inline-flex;
     align-items: center;
     justify-content: center;
@@ -93,53 +93,53 @@
     font-weight: 500;
     line-height: 1.5;
     border: 1px solid transparent;
-    border-radius: var(--vhm-radius);
+    border-radius: var(--nzl-radius);
     cursor: pointer;
-    transition: all var(--vhm-transition);
+    transition: all var(--nzl-transition);
     text-decoration: none;
 }
 
-.vhm-btn:disabled {
+.nzl-btn:disabled {
     opacity: 0.5;
     cursor: not-allowed;
 }
 
-.vhm-btn-primary {
+.nzl-btn-primary {
     color: #fff;
-    background-color: var(--vhm-primary);
-    border-color: var(--vhm-primary);
+    background-color: var(--nzl-primary);
+    border-color: var(--nzl-primary);
 }
 
-.vhm-btn-primary:hover:not(:disabled) {
-    background-color: var(--vhm-primary-dark);
+.nzl-btn-primary:hover:not(:disabled) {
+    background-color: var(--nzl-primary-dark);
 }
 
-.vhm-btn-secondary {
+.nzl-btn-secondary {
     color: #374151;
     background-color: #fff;
-    border-color: var(--vhm-border);
+    border-color: var(--nzl-border);
 }
 
-.vhm-btn-secondary:hover:not(:disabled) {
-    background-color: var(--vhm-light);
+.nzl-btn-secondary:hover:not(:disabled) {
+    background-color: var(--nzl-light);
 }
 
-.vhm-btn-success {
+.nzl-btn-success {
     color: #fff;
-    background-color: var(--vhm-success);
+    background-color: var(--nzl-success);
 }
 
-.vhm-btn-danger {
+.nzl-btn-danger {
     color: #fff;
-    background-color: var(--vhm-danger);
+    background-color: var(--nzl-danger);
 }
 
-.vhm-btn-lg {
+.nzl-btn-lg {
     padding: 0.75rem 1.5rem;
     font-size: 1rem;
 }
 
-.vhm-btn-sm {
+.nzl-btn-sm {
     padding: 0.25rem 0.75rem;
     font-size: 0.75rem;
 }
@@ -147,58 +147,58 @@
 /* ============================================
    Cards
    ============================================ */
-.vhm-card {
+.nzl-card {
     background: #fff;
-    border: 1px solid var(--vhm-border);
-    border-radius: var(--vhm-radius);
-    box-shadow: var(--vhm-shadow);
+    border: 1px solid var(--nzl-border);
+    border-radius: var(--nzl-radius);
+    box-shadow: var(--nzl-shadow);
     overflow: hidden;
 }
 
-.vhm-card-header {
+.nzl-card-header {
     padding: 1rem 1.5rem;
-    border-bottom: 1px solid var(--vhm-border);
+    border-bottom: 1px solid var(--nzl-border);
     font-weight: 600;
 }
 
-.vhm-card-body {
+.nzl-card-body {
     padding: 1.5rem;
 }
 
-.vhm-card-footer {
+.nzl-card-footer {
     padding: 1rem 1.5rem;
-    border-top: 1px solid var(--vhm-border);
-    background-color: var(--vhm-light);
+    border-top: 1px solid var(--nzl-border);
+    background-color: var(--nzl-light);
 }
 
 /* ============================================
    Room Cards
    ============================================ */
-.vhm-room-card {
-    transition: transform var(--vhm-transition), box-shadow var(--vhm-transition);
+.nzl-room-card {
+    transition: transform var(--nzl-transition), box-shadow var(--nzl-transition);
 }
 
-.vhm-room-card:hover {
+.nzl-room-card:hover {
     transform: translateY(-2px);
-    box-shadow: var(--vhm-shadow-lg);
+    box-shadow: var(--nzl-shadow-lg);
 }
 
-.vhm-room-card .vhm-room-image {
+.nzl-room-card .nzl-room-image {
     width: 100%;
     height: 200px;
     object-fit: cover;
 }
 
-.vhm-room-card .vhm-room-price {
+.nzl-room-card .nzl-room-price {
     font-size: 1.25rem;
     font-weight: 700;
-    color: var(--vhm-primary);
+    color: var(--nzl-primary);
 }
 
 /* ============================================
    Status Badges
    ============================================ */
-.vhm-badge {
+.nzl-badge {
     display: inline-flex;
     align-items: center;
     padding: 0.125rem 0.625rem;
@@ -207,39 +207,39 @@
     border-radius: 9999px;
 }
 
-.vhm-badge-pending { background-color: #fef3c7; color: #92400e; }
-.vhm-badge-confirmed { background-color: #d1fae5; color: #065f46; }
-.vhm-badge-checked-in { background-color: #dbeafe; color: #1e40af; }
-.vhm-badge-checked-out { background-color: #f3f4f6; color: #374151; }
-.vhm-badge-cancelled { background-color: #fee2e2; color: #991b1b; }
+.nzl-badge-pending { background-color: #fef3c7; color: #92400e; }
+.nzl-badge-confirmed { background-color: #d1fae5; color: #065f46; }
+.nzl-badge-checked-in { background-color: #dbeafe; color: #1e40af; }
+.nzl-badge-checked-out { background-color: #f3f4f6; color: #374151; }
+.nzl-badge-cancelled { background-color: #fee2e2; color: #991b1b; }
 
 /* ============================================
    Loading Spinner
    ============================================ */
-.vhm-spinner {
+.nzl-spinner {
     display: inline-block;
     width: 1.25rem;
     height: 1.25rem;
-    border: 2px solid var(--vhm-border);
-    border-top-color: var(--vhm-primary);
+    border: 2px solid var(--nzl-border);
+    border-top-color: var(--nzl-primary);
     border-radius: 50%;
-    animation: vhm-spin 0.6s linear infinite;
+    animation: nzl-spin 0.6s linear infinite;
 }
 
-.vhm-spinner-lg {
+.nzl-spinner-lg {
     width: 2.5rem;
     height: 2.5rem;
     border-width: 3px;
 }
 
-@keyframes vhm-spin {
+@keyframes nzl-spin {
     to { transform: rotate(360deg); }
 }
 
 /* ============================================
    Toast Notifications
    ============================================ */
-.vhm-toast-container {
+.nzl-toast-container {
     position: fixed;
     top: 1rem;
     right: 1rem;
@@ -250,19 +250,19 @@
     max-width: 24rem;
 }
 
-.vhm-toast {
+.nzl-toast {
     padding: 0.75rem 1rem;
-    border-radius: var(--vhm-radius);
-    box-shadow: var(--vhm-shadow-lg);
-    animation: vhm-slide-in 0.3s ease-out;
+    border-radius: var(--nzl-radius);
+    box-shadow: var(--nzl-shadow-lg);
+    animation: nzl-slide-in 0.3s ease-out;
 }
 
-.vhm-toast-info { background: #eff6ff; border-left: 4px solid var(--vhm-info); color: #1e40af; }
-.vhm-toast-success { background: #f0fdf4; border-left: 4px solid var(--vhm-success); color: #065f46; }
-.vhm-toast-error { background: #fef2f2; border-left: 4px solid var(--vhm-danger); color: #991b1b; }
-.vhm-toast-warning { background: #fffbeb; border-left: 4px solid var(--vhm-warning); color: #92400e; }
+.nzl-toast-info { background: #eff6ff; border-left: 4px solid var(--nzl-info); color: #1e40af; }
+.nzl-toast-success { background: #f0fdf4; border-left: 4px solid var(--nzl-success); color: #065f46; }
+.nzl-toast-error { background: #fef2f2; border-left: 4px solid var(--nzl-danger); color: #991b1b; }
+.nzl-toast-warning { background: #fffbeb; border-left: 4px solid var(--nzl-warning); color: #92400e; }
 
-@keyframes vhm-slide-in {
+@keyframes nzl-slide-in {
     from { transform: translateX(100%); opacity: 0; }
     to { transform: translateX(0); opacity: 1; }
 }
@@ -270,7 +270,7 @@
 /* ============================================
    Booking Widget Layout
    ============================================ */
-.vhm-booking-widget {
+.nzl-booking-widget {
     display: flex;
     flex-wrap: wrap;
     gap: 0.75rem;
@@ -278,15 +278,15 @@
     padding: 1.5rem;
 }
 
-.vhm-booking-widget.vhm-horizontal {
+.nzl-booking-widget.nzl-horizontal {
     flex-direction: row;
 }
 
-.vhm-booking-widget.vhm-vertical {
+.nzl-booking-widget.nzl-vertical {
     flex-direction: column;
 }
 
-.vhm-booking-widget .vhm-field {
+.nzl-booking-widget .nzl-field {
     flex: 1;
     min-width: 150px;
 }
@@ -295,11 +295,11 @@
    Responsive
    ============================================ */
 @media (max-width: 768px) {
-    .vhm-booking-widget {
+    .nzl-booking-widget {
         flex-direction: column;
     }
 
-    .vhm-booking-widget .vhm-field {
+    .nzl-booking-widget .nzl-field {
         min-width: 100%;
     }
 }

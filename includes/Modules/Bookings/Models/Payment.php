@@ -1,8 +1,8 @@
 <?php
 
-namespace Venezia\Modules\Bookings\Models;
+namespace Nozule\Modules\Bookings\Models;
 
-use Venezia\Core\BaseModel;
+use Nozule\Core\BaseModel;
 
 /**
  * Payment model.

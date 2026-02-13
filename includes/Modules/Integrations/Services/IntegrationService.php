@@ -1,8 +1,8 @@
 <?php
 
-namespace Venezia\Modules\Integrations\Services;
+namespace Nozule\Modules\Integrations\Services;
 
-use Venezia\Core\SettingsManager;
+use Nozule\Core\SettingsManager;
 
 /**
  * Orchestrates dispatching plugin events to configured external systems.
@@ -32,16 +32,16 @@ class IntegrationService {
 		}
 
 		// Booking events.
-		add_action( 'venezia/booking/created',      [ $this, 'onBookingCreated' ], 20, 2 );
-		add_action( 'venezia/booking/confirmed',     [ $this, 'onBookingConfirmed' ], 20 );
-		add_action( 'venezia/booking/cancelled',     [ $this, 'onBookingCancelled' ], 20, 2 );
-		add_action( 'venezia/booking/checked_in',    [ $this, 'onBookingCheckedIn' ], 20, 2 );
-		add_action( 'venezia/booking/checked_out',   [ $this, 'onBookingCheckedOut' ], 20 );
-		add_action( 'venezia/booking/payment_added', [ $this, 'onPaymentAdded' ], 20, 2 );
+		add_action( 'nozule/booking/created',      [ $this, 'onBookingCreated' ], 20, 2 );
+		add_action( 'nozule/booking/confirmed',     [ $this, 'onBookingConfirmed' ], 20 );
+		add_action( 'nozule/booking/cancelled',     [ $this, 'onBookingCancelled' ], 20, 2 );
+		add_action( 'nozule/booking/checked_in',    [ $this, 'onBookingCheckedIn' ], 20, 2 );
+		add_action( 'nozule/booking/checked_out',   [ $this, 'onBookingCheckedOut' ], 20 );
+		add_action( 'nozule/booking/payment_added', [ $this, 'onPaymentAdded' ], 20, 2 );
 
 		// Guest events.
-		add_action( 'venezia/guests/created', [ $this, 'onGuestCreated' ], 20 );
-		add_action( 'venezia/guests/updated', [ $this, 'onGuestUpdated' ], 20 );
+		add_action( 'nozule/guests/created', [ $this, 'onGuestCreated' ], 20 );
+		add_action( 'nozule/guests/updated', [ $this, 'onGuestUpdated' ], 20 );
 	}
 
 	/**
@@ -187,7 +187,7 @@ class IntegrationService {
 			}
 		} catch ( \Throwable $e ) {
 			// Log the error but never break the main flow.
-			do_action( 'venezia/log', 'error', 'Integration dispatch failed', [
+			do_action( 'nozule/log', 'error', 'Integration dispatch failed', [
 				'provider' => $provider,
 				'event'    => $payload['event'] ?? 'unknown',
 				'error'    => $e->getMessage(),

@@ -1,6 +1,6 @@
 <?php
 
-namespace Venezia\Core;
+namespace Nozule\Core;
 
 /**
  * Simple Dependency Injection Container.

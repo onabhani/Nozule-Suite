@@ -1,9 +1,9 @@
 <?php
 
-namespace Venezia\Modules\Rooms\Controllers;
+namespace Nozule\Modules\Rooms\Controllers;
 
-use Venezia\Modules\Rooms\Models\RoomType;
-use Venezia\Modules\Rooms\Services\RoomService;
+use Nozule\Modules\Rooms\Models\RoomType;
+use Nozule\Modules\Rooms\Services\RoomService;
 use WP_REST_Request;
 use WP_REST_Response;
 use WP_REST_Server;
@@ -12,13 +12,13 @@ use WP_REST_Server;
  * REST controller for room type CRUD operations and public listing.
  *
  * Routes:
- *   GET    /venezia/v1/room-types          (public)  List active room types
- *   GET    /venezia/v1/room-types/{id}     (public)  Get single room type
- *   POST   /venezia/v1/room-types          (admin)   Create room type
- *   PUT    /venezia/v1/room-types/{id}     (admin)   Update room type
- *   DELETE /venezia/v1/room-types/{id}     (admin)   Delete room type
- *   POST   /venezia/v1/room-types/reorder  (admin)   Reorder room types
- *   GET    /venezia/v1/admin/room-types    (admin)   List all room types (including inactive)
+ *   GET    /nozule/v1/room-types          (public)  List active room types
+ *   GET    /nozule/v1/room-types/{id}     (public)  Get single room type
+ *   POST   /nozule/v1/room-types          (admin)   Create room type
+ *   PUT    /nozule/v1/room-types/{id}     (admin)   Update room type
+ *   DELETE /nozule/v1/room-types/{id}     (admin)   Delete room type
+ *   POST   /nozule/v1/room-types/reorder  (admin)   Reorder room types
+ *   GET    /nozule/v1/admin/room-types    (admin)   List all room types (including inactive)
  */
 class RoomTypeController {
 
@@ -32,7 +32,7 @@ class RoomTypeController {
 	 * Register REST routes.
 	 */
 	public function registerRoutes(): void {
-		$namespace = 'venezia/v1';
+		$namespace = 'nozule/v1';
 
 		// Public: list active room types.
 		register_rest_route( $namespace, '/room-types', [
@@ -130,7 +130,7 @@ class RoomTypeController {
 		if ( ! $roomType ) {
 			return new WP_REST_Response( [
 				'success' => false,
-				'message' => __( 'Room type not found.', 'venezia-hotel' ),
+				'message' => __( 'Room type not found.', 'nozule' ),
 			], 404 );
 		}
 
@@ -168,14 +168,14 @@ class RoomTypeController {
 		if ( $result instanceof RoomType ) {
 			return new WP_REST_Response( [
 				'success' => true,
-				'message' => __( 'Room type created successfully.', 'venezia-hotel' ),
+				'message' => __( 'Room type created successfully.', 'nozule' ),
 				'data'    => $result->toPublicArray(),
 			], 201 );
 		}
 
 		return new WP_REST_Response( [
 			'success' => false,
-			'message' => __( 'Validation failed.', 'venezia-hotel' ),
+			'message' => __( 'Validation failed.', 'nozule' ),
 			'errors'  => $result,
 		], 422 );
 	}
@@ -192,7 +192,7 @@ class RoomTypeController {
 		if ( $result instanceof RoomType ) {
 			return new WP_REST_Response( [
 				'success' => true,
-				'message' => __( 'Room type updated successfully.', 'venezia-hotel' ),
+				'message' => __( 'Room type updated successfully.', 'nozule' ),
 				'data'    => $result->toPublicArray(),
 			], 200 );
 		}
@@ -208,7 +208,7 @@ class RoomTypeController {
 
 		return new WP_REST_Response( [
 			'success' => false,
-			'message' => __( 'Validation failed.', 'venezia-hotel' ),
+			'message' => __( 'Validation failed.', 'nozule' ),
 			'errors'  => $result,
 		], 422 );
 	}
@@ -223,7 +223,7 @@ class RoomTypeController {
 		if ( $result === true ) {
 			return new WP_REST_Response( [
 				'success' => true,
-				'message' => __( 'Room type deleted successfully.', 'venezia-hotel' ),
+				'message' => __( 'Room type deleted successfully.', 'nozule' ),
 			], 200 );
 		}
 
@@ -231,7 +231,7 @@ class RoomTypeController {
 
 		return new WP_REST_Response( [
 			'success' => false,
-			'message' => __( 'Failed to delete room type.', 'venezia-hotel' ),
+			'message' => __( 'Failed to delete room type.', 'nozule' ),
 			'errors'  => $result,
 		], $statusCode );
 	}
@@ -245,7 +245,7 @@ class RoomTypeController {
 		if ( ! is_array( $orderedIds ) || empty( $orderedIds ) ) {
 			return new WP_REST_Response( [
 				'success' => false,
-				'message' => __( 'ordered_ids is required and must be a non-empty array.', 'venezia-hotel' ),
+				'message' => __( 'ordered_ids is required and must be a non-empty array.', 'nozule' ),
 			], 422 );
 		}
 
@@ -255,13 +255,13 @@ class RoomTypeController {
 		if ( $success ) {
 			return new WP_REST_Response( [
 				'success' => true,
-				'message' => __( 'Room types reordered successfully.', 'venezia-hotel' ),
+				'message' => __( 'Room types reordered successfully.', 'nozule' ),
 			], 200 );
 		}
 
 		return new WP_REST_Response( [
 			'success' => false,
-			'message' => __( 'Failed to reorder room types.', 'venezia-hotel' ),
+			'message' => __( 'Failed to reorder room types.', 'nozule' ),
 		], 500 );
 	}
 
@@ -328,17 +328,17 @@ class RoomTypeController {
 	}
 
 	/**
-	 * Permission callback: require vhm_admin capability.
+	 * Permission callback: require nzl_admin capability.
 	 */
 	public function checkAdminPermission( WP_REST_Request $request ): bool {
-		return current_user_can( 'manage_options' ) || current_user_can( 'vhm_admin' );
+		return current_user_can( 'manage_options' ) || current_user_can( 'nzl_admin' );
 	}
 
 	/**
-	 * Permission callback: require vhm_staff or vhm_admin capability.
+	 * Permission callback: require nzl_staff or nzl_admin capability.
 	 */
 	public function checkStaffPermission( WP_REST_Request $request ): bool {
-		return current_user_can( 'manage_options' ) || current_user_can( 'vhm_admin' ) || current_user_can( 'vhm_staff' );
+		return current_user_can( 'manage_options' ) || current_user_can( 'nzl_admin' ) || current_user_can( 'nzl_staff' );
 	}
 
 	// Standard CRUD aliases (used by RestController admin routes)

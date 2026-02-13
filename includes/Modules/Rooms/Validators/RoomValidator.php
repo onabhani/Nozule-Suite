@@ -1,11 +1,11 @@
 <?php
 
-namespace Venezia\Modules\Rooms\Validators;
+namespace Nozule\Modules\Rooms\Validators;
 
-use Venezia\Core\BaseValidator;
-use Venezia\Modules\Rooms\Models\Room;
-use Venezia\Modules\Rooms\Repositories\RoomRepository;
-use Venezia\Modules\Rooms\Repositories\RoomTypeRepository;
+use Nozule\Core\BaseValidator;
+use Nozule\Modules\Rooms\Models\Room;
+use Nozule\Modules\Rooms\Repositories\RoomRepository;
+use Nozule\Modules\Rooms\Repositories\RoomTypeRepository;
 
 /**
  * Validator for individual room create and update operations.
@@ -62,7 +62,7 @@ class RoomValidator extends BaseValidator {
 
 		if ( ! in_array( $newStatus, Room::validStatuses(), true ) ) {
 			$this->errors['status'][] = sprintf(
-				__( 'Invalid status. Must be one of: %s.', 'venezia-hotel' ),
+				__( 'Invalid status. Must be one of: %s.', 'nozule' ),
 				implode( ', ', Room::validStatuses() )
 			);
 			return false;
@@ -70,7 +70,7 @@ class RoomValidator extends BaseValidator {
 
 		$room = $this->roomRepository->find( $roomId );
 		if ( ! $room ) {
-			$this->errors['id'][] = __( 'Room not found.', 'venezia-hotel' );
+			$this->errors['id'][] = __( 'Room not found.', 'nozule' );
 			return false;
 		}
 
@@ -81,7 +81,7 @@ class RoomValidator extends BaseValidator {
 		) {
 			$this->errors['status'][] = __(
 				'Cannot move an occupied room to maintenance or out-of-order. Check out the guest first.',
-				'venezia-hotel'
+				'nozule'
 			);
 			return false;
 		}
@@ -142,7 +142,7 @@ class RoomValidator extends BaseValidator {
 		if ( $roomNumber && ! $this->roomRepository->isRoomNumberUnique( $roomNumber, $excludeId ) ) {
 			$this->errors['room_number'][] = __(
 				'This room number is already in use.',
-				'venezia-hotel'
+				'nozule'
 			);
 		}
 	}
@@ -154,7 +154,7 @@ class RoomValidator extends BaseValidator {
 		if ( $roomTypeId && ! $this->roomTypeRepository->find( $roomTypeId ) ) {
 			$this->errors['room_type_id'][] = __(
 				'The specified room type does not exist.',
-				'venezia-hotel'
+				'nozule'
 			);
 		}
 	}

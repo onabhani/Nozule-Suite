@@ -1,12 +1,12 @@
 <?php
 
-namespace Venezia\Admin;
+namespace Nozule\Admin;
 
 /**
- * Enqueues CSS and JavaScript assets for the Hotel Manager admin pages.
+ * Enqueues CSS and JavaScript assets for the Nozule admin pages.
  *
  * Assets are loaded only when the current screen belongs to the plugin
- * (screen ID starts with "hotel-manager" or "toplevel_page_vhm").
+ * (screen ID starts with "nozule" or "toplevel_page_nzl").
  */
 class AdminAssets {
 
@@ -42,19 +42,19 @@ class AdminAssets {
 
         // Plugin admin styles
         wp_enqueue_style(
-            'venezia-admin',
-            VHM_PLUGIN_URL . 'assets/css/admin.css',
+            'nozule-admin',
+            NZL_PLUGIN_URL . 'assets/css/admin.css',
             [ 'tailwindcss' ],
-            VHM_VERSION
+            NZL_VERSION
         );
 
         // RTL support
         if ( is_rtl() ) {
             wp_enqueue_style(
-                'venezia-admin-rtl',
-                VHM_PLUGIN_URL . 'assets/css/admin-rtl.css',
-                [ 'venezia-admin' ],
-                VHM_VERSION
+                'nozule-admin-rtl',
+                NZL_PLUGIN_URL . 'assets/css/admin-rtl.css',
+                [ 'nozule-admin' ],
+                NZL_VERSION
             );
         }
 
@@ -65,59 +65,59 @@ class AdminAssets {
 
         // Core utilities (no Alpine dependency — just plain JS)
         wp_enqueue_script(
-            'venezia-api',
-            VHM_PLUGIN_URL . 'assets/js/core/api.js',
+            'nozule-api',
+            NZL_PLUGIN_URL . 'assets/js/core/api.js',
             [],
-            VHM_VERSION,
+            NZL_VERSION,
             true
         );
 
         wp_enqueue_script(
-            'venezia-utils',
-            VHM_PLUGIN_URL . 'assets/js/core/utils.js',
+            'nozule-utils',
+            NZL_PLUGIN_URL . 'assets/js/core/utils.js',
             [],
-            VHM_VERSION,
+            NZL_VERSION,
             true
         );
 
         wp_enqueue_script(
-            'venezia-i18n',
-            VHM_PLUGIN_URL . 'assets/js/core/i18n.js',
+            'nozule-i18n',
+            NZL_PLUGIN_URL . 'assets/js/core/i18n.js',
             [],
-            VHM_VERSION,
+            NZL_VERSION,
             true
         );
 
         // Alpine store — registers alpine:init listener (runs before Alpine)
         wp_enqueue_script(
-            'venezia-store',
-            VHM_PLUGIN_URL . 'assets/js/core/store.js',
-            [ 'venezia-utils' ],
-            VHM_VERSION,
+            'nozule-store',
+            NZL_PLUGIN_URL . 'assets/js/core/store.js',
+            [ 'nozule-utils' ],
+            NZL_VERSION,
             true
         );
 
         // Admin component scripts — each registers an alpine:init listener
         $admin_scripts = [
-            'venezia-admin-dashboard'       => 'dashboard.js',
-            'venezia-admin-booking-manager'  => 'booking-manager.js',
-            'venezia-admin-calendar-view'    => 'calendar-view.js',
-            'venezia-admin-rooms'            => 'rooms.js',
-            'venezia-admin-inventory'        => 'inventory.js',
-            'venezia-admin-guests'           => 'guests.js',
-            'venezia-admin-rates'            => 'rates.js',
-            'venezia-admin-channels'         => 'channels.js',
-            'venezia-admin-settings'         => 'settings.js',
-            'venezia-admin-reports'          => 'reports.js',
+            'nozule-admin-dashboard'       => 'dashboard.js',
+            'nozule-admin-booking-manager'  => 'booking-manager.js',
+            'nozule-admin-calendar-view'    => 'calendar-view.js',
+            'nozule-admin-rooms'            => 'rooms.js',
+            'nozule-admin-inventory'        => 'inventory.js',
+            'nozule-admin-guests'           => 'guests.js',
+            'nozule-admin-rates'            => 'rates.js',
+            'nozule-admin-channels'         => 'channels.js',
+            'nozule-admin-settings'         => 'settings.js',
+            'nozule-admin-reports'          => 'reports.js',
         ];
 
         $component_handles = [];
         foreach ( $admin_scripts as $handle => $file ) {
             wp_enqueue_script(
                 $handle,
-                VHM_PLUGIN_URL . 'assets/js/admin/' . $file,
-                [ 'venezia-api', 'venezia-utils', 'venezia-store' ],
-                VHM_VERSION,
+                NZL_PLUGIN_URL . 'assets/js/admin/' . $file,
+                [ 'nozule-api', 'nozule-utils', 'nozule-store' ],
+                NZL_VERSION,
                 true
             );
             $component_handles[] = $handle;
@@ -129,7 +129,7 @@ class AdminAssets {
         wp_enqueue_script(
             'alpinejs',
             'https://cdn.jsdelivr.net/npm/alpinejs@3.x.x/dist/cdn.min.js',
-            array_merge( [ 'venezia-store' ], $component_handles ),
+            array_merge( [ 'nozule-store' ], $component_handles ),
             '3.14.0',
             true
         );
@@ -140,12 +140,12 @@ class AdminAssets {
 
         $current_user = wp_get_current_user();
 
-        wp_localize_script( 'venezia-api', 'VeneziaAdmin', [
+        wp_localize_script( 'nozule-api', 'NozuleAdmin', [
             'nonce'        => wp_create_nonce( 'wp_rest' ),
-            'apiBase'      => rest_url( 'venezia/v1' ),
+            'apiBase'      => rest_url( 'nozule/v1' ),
             'adminUrl'     => admin_url(),
-            'pluginUrl'    => VHM_PLUGIN_URL,
-            'version'      => VHM_VERSION,
+            'pluginUrl'    => NZL_PLUGIN_URL,
+            'version'      => NZL_VERSION,
             'locale'       => get_locale(),
             'isRtl'        => is_rtl(),
             'user'         => [
@@ -154,23 +154,23 @@ class AdminAssets {
                 'email'        => $current_user->user_email,
             ],
             'i18n'         => [
-                'revenue_report'  => __( 'Revenue Report', 'venezia-hotel' ),
-                'occupancy_report' => __( 'Occupancy Report', 'venezia-hotel' ),
-                'booking_sources' => __( 'Booking Sources', 'venezia-hotel' ),
-                'report'          => __( 'Report', 'venezia-hotel' ),
+                'revenue_report'  => __( 'Revenue Report', 'nozule' ),
+                'occupancy_report' => __( 'Occupancy Report', 'nozule' ),
+                'booking_sources' => __( 'Booking Sources', 'nozule' ),
+                'report'          => __( 'Report', 'nozule' ),
             ],
             'capabilities' => [
-                'admin'            => current_user_can( 'vhm_admin' ),
-                'staff'            => current_user_can( 'vhm_staff' ),
-                'manage_rooms'     => current_user_can( 'vhm_manage_rooms' ),
-                'manage_rates'     => current_user_can( 'vhm_manage_rates' ),
-                'manage_inventory' => current_user_can( 'vhm_manage_inventory' ),
-                'manage_bookings'  => current_user_can( 'vhm_manage_bookings' ),
-                'manage_guests'    => current_user_can( 'vhm_manage_guests' ),
-                'view_reports'     => current_user_can( 'vhm_view_reports' ),
-                'view_calendar'    => current_user_can( 'vhm_view_calendar' ),
-                'manage_channels'  => current_user_can( 'vhm_manage_channels' ),
-                'manage_settings'  => current_user_can( 'vhm_manage_settings' ),
+                'admin'            => current_user_can( 'nzl_admin' ),
+                'staff'            => current_user_can( 'nzl_staff' ),
+                'manage_rooms'     => current_user_can( 'nzl_manage_rooms' ),
+                'manage_rates'     => current_user_can( 'nzl_manage_rates' ),
+                'manage_inventory' => current_user_can( 'nzl_manage_inventory' ),
+                'manage_bookings'  => current_user_can( 'nzl_manage_bookings' ),
+                'manage_guests'    => current_user_can( 'nzl_manage_guests' ),
+                'view_reports'     => current_user_can( 'nzl_view_reports' ),
+                'view_calendar'    => current_user_can( 'nzl_view_calendar' ),
+                'manage_channels'  => current_user_can( 'nzl_manage_channels' ),
+                'manage_settings'  => current_user_can( 'nzl_manage_settings' ),
             ],
         ] );
     }
@@ -179,24 +179,24 @@ class AdminAssets {
      * Determine whether the current screen is a plugin page.
      *
      * Plugin pages have a hook suffix that contains the slug prefix
-     * used in AdminMenu (e.g. "toplevel_page_vhm-dashboard",
-     * "hotel-manager_page_vhm-bookings", etc.).
+     * used in AdminMenu (e.g. "toplevel_page_nzl-dashboard",
+     * "nozule_page_nzl-bookings", etc.).
      *
      * @param string $hook_suffix The admin page hook suffix.
      */
     private function isPluginPage( string $hook_suffix ): bool {
-        // The top-level page uses "toplevel_page_vhm-dashboard".
-        // Sub-pages use "hotel-manager_page_vhm-*".
-        if ( str_starts_with( $hook_suffix, 'toplevel_page_vhm' ) ) {
+        // The top-level page uses "toplevel_page_nzl-dashboard".
+        // Sub-pages use "nozule_page_nzl-*".
+        if ( str_starts_with( $hook_suffix, 'toplevel_page_nzl' ) ) {
             return true;
         }
 
-        if ( str_contains( $hook_suffix, 'hotel-manager' ) ) {
+        if ( str_contains( $hook_suffix, 'nozule' ) ) {
             return true;
         }
 
-        // Fallback: check for any "vhm-" occurrence (covers renamed parent slugs).
-        if ( str_contains( $hook_suffix, 'vhm-' ) ) {
+        // Fallback: check for any "nzl-" occurrence (covers renamed parent slugs).
+        if ( str_contains( $hook_suffix, 'nzl-' ) ) {
             return true;
         }
 
