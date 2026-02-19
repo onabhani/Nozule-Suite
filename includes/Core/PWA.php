@@ -52,7 +52,7 @@ class PWA {
         $icon_url = esc_url( NZL_PLUGIN_URL . 'assets/pwa/icon.svg' );
         ?>
         <meta name="theme-color" content="#1e3a5f">
-        <meta name="apple-mobile-web-app-capable" content="yes">
+        <meta name="mobile-web-app-capable" content="yes">
         <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
         <meta name="apple-mobile-web-app-title" content="Nozule">
         <meta name="application-name" content="Nozule">
@@ -75,7 +75,7 @@ class PWA {
             if ('serviceWorker' in navigator) {
                 window.addEventListener('load', function () {
                     navigator.serviceWorker
-                        .register('<?php echo $sw_url; ?>', { scope: '/' })
+                        .register('<?php echo $sw_url; ?>')
                         .then(function (registration) {
                             // Check for updates periodically (every 60 minutes).
                             setInterval(function () {
