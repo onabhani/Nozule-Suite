@@ -1,0 +1,190 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="theme-color" content="#1e3a5f">
+    <title>Nozule - Offline | غير متصل</title>
+    <style>
+        *,
+        *::before,
+        *::after {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial,
+                         'Noto Sans Arabic', 'Noto Sans', sans-serif;
+            background-color: #0f2640;
+            color: #e2e8f0;
+            min-height: 100vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 1.5rem;
+            direction: rtl;
+        }
+
+        .container {
+            text-align: center;
+            max-width: 32rem;
+            width: 100%;
+        }
+
+        /* Animated wifi-off icon */
+        .icon-wrap {
+            margin-bottom: 2rem;
+        }
+
+        .icon-wrap svg {
+            width: 5rem;
+            height: 5rem;
+            color: #64b5f6;
+            animation: pulse 2s ease-in-out infinite;
+        }
+
+        @keyframes pulse {
+            0%, 100% { opacity: 0.6; transform: scale(1); }
+            50% { opacity: 1; transform: scale(1.08); }
+        }
+
+        /* Card */
+        .card {
+            background-color: #1e3a5f;
+            border-radius: 1rem;
+            padding: 2.5rem 2rem;
+            box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.4);
+        }
+
+        /* Arabic heading */
+        .title-ar {
+            font-size: 1.75rem;
+            font-weight: 700;
+            margin-bottom: 0.5rem;
+            color: #ffffff;
+        }
+
+        /* English heading */
+        .title-en {
+            font-size: 1.25rem;
+            font-weight: 600;
+            color: #90caf9;
+            margin-bottom: 1.5rem;
+            direction: ltr;
+        }
+
+        .divider {
+            width: 4rem;
+            height: 2px;
+            background-color: #3b82f6;
+            margin: 0 auto 1.5rem;
+            border-radius: 1px;
+        }
+
+        /* Arabic body */
+        .body-ar {
+            font-size: 1rem;
+            line-height: 1.75;
+            color: #cbd5e1;
+            margin-bottom: 0.75rem;
+        }
+
+        /* English body */
+        .body-en {
+            font-size: 0.875rem;
+            line-height: 1.625;
+            color: #94a3b8;
+            direction: ltr;
+            margin-bottom: 2rem;
+        }
+
+        /* Retry button */
+        .btn-retry {
+            display: inline-flex;
+            align-items: center;
+            gap: 0.5rem;
+            background-color: #3b82f6;
+            color: #ffffff;
+            font-size: 1rem;
+            font-weight: 600;
+            padding: 0.75rem 2rem;
+            border: none;
+            border-radius: 0.5rem;
+            cursor: pointer;
+            transition: background-color 0.2s ease, transform 0.15s ease;
+        }
+
+        .btn-retry:hover {
+            background-color: #2563eb;
+        }
+
+        .btn-retry:active {
+            transform: scale(0.97);
+        }
+
+        .btn-retry svg {
+            width: 1.25rem;
+            height: 1.25rem;
+        }
+
+        /* Brand footer */
+        .brand {
+            margin-top: 2rem;
+            font-size: 0.75rem;
+            color: #475569;
+        }
+
+        .brand strong {
+            color: #64748b;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="icon-wrap">
+            <!-- Wi-Fi Off icon -->
+            <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor">
+                <path stroke-linecap="round" stroke-linejoin="round"
+                      d="M12 18.75a.75.75 0 1 0 0-1.5.75.75 0 0 0 0 1.5Z" />
+                <path stroke-linecap="round" stroke-linejoin="round"
+                      d="M8.648 15.352a4.478 4.478 0 0 1 6.704 0" />
+                <path stroke-linecap="round" stroke-linejoin="round"
+                      d="M5.295 12a8.954 8.954 0 0 1 13.41 0" />
+                <path stroke-linecap="round" stroke-linejoin="round"
+                      d="M1.943 8.648a13.432 13.432 0 0 1 20.114 0" />
+                <path stroke-linecap="round" stroke-linejoin="round"
+                      d="M3 3l18 18" />
+            </svg>
+        </div>
+
+        <div class="card">
+            <h1 class="title-ar">غير متصل بالإنترنت</h1>
+            <p class="title-en">You Are Offline</p>
+
+            <div class="divider"></div>
+
+            <p class="body-ar">
+                يبدو أنك غير متصل بالإنترنت حالياً.
+                يرجى التحقق من اتصالك بالشبكة والمحاولة مرة أخرى.
+            </p>
+            <p class="body-en">
+                It looks like you are not connected to the internet.
+                Please check your network connection and try again.
+            </p>
+
+            <button class="btn-retry" onclick="location.reload()">
+                <!-- Refresh icon -->
+                <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor">
+                    <path stroke-linecap="round" stroke-linejoin="round"
+                          d="M16.023 9.348h4.992v-.001M2.985 19.644v-4.992m0 0h4.992m-4.993 0 3.181 3.183a8.25 8.25 0 0 0 13.803-3.7M4.031 9.865a8.25 8.25 0 0 1 13.803-3.7l3.181 3.182" />
+                </svg>
+                <span>إعادة المحاولة / Retry</span>
+            </button>
+        </div>
+
+        <p class="brand"><strong>Nozule</strong> &mdash; نزلي</p>
+    </div>
+</body>
+</html>

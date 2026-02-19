@@ -43,6 +43,12 @@ class Activator {
     private static function createTables(): void {
         require_once NZL_PLUGIN_DIR . 'migrations/001_create_tables.php';
         nzl_migration_001_create_tables();
+
+        require_once NZL_PLUGIN_DIR . 'migrations/003_create_housekeeping_billing_groups.php';
+        nzl_migration_003_create_housekeeping_billing_groups();
+
+        require_once NZL_PLUGIN_DIR . 'migrations/004_create_promotions_messaging_currency_documents.php';
+        nzl_migration_004_create_promotions_messaging_currency_documents();
     }
 
     /**

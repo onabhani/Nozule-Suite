@@ -67,9 +67,26 @@ class RatePlanRepository extends BaseRepository {
 	 * given room type (either specifically or globally via NULL room_type_id).
 	 * Prefers a room-type-specific plan over a global one.
 	 * Falls back to the first active plan for the room type.
+	 *
+	 * When $guestType is provided ('syrian' or 'non_syrian'), it first tries
+	 * to find a plan matching that guest type, then falls back to 'all'.
 	 */
-	public function getDefaultForRoomType( int $roomTypeId ): ?RatePlan {
+	public function getDefaultForRoomType( int $roomTypeId, ?string $guestType = null ): ?RatePlan {
 		$table = $this->tableName();
+
+		// Build guest_type filter: prefer specific type, fall back to 'all'.
+		$guestTypeClause = "AND (guest_type = 'all')";
+		$guestTypeOrder  = '';
+		if ( $guestType && in_array( $guestType, [ 'syrian', 'non_syrian' ], true ) ) {
+			$guestTypeClause = $this->db->prepare(
+				"AND (guest_type = %s OR guest_type = 'all')",
+				$guestType
+			);
+			$guestTypeOrder = $this->db->prepare(
+				"CASE WHEN guest_type = %s THEN 0 ELSE 1 END ASC,",
+				$guestType
+			);
+		}
 
 		// First try to find a plan explicitly marked as default for this room type.
 		$row = $this->db->getRow(
@@ -77,7 +94,9 @@ class RatePlanRepository extends BaseRepository {
 			WHERE status = 'active'
 			AND is_default = 1
 			AND (room_type_id = %d OR room_type_id IS NULL)
+			{$guestTypeClause}
 			ORDER BY
+				{$guestTypeOrder}
 				CASE WHEN room_type_id = %d THEN 0 ELSE 1 END ASC,
 				name ASC
 			LIMIT 1",
@@ -94,7 +113,9 @@ class RatePlanRepository extends BaseRepository {
 			"SELECT * FROM {$table}
 			WHERE status = 'active'
 			AND (room_type_id = %d OR room_type_id IS NULL)
+			{$guestTypeClause}
 			ORDER BY
+				{$guestTypeOrder}
 				CASE WHEN room_type_id = %d THEN 0 ELSE 1 END ASC,
 				name ASC
 			LIMIT 1",
