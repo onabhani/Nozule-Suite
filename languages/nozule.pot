@@ -6,712 +6,1745 @@ msgstr ""
 "Project-Id-Version: Nozule 1.0.1\n"
 "Report-Msgid-Bugs-To: \n"
 "POT-Creation-Date: 2026-02-10 00:00+0000\n"
-"PO-Revision-Date: 2026-02-10 00:00+0000\n"
+"PO-Revision-Date: 2026-02-19 00:00+0000\n"
 "Last-Translator: \n"
-"Language-Team: Arabic\n"
-"Language: ar\n"
+"Language-Team: LANGUAGE\n"
+"Language: \n"
 "MIME-Version: 1.0\n"
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
-"Plural-Forms: nplurals=6; plural=(n==0 ? 0 : n==1 ? 1 : n==2 ? 2 : n%100>=3 "
-"&& n%100<=10 ? 3 : n%100>=11 && n%100<=99 ? 4 : 5);\n"
+"Plural-Forms: nplurals=6; plural=(n==0 ? 0 : n==1 ? 1 : n==2 ? 2 : n%100>=3 && n%100<=10 ? 3 : n%100>=11 && n%100<=99 ? 4 : 5);\n"
 
 # ---- Plugin Meta ----
+
 msgid "Nozule"
-msgstr "نزلي"
+msgstr ""
 
 # ---- Admin Menu (AdminMenu.php) ----
+
 msgid "Hotel Manager"
-msgstr "مدير الفندق"
+msgstr ""
 
 msgid "Dashboard"
-msgstr "لوحة التحكم"
+msgstr ""
 
 msgid "Bookings"
-msgstr "الحجوزات"
+msgstr ""
 
 msgid "Calendar"
-msgstr "التقويم"
+msgstr ""
 
 msgid "Guests"
-msgstr "الضيوف"
+msgstr ""
 
 msgid "Rooms"
-msgstr "الغرف"
+msgstr ""
 
 msgid "Rates & Pricing"
-msgstr "الأسعار والتسعير"
+msgstr ""
 
 msgid "Inventory"
-msgstr "المخزون"
+msgstr ""
 
 msgid "Reports"
-msgstr "التقارير"
+msgstr ""
 
 msgid "Channel Manager"
-msgstr "مدير القنوات"
+msgstr ""
 
 msgid "Settings"
-msgstr "الإعدادات"
+msgstr ""
 
 # ---- Dashboard ----
+
 msgid "Hotel Dashboard"
-msgstr "لوحة تحكم الفندق"
+msgstr ""
 
 msgid "Today's Arrivals"
-msgstr "وصول اليوم"
+msgstr ""
 
 msgid "Today's Departures"
-msgstr "مغادرة اليوم"
+msgstr ""
 
 msgid "In-House Guests"
-msgstr "الضيوف الحاليون"
+msgstr ""
 
 msgid "Occupancy Rate"
-msgstr "نسبة الإشغال"
+msgstr ""
 
 msgid "Today's Revenue"
-msgstr "إيرادات اليوم"
+msgstr ""
 
 msgid "Arrivals"
-msgstr "الوصول"
+msgstr ""
 
 msgid "Departures"
-msgstr "المغادرة"
+msgstr ""
 
 msgid "In-House"
-msgstr "في الفندق"
+msgstr ""
 
 msgid "Booking #"
-msgstr "حجز #"
+msgstr ""
 
 msgid "Guest"
-msgstr "الضيف"
+msgstr ""
 
 msgid "Room Type"
-msgstr "نوع الغرفة"
+msgstr ""
 
 msgid "Nights"
-msgstr "ليالي"
+msgstr ""
 
 msgid "Status"
-msgstr "الحالة"
+msgstr ""
 
 msgid "Actions"
-msgstr "إجراءات"
+msgstr ""
 
 msgid "Confirm"
-msgstr "تأكيد"
+msgstr ""
 
 msgid "Check In"
-msgstr "تسجيل وصول"
+msgstr ""
 
 msgid "Check Out"
-msgstr "تسجيل مغادرة"
+msgstr ""
 
 msgid "Room"
-msgstr "الغرفة"
+msgstr ""
 
 msgid "Balance"
-msgstr "الرصيد"
+msgstr ""
 
 msgid "No arrivals today"
-msgstr "لا يوجد وصول اليوم"
+msgstr ""
 
 msgid "No departures today"
-msgstr "لا توجد مغادرات اليوم"
+msgstr ""
 
 msgid "No guests currently in-house"
-msgstr "لا يوجد ضيوف حالياً في الفندق"
+msgstr ""
 
 # ---- Bookings ----
+
 msgid "Add New Booking"
-msgstr "إضافة حجز جديد"
+msgstr ""
 
 msgid "All Statuses"
-msgstr "جميع الحالات"
+msgstr ""
 
 msgid "Pending"
-msgstr "معلق"
+msgstr ""
 
 msgid "Confirmed"
-msgstr "مؤكد"
+msgstr ""
 
 msgid "Checked In"
-msgstr "مسجل وصول"
+msgstr ""
 
 msgid "Checked Out"
-msgstr "مسجل مغادرة"
+msgstr ""
 
 msgid "Cancelled"
-msgstr "ملغي"
+msgstr ""
 
 msgid "No Show"
-msgstr "لم يحضر"
+msgstr ""
 
 msgid "From"
-msgstr "من"
+msgstr ""
 
 msgid "To"
-msgstr "إلى"
+msgstr ""
 
 msgid "Search"
-msgstr "بحث"
+msgstr ""
 
 msgid "Booking #, guest name..."
-msgstr "رقم الحجز، اسم الضيف..."
+msgstr ""
 
 msgid "Check-in"
-msgstr "تسجيل الوصول"
+msgstr ""
 
 msgid "Check-out"
-msgstr "تسجيل المغادرة"
+msgstr ""
 
 msgid "Total"
-msgstr "المجموع"
+msgstr ""
 
 msgid "No bookings found."
-msgstr "لا توجد حجوزات."
+msgstr ""
 
 msgid "Page"
-msgstr "صفحة"
+msgstr ""
 
 msgid "of"
-msgstr "من"
+msgstr ""
 
 msgid "Previous"
-msgstr "السابق"
+msgstr ""
 
 msgid "Next"
-msgstr "التالي"
+msgstr ""
 
 # ---- Calendar ----
+
 msgid "Availability Calendar"
-msgstr "تقويم التوفر"
+msgstr ""
 
 msgid "Week"
-msgstr "أسبوع"
+msgstr ""
 
 msgid "2 Weeks"
-msgstr "أسبوعين"
+msgstr ""
 
 msgid "Month"
-msgstr "شهر"
+msgstr ""
 
 msgid "Available"
-msgstr "متاح"
+msgstr ""
 
 msgid "Occupied"
-msgstr "مشغول"
+msgstr ""
 
 msgid "Blocked"
-msgstr "محجوب"
+msgstr ""
 
 msgid "No rooms configured yet. Add room types and rooms first."
-msgstr "لم يتم إعداد غرف بعد. أضف أنواع الغرف والغرف أولاً."
+msgstr ""
 
 msgid "Go to Rooms"
-msgstr "الذهاب إلى الغرف"
+msgstr ""
 
 # ---- Guests ----
+
 msgid "Name, email, phone..."
-msgstr "الاسم، البريد الإلكتروني، الهاتف..."
+msgstr ""
 
 msgid "Name"
-msgstr "الاسم"
+msgstr ""
 
 msgid "Email"
-msgstr "البريد الإلكتروني"
+msgstr ""
 
 msgid "Phone"
-msgstr "الهاتف"
+msgstr ""
 
 msgid "Country"
-msgstr "الدولة"
+msgstr ""
 
 msgid "Total Bookings"
-msgstr "إجمالي الحجوزات"
+msgstr ""
 
 msgid "Last Stay"
-msgstr "آخر إقامة"
+msgstr ""
 
 msgid "View"
-msgstr "عرض"
+msgstr ""
 
 msgid "No guests found."
-msgstr "لا يوجد ضيوف."
+msgstr ""
+
+msgid "Add Guest"
+msgstr ""
+
+msgid "Edit Guest"
+msgstr ""
+
+msgid "Guest Profile"
+msgstr ""
+
+msgid "Total Spent"
+msgstr ""
+
+msgid "Total Nights"
+msgstr ""
+
+msgid "Personal Information"
+msgstr ""
+
+msgid "Identity & Address"
+msgstr ""
+
+msgid "Alternative Phone"
+msgstr ""
+
+msgid "Alt. Phone"
+msgstr ""
+
+msgid "Gender"
+msgstr ""
+
+msgid "Male"
+msgstr ""
+
+msgid "Female"
+msgstr ""
+
+msgid "Date of Birth"
+msgstr ""
+
+msgid "Company"
+msgstr ""
+
+msgid "ID Type"
+msgstr ""
+
+msgid "Passport"
+msgstr ""
+
+msgid "National ID"
+msgstr ""
+
+msgid "Driving License"
+msgstr ""
+
+msgid "Other"
+msgstr ""
+
+msgid "ID Number"
+msgstr ""
+
+msgid "City"
+msgstr ""
+
+msgid "Address"
+msgstr ""
+
+msgid "Internal notes about this guest..."
+msgstr ""
+
+msgid "Booking History"
+msgstr ""
+
+msgid "No bookings yet."
+msgstr ""
 
 # ---- Rooms ----
+
 msgid "Add Room Type"
-msgstr "إضافة نوع غرفة"
+msgstr ""
 
 msgid "Add Room"
-msgstr "إضافة غرفة"
+msgstr ""
 
 msgid "Room Types"
-msgstr "أنواع الغرف"
+msgstr ""
 
 msgid "Individual Rooms"
-msgstr "الغرف الفردية"
+msgstr ""
 
 msgid "Base Price"
-msgstr "السعر الأساسي"
+msgstr ""
 
 msgid "Max Occupancy"
-msgstr "الحد الأقصى للإشغال"
+msgstr ""
 
 msgid "Edit"
-msgstr "تعديل"
+msgstr ""
 
 msgid "Delete"
-msgstr "حذف"
+msgstr ""
 
 msgid "No room types found."
-msgstr "لا توجد أنواع غرف."
+msgstr ""
 
 msgid "Room Number"
-msgstr "رقم الغرفة"
+msgstr ""
 
 msgid "Floor"
-msgstr "الطابق"
+msgstr ""
 
 msgid "No rooms found."
-msgstr "لا توجد غرف."
+msgstr ""
 
 # ---- Inventory ----
+
 msgid "Room Inventory"
-msgstr "مخزون الغرف"
+msgstr ""
 
 msgid "Bulk Update"
-msgstr "تحديث جماعي"
+msgstr ""
 
 msgid "All Room Types"
-msgstr "جميع أنواع الغرف"
+msgstr ""
 
 msgid "High Availability"
-msgstr "توفر عالي"
+msgstr ""
 
 msgid "Low Availability"
-msgstr "توفر منخفض"
+msgstr ""
 
 msgid "Sold Out"
-msgstr "نفذ"
+msgstr ""
 
 # ---- Reports ----
+
 msgid "Export CSV"
-msgstr "تصدير CSV"
+msgstr ""
 
 msgid "Report Type"
-msgstr "نوع التقرير"
+msgstr ""
 
 msgid "Revenue"
-msgstr "الإيرادات"
+msgstr ""
 
 msgid "Occupancy"
-msgstr "الإشغال"
+msgstr ""
 
 msgid "Booking Sources"
-msgstr "مصادر الحجز"
+msgstr ""
 
 msgid "Period"
-msgstr "الفترة"
+msgstr ""
 
 msgid "Today"
-msgstr "اليوم"
+msgstr ""
 
 msgid "This Week"
-msgstr "هذا الأسبوع"
+msgstr ""
 
 msgid "This Month"
-msgstr "هذا الشهر"
+msgstr ""
 
 msgid "This Quarter"
-msgstr "هذا الربع"
+msgstr ""
 
 msgid "This Year"
-msgstr "هذه السنة"
+msgstr ""
 
 msgid "Custom Range"
-msgstr "نطاق مخصص"
+msgstr ""
 
 msgid "Apply"
-msgstr "تطبيق"
+msgstr ""
 
 msgid "No data available for the selected period."
-msgstr "لا توجد بيانات للفترة المحددة."
+msgstr ""
 
 # ---- Channels ----
+
 msgid "Add Channel"
-msgstr "إضافة قناة"
+msgstr ""
 
 msgid "Type:"
-msgstr "النوع:"
+msgstr ""
 
 msgid "Last Sync:"
-msgstr "آخر مزامنة:"
+msgstr ""
 
 msgid "Never"
-msgstr "أبداً"
+msgstr ""
 
 msgid "Bookings:"
-msgstr "الحجوزات:"
+msgstr ""
 
 msgid "Sync Now"
-msgstr "مزامنة الآن"
+msgstr ""
 
 msgid "Syncing..."
-msgstr "جاري المزامنة..."
+msgstr ""
 
 msgid "No channels configured yet."
-msgstr "لم يتم إعداد قنوات بعد."
+msgstr ""
 
-msgid ""
-"Connect to OTAs and booking platforms to sync availability and reservations."
-msgstr "اتصل بمنصات الحجز لمزامنة التوفر والحجوزات."
+msgid "Connect to OTAs and booking platforms to sync availability and reservations."
+msgstr ""
 
 msgid "Add Your First Channel"
-msgstr "أضف قناتك الأولى"
+msgstr ""
 
 # ---- Settings ----
+
 msgid "General"
-msgstr "عام"
+msgstr ""
 
 msgid "Currency"
-msgstr "العملة"
+msgstr ""
 
 msgid "Booking"
-msgstr "الحجز"
+msgstr ""
 
 msgid "Notifications"
-msgstr "الإشعارات"
+msgstr ""
 
 msgid "Policies"
-msgstr "السياسات"
+msgstr ""
 
 msgid "General Settings"
-msgstr "الإعدادات العامة"
+msgstr ""
 
 msgid "Hotel Name"
-msgstr "اسم الفندق"
+msgstr ""
 
 msgid "Hotel Email"
-msgstr "البريد الإلكتروني للفندق"
+msgstr ""
 
 msgid "Hotel Phone"
-msgstr "هاتف الفندق"
+msgstr ""
 
 msgid "Hotel Address"
-msgstr "عنوان الفندق"
+msgstr ""
 
 msgid "Timezone"
-msgstr "المنطقة الزمنية"
+msgstr ""
 
 msgid "e.g. America/New_York"
-msgstr "مثال: Asia/Riyadh"
+msgstr ""
 
 msgid "Check-in Time"
-msgstr "وقت تسجيل الوصول"
+msgstr ""
 
 msgid "Check-out Time"
-msgstr "وقت تسجيل المغادرة"
+msgstr ""
 
 msgid "Currency Settings"
-msgstr "إعدادات العملة"
+msgstr ""
 
 msgid "Default Currency"
-msgstr "العملة الافتراضية"
+msgstr ""
 
 msgid "Currency Symbol"
-msgstr "رمز العملة"
+msgstr ""
 
 msgid "Symbol Position"
-msgstr "موضع الرمز"
+msgstr ""
 
 msgid "Before amount ($100)"
-msgstr "قبل المبلغ (100﷼)"
+msgstr ""
 
 msgid "After amount (100$)"
-msgstr "بعد المبلغ (﷼100)"
+msgstr ""
 
 msgid "Booking Settings"
-msgstr "إعدادات الحجز"
+msgstr ""
 
 msgid "Minimum Stay (nights)"
-msgstr "الحد الأدنى للإقامة (ليالي)"
+msgstr ""
 
 msgid "Maximum Stay (nights)"
-msgstr "الحد الأقصى للإقامة (ليالي)"
+msgstr ""
 
 msgid "Advance Booking (days)"
-msgstr "الحجز المسبق (أيام)"
+msgstr ""
 
 msgid "Auto-confirm bookings"
-msgstr "تأكيد الحجوزات تلقائياً"
+msgstr ""
 
 msgid "Notification Settings"
-msgstr "إعدادات الإشعارات"
+msgstr ""
 
 msgid "Email admin on new booking"
-msgstr "إرسال بريد للمدير عند حجز جديد"
+msgstr ""
 
 msgid "Email admin on cancellation"
-msgstr "إرسال بريد للمدير عند الإلغاء"
+msgstr ""
 
 msgid "Send booking confirmation to guest"
-msgstr "إرسال تأكيد الحجز للضيف"
+msgstr ""
 
 msgid "Send pre-arrival reminder to guest"
-msgstr "إرسال تذكير ما قبل الوصول للضيف"
+msgstr ""
 
 msgid "Reminder Days Before Arrival"
-msgstr "أيام التذكير قبل الوصول"
+msgstr ""
 
 msgid "Cancellation & Policies"
-msgstr "الإلغاء والسياسات"
+msgstr ""
 
 msgid "Free Cancellation Hours"
-msgstr "ساعات الإلغاء المجاني"
+msgstr ""
 
 msgid "Cancellation Policy Text"
-msgstr "نص سياسة الإلغاء"
+msgstr ""
 
 msgid "Terms & Conditions"
-msgstr "الشروط والأحكام"
+msgstr ""
 
 msgid "Save Settings"
-msgstr "حفظ الإعدادات"
+msgstr ""
 
 msgid "Saving..."
-msgstr "جاري الحفظ..."
+msgstr ""
 
 msgid "Settings saved successfully."
-msgstr "تم حفظ الإعدادات بنجاح."
+msgstr ""
 
 # ---- Rates & Pricing ----
+
 msgid "Add Rate Plan"
-msgstr "إضافة خطة أسعار"
+msgstr ""
 
 msgid "Add Seasonal Rate"
-msgstr "إضافة سعر موسمي"
+msgstr ""
 
 msgid "Rate Plans"
-msgstr "خطط الأسعار"
+msgstr ""
 
 msgid "Seasonal Rates"
-msgstr "الأسعار الموسمية"
+msgstr ""
 
 msgid "Code"
-msgstr "الرمز"
+msgstr ""
 
 msgid "Modifier Type"
-msgstr "نوع المعدّل"
+msgstr ""
 
 msgid "Modifier Value"
-msgstr "قيمة المعدّل"
+msgstr ""
 
 msgid "Min Stay"
-msgstr "الحد الأدنى للإقامة"
+msgstr ""
 
 msgid "No rate plans found."
-msgstr "لا توجد خطط أسعار."
+msgstr ""
 
 msgid "Season Name"
-msgstr "اسم الموسم"
+msgstr ""
 
 msgid "Start Date"
-msgstr "تاريخ البدء"
+msgstr ""
 
 msgid "End Date"
-msgstr "تاريخ الانتهاء"
+msgstr ""
 
 msgid "Modifier"
-msgstr "المعدّل"
+msgstr ""
 
 msgid "Priority"
-msgstr "الأولوية"
+msgstr ""
 
 msgid "No seasonal rates found."
-msgstr "لا توجد أسعار موسمية."
+msgstr ""
 
 msgid "Edit Rate Plan"
-msgstr "تعديل خطة الأسعار"
+msgstr ""
 
 msgid "Plan Name"
-msgstr "اسم الخطة"
+msgstr ""
 
 msgid "e.g. Standard Rate"
-msgstr "مثال: السعر القياسي"
+msgstr ""
 
 msgid "e.g. standard-rate"
-msgstr "مثال: standard-rate"
+msgstr ""
 
 msgid "Percentage"
-msgstr "نسبة مئوية"
+msgstr ""
 
 msgid "Fixed Amount"
-msgstr "مبلغ ثابت"
+msgstr ""
 
 msgid "Absolute Price"
-msgstr "سعر مطلق"
+msgstr ""
 
 msgid "e.g. 10 for 10%"
-msgstr "مثال: 10 لنسبة 10%"
+msgstr ""
 
 msgid "Min Stay (nights)"
-msgstr "الحد الأدنى للإقامة (ليالي)"
+msgstr ""
 
 msgid "Max Stay (nights)"
-msgstr "الحد الأقصى للإقامة (ليالي)"
+msgstr ""
 
 msgid "Active"
-msgstr "نشط"
+msgstr ""
 
 msgid "Inactive"
-msgstr "غير نشط"
+msgstr ""
 
 msgid "Description"
-msgstr "الوصف"
+msgstr ""
 
 msgid "Optional description..."
-msgstr "وصف اختياري..."
+msgstr ""
 
 msgid "Cancel"
-msgstr "إلغاء"
+msgstr ""
 
 msgid "Update"
-msgstr "تحديث"
+msgstr ""
 
 msgid "Create"
-msgstr "إنشاء"
+msgstr ""
 
 msgid "Edit Seasonal Rate"
-msgstr "تعديل السعر الموسمي"
+msgstr ""
 
 msgid "e.g. Summer Peak"
-msgstr "مثال: ذروة الصيف"
+msgstr ""
 
 msgid "Room Type ID"
-msgstr "معرّف نوع الغرفة"
+msgstr ""
 
 msgid "-- Select --"
-msgstr "-- اختر --"
+msgstr ""
 
 msgid "e.g. 25 for 25%"
-msgstr "مثال: 25 لنسبة 25%"
+msgstr ""
 
 # ---- Reception Portal ----
+
 msgid "Reception Portal - Nozule Hotel"
-msgstr "بوابة الاستقبال - نزلي"
+msgstr ""
 
 msgid "Hotel Reception"
-msgstr "استقبال الفندق"
+msgstr ""
 
 # ---- Public Booking Flow ----
+
 msgid "Adults"
-msgstr "بالغين"
+msgstr ""
 
 msgid "Children"
-msgstr "أطفال"
+msgstr ""
 
 msgid "night(s)"
-msgstr "ليلة/ليالي"
+msgstr ""
 
 msgid "available"
-msgstr "متاح"
+msgstr ""
 
 msgid "No rooms available for the selected dates."
-msgstr "لا تتوفر غرف للتواريخ المحددة."
+msgstr ""
 
 msgid "Guest Details"
-msgstr "بيانات الضيف"
+msgstr ""
 
 msgid "First Name"
-msgstr "الاسم الأول"
+msgstr ""
 
 msgid "Last Name"
-msgstr "اسم العائلة"
+msgstr ""
 
 msgid "Nationality"
-msgstr "الجنسية"
+msgstr ""
 
 msgid "Special Requests"
-msgstr "طلبات خاصة"
+msgstr ""
 
 msgid "Estimated Arrival Time"
-msgstr "وقت الوصول المتوقع"
+msgstr ""
 
 msgid "Continue to Review"
-msgstr "متابعة للمراجعة"
+msgstr ""
 
 msgid "Review Your Booking"
-msgstr "مراجعة حجزك"
+msgstr ""
 
 msgid "Confirm Booking"
-msgstr "تأكيد الحجز"
+msgstr ""
 
 msgid "Booking Confirmed!"
-msgstr "تم تأكيد الحجز!"
+msgstr ""
 
 msgid "Booking Number"
-msgstr "رقم الحجز"
+msgstr ""
 
 msgid "Booking Confirmation"
-msgstr "تأكيد الحجز"
+msgstr ""
 
 msgid "Booking Cancelled"
-msgstr "إلغاء الحجز"
+msgstr ""
 
 msgid "night"
-msgstr "ليلة"
+msgstr ""
 
 msgid "nights"
-msgstr "ليالي"
+msgstr ""
 
 msgid "guests"
-msgstr "ضيوف"
+msgstr ""
 
 msgid "Max"
-msgstr "الحد الأقصى"
+msgstr ""
 
 msgid "Select"
-msgstr "اختيار"
+msgstr ""
 
 msgid "No Image"
-msgstr "لا توجد صورة"
+msgstr ""
 
 msgid "Back"
-msgstr "رجوع"
+msgstr ""
 
 msgid "Cancel Booking"
-msgstr "إلغاء الحجز"
+msgstr ""
 
 msgid "Cancellation Reason"
-msgstr "سبب الإلغاء"
+msgstr ""
 
 msgid "Confirm Cancellation"
-msgstr "تأكيد الإلغاء"
+msgstr ""
 
 msgid "Never mind"
-msgstr "تراجع"
+msgstr ""
 
 msgid "Look Up Your Booking"
-msgstr "البحث عن حجزك"
+msgstr ""
 
 msgid "Payment"
-msgstr "الدفع"
+msgstr ""
 
 msgid "Processing your booking..."
-msgstr "جاري معالجة حجزك..."
+msgstr ""
 
 msgid "A confirmation email has been sent to"
-msgstr "تم إرسال بريد التأكيد إلى"
+msgstr ""
 
 msgid "Please select a room first using the booking search widget."
-msgstr "يرجى اختيار غرفة أولاً باستخدام أداة البحث عن الحجز."
+msgstr ""
 
 # ---- Common / Shared ----
+
 msgid "Room not found."
-msgstr "الغرفة غير موجودة."
+msgstr ""
 
 msgid "Room type created successfully."
-msgstr "تم إنشاء نوع الغرفة بنجاح."
+msgstr ""
+
+# ---- Rooms Modal (new) ----
+
+msgid "Edit Room Type"
+msgstr ""
+
+msgid "Edit Room"
+msgstr ""
+
+msgid "Room Name/Number"
+msgstr ""
+
+msgid "Notes"
+msgstr ""
+
+msgid "Optional notes..."
+msgstr ""
+
+msgid "Maintenance"
+msgstr ""
+
+msgid "Out of Order"
+msgstr ""
+
+msgid "Save"
+msgstr ""
+
+# ---- Bookings Modal (new) ----
+
+msgid "Guest First Name"
+msgstr ""
+
+msgid "Guest Last Name"
+msgstr ""
+
+msgid "Number of Adults"
+msgstr ""
+
+msgid "Number of Children"
+msgstr ""
+
+# ---- Channels Modal (new) ----
+
+msgid "Edit Channel"
+msgstr ""
+
+msgid "Channel Name"
+msgstr ""
+
+msgid "Booking.com"
+msgstr ""
+
+msgid "Expedia"
+msgstr ""
+
+msgid "Airbnb"
+msgstr ""
+
+msgid "Agoda"
+msgstr ""
+
+msgid "Hotels.com"
+msgstr ""
+
+msgid "Direct"
+msgstr ""
+
+msgid "Custom"
+msgstr ""
+
+msgid "External Room/Property ID"
+msgstr ""
+
+msgid "Sync Options"
+msgstr ""
+
+msgid "Sync Availability"
+msgstr ""
+
+msgid "Sync Rates"
+msgstr ""
+
+msgid "Sync Reservations"
+msgstr ""
+
+# ---- Additional UI strings ----
+
+msgid "Select Room Type"
+msgstr ""
+
+msgid "Save Booking"
+msgstr ""
+
+msgid "e.g. Deluxe Suite"
+msgstr ""
+
+msgid "e.g. 150.00"
+msgstr ""
+
+msgid "e.g. 101"
+msgstr ""
+
+msgid "e.g. 1"
+msgstr ""
+
+msgid "-- Select Channel --"
+msgstr ""
+
+msgid "-- Select Room Type --"
+msgstr ""
+
+msgid "Create Channel"
+msgstr ""
+
+msgid "Update Channel"
+msgstr ""
+
+msgid "e.g. 12345678"
+msgstr ""
+
+# ---- Reports (JS i18n) ----
+
+msgid "Revenue Report"
+msgstr ""
+
+msgid "Occupancy Report"
+msgstr ""
+
+msgid "Report"
+msgstr ""
+
+# ---- Integrations ----
+
+msgid "Integrations"
+msgstr ""
+
+msgid "ERP / CRM Integration"
+msgstr ""
+
+msgid "Enable external integrations"
+msgstr ""
+
+msgid "Integration Provider"
+msgstr ""
+
+msgid "-- None --"
+msgstr ""
+
+msgid "Odoo ERP"
+msgstr ""
+
+msgid "Custom Webhook"
+msgstr ""
+
+msgid "Odoo Connection"
+msgstr ""
+
+msgid "Odoo Server URL"
+msgstr ""
+
+msgid "Database Name"
+msgstr ""
+
+msgid "Username"
+msgstr ""
+
+msgid "API Key"
+msgstr ""
+
+msgid "Generate from Odoo: Settings > Users > API Keys"
+msgstr ""
+
+msgid "Webhook Configuration"
+msgstr ""
+
+msgid "Webhook URL"
+msgstr ""
+
+msgid "Signing Secret"
+msgstr ""
+
+msgid "Used to sign payloads with HMAC-SHA256. Leave empty to skip signing."
+msgstr ""
+
+msgid "Sync bookings"
+msgstr ""
+
+msgid "Send booking events (created, confirmed, cancelled, check-in/out)"
+msgstr ""
+
+msgid "Sync contacts / guests"
+msgstr ""
+
+msgid "Create and update guest profiles in the external system"
+msgstr ""
+
+msgid "Sync invoices / payments"
+msgstr ""
+
+msgid "Send payment records to the external accounting system"
+msgstr ""
+
+msgid "Connection Test"
+msgstr ""
+
+msgid "Test Connection"
+msgstr ""
+
+msgid "Testing..."
+msgstr ""
+
+# ---- Settings Dropdowns ----
+
+msgid "-- Select Timezone --"
+msgstr ""
+
+msgid "Middle East"
+msgstr ""
+
+msgid "Europe"
+msgstr ""
+
+msgid "Asia & Pacific"
+msgstr ""
+
+msgid "Americas"
+msgstr ""
+
+msgid "Africa"
+msgstr ""
+
+msgid "Saudi Riyal"
+msgstr ""
+
+msgid "UAE Dirham"
+msgstr ""
+
+msgid "Qatari Riyal"
+msgstr ""
+
+msgid "Kuwaiti Dinar"
+msgstr ""
+
+msgid "Bahraini Dinar"
+msgstr ""
+
+msgid "Omani Rial"
+msgstr ""
+
+msgid "Egyptian Pound"
+msgstr ""
+
+msgid "Jordanian Dinar"
+msgstr ""
+
+msgid "US Dollar"
+msgstr ""
+
+msgid "Euro"
+msgstr ""
+
+msgid "British Pound"
+msgstr ""
+
+msgid "Turkish Lira"
+msgstr ""
+
+msgid "Moroccan Dirham"
+msgstr ""
+
+msgid "Indian Rupee"
+msgstr ""
+
+msgid "Chinese Yuan"
+msgstr ""
+
+msgid "Japanese Yen"
+msgstr ""
+
+msgid "Swiss Franc"
+msgstr ""
+
+msgid "Canadian Dollar"
+msgstr ""
+
+msgid "Australian Dollar"
+msgstr ""
+
+msgid "Brazilian Real"
+msgstr ""
+
+# ──────────────────────────────────────────────────────────
+# NZL-001: Housekeeping
+# ──────────────────────────────────────────────────────────
+
+msgid "Housekeeping"
+msgstr ""
+
+msgid "Mark All Clean"
+msgstr ""
+
+msgid "Add Task"
+msgstr ""
+
+msgid "Dirty"
+msgstr ""
+
+msgid "Clean"
+msgstr ""
+
+msgid "Inspected"
+msgstr ""
+
+msgid "All Priorities"
+msgstr ""
+
+msgid "All Rooms"
+msgstr ""
+
+msgid "Low"
+msgstr ""
+
+msgid "Normal"
+msgstr ""
+
+msgid "High"
+msgstr ""
+
+msgid "Urgent"
+msgstr ""
+
+msgid "Type"
+msgstr ""
+
+msgid "Assigned To"
+msgstr ""
+
+msgid "Task Type"
+msgstr ""
+
+msgid "Mark Clean"
+msgstr ""
+
+msgid "Mark Inspected"
+msgstr ""
+
+msgid "Assign"
+msgstr ""
+
+msgid "No housekeeping tasks found."
+msgstr ""
+
+msgid "Edit Housekeeping Task"
+msgstr ""
+
+msgid "Add Housekeeping Task"
+msgstr ""
+
+msgid "-- Select Room --"
+msgstr ""
+
+msgid "Checkout Clean"
+msgstr ""
+
+msgid "Stayover Clean"
+msgstr ""
+
+msgid "Deep Clean"
+msgstr ""
+
+msgid "Touch Up"
+msgstr ""
+
+msgid "Inspection"
+msgstr ""
+
+msgid "-- Unassigned --"
+msgstr ""
+
+msgid "Special instructions or notes..."
+msgstr ""
+
+# ──────────────────────────────────────────────────────────
+# NZL-003: Billing / Folios / Taxes
+# ──────────────────────────────────────────────────────────
+
+msgid "Billing"
+msgstr ""
+
+msgid "Add Tax"
+msgstr ""
+
+msgid "Folios"
+msgstr ""
+
+msgid "Taxes"
+msgstr ""
+
+msgid "Open"
+msgstr ""
+
+msgid "Closed"
+msgstr ""
+
+msgid "Void"
+msgstr ""
+
+msgid "Folio number..."
+msgstr ""
+
+msgid "Folio #"
+msgstr ""
+
+msgid "Subtotal"
+msgstr ""
+
+msgid "Tax"
+msgstr ""
+
+msgid "Grand Total"
+msgstr ""
+
+msgid "Paid"
+msgstr ""
+
+msgid "Close"
+msgstr ""
+
+msgid "No folios found."
+msgstr ""
+
+msgid "Name (AR)"
+msgstr ""
+
+msgid "Rate"
+msgstr ""
+
+msgid "Applies To"
+msgstr ""
+
+msgid "Sort Order"
+msgstr ""
+
+msgid "No taxes configured."
+msgstr ""
+
+msgid "Folio"
+msgstr ""
+
+msgid "Created"
+msgstr ""
+
+msgid "Line Items"
+msgstr ""
+
+msgid "Date"
+msgstr ""
+
+msgid "Qty"
+msgstr ""
+
+msgid "Unit Price"
+msgstr ""
+
+msgid "No line items yet."
+msgstr ""
+
+msgid "Add Item"
+msgstr ""
+
+msgid "Category"
+msgstr ""
+
+msgid "Room Charge"
+msgstr ""
+
+msgid "Extra"
+msgstr ""
+
+msgid "Service"
+msgstr ""
+
+msgid "Food & Beverage"
+msgstr ""
+
+msgid "Minibar"
+msgstr ""
+
+msgid "Laundry"
+msgstr ""
+
+msgid "Item description..."
+msgstr ""
+
+msgid "Add"
+msgstr ""
+
+msgid "Adding..."
+msgstr ""
+
+msgid "Close Folio"
+msgstr ""
+
+msgid "Edit Tax"
+msgstr ""
+
+msgid "e.g. VAT"
+msgstr ""
+
+msgid "e.g. ضريبة القيمة المضافة"
+msgstr ""
+
+msgid "Percentage (%)"
+msgstr ""
+
+msgid "Extras"
+msgstr ""
+
+msgid "Services"
+msgstr ""
+
+msgid "All"
+msgstr ""
+
+# ──────────────────────────────────────────────────────────
+# NZL-005: Group Bookings
+# ──────────────────────────────────────────────────────────
+
+msgid "Group Bookings"
+msgstr ""
+
+msgid "New Group"
+msgstr ""
+
+msgid "Tentative"
+msgstr ""
+
+msgid "Agency"
+msgstr ""
+
+msgid "Group name, agency..."
+msgstr ""
+
+msgid "Group #"
+msgstr ""
+
+msgid "No group bookings found."
+msgstr ""
+
+msgid "Group Details"
+msgstr ""
+
+msgid "Contact"
+msgstr ""
+
+msgid "Payment Terms"
+msgstr ""
+
+msgid "Rooming List"
+msgstr ""
+
+msgid "Guest Name"
+msgstr ""
+
+msgid "Rate/Night"
+msgstr ""
+
+msgid "Room #"
+msgstr ""
+
+msgid "Assign Room"
+msgstr ""
+
+msgid "Remove"
+msgstr ""
+
+msgid "No rooms added to this group yet."
+msgstr ""
+
+msgid "Total Rooms"
+msgstr ""
+
+msgid "Total Amount"
+msgstr ""
+
+msgid "Edit Group"
+msgstr ""
+
+msgid "New Group Booking"
+msgstr ""
+
+msgid "Group Information"
+msgstr ""
+
+msgid "Group Name"
+msgstr ""
+
+msgid "Group Name (AR)"
+msgstr ""
+
+msgid "الاسم بالعربية"
+msgstr ""
+
+msgid "Agency Name"
+msgstr ""
+
+msgid "Agency Name (AR)"
+msgstr ""
+
+msgid "اسم الوكالة بالعربية"
+msgstr ""
+
+msgid "e.g. Conference Delegates"
+msgstr ""
+
+msgid "e.g. ABC Travel Agency"
+msgstr ""
+
+msgid "Contact Person"
+msgstr ""
+
+msgid "Full name"
+msgstr ""
+
+msgid "Contact Phone"
+msgstr ""
+
+msgid "+966 5xx xxx xxx"
+msgstr ""
+
+msgid "Contact Email"
+msgstr ""
+
+msgid "Dates & Payment"
+msgstr ""
+
+msgid "SYP - Syrian Pound"
+msgstr ""
+
+msgid "SAR - Saudi Riyal"
+msgstr ""
+
+msgid "USD - US Dollar"
+msgstr ""
+
+msgid "EUR - Euro"
+msgstr ""
+
+msgid "GBP - British Pound"
+msgstr ""
+
+msgid "AED - UAE Dirham"
+msgstr ""
+
+msgid "Prepaid"
+msgstr ""
+
+msgid "Pay on Arrival"
+msgstr ""
+
+msgid "Net 15"
+msgstr ""
+
+msgid "Net 30"
+msgstr ""
+
+msgid "Net 60"
+msgstr ""
+
+msgid "Credit"
+msgstr ""
+
+msgid "Internal notes about this group..."
+msgstr ""
+
+msgid "Guest name..."
+msgstr ""
+
+# ──────────────────────────────────────────────────────────
+# NZL-006: Promotions / Promo Codes
+# ──────────────────────────────────────────────────────────
+
+msgid "Promotions"
+msgstr ""
+
+msgid "Promo Codes"
+msgstr ""
+
+msgid "Manage discount codes and promotions for bookings."
+msgstr ""
+
+msgid "New Promo Code"
+msgstr ""
+
+msgid "Expired"
+msgstr ""
+
+msgid "Code or name..."
+msgstr ""
+
+msgid "Discount"
+msgstr ""
+
+msgid "Validity"
+msgstr ""
+
+msgid "Usage"
+msgstr ""
+
+msgid "Always"
+msgstr ""
+
+msgid "No promo codes found."
+msgstr ""
+
+msgid "Edit Promo Code"
+msgstr ""
+
+msgid "Code *"
+msgstr ""
+
+msgid "Discount Type *"
+msgstr ""
+
+msgid "Name (English) *"
+msgstr ""
+
+msgid "Name (Arabic)"
+msgstr ""
+
+msgid "Discount Value *"
+msgstr ""
+
+msgid "Max Discount Cap"
+msgstr ""
+
+msgid "No limit"
+msgstr ""
+
+msgid "Valid From"
+msgstr ""
+
+msgid "Valid To"
+msgstr ""
+
+msgid "Max Uses"
+msgstr ""
+
+msgid "Unlimited"
+msgstr ""
+
+msgid "Per Guest Limit"
+msgstr ""
+
+msgid "Min Nights"
+msgstr ""
+
+msgid "None"
+msgstr ""
+
+msgid "Description (English)"
+msgstr ""
+
+msgid "Description (Arabic)"
+msgstr ""
+
+# ──────────────────────────────────────────────────────────
+# NZL-007: Guest Messaging
+# ──────────────────────────────────────────────────────────
+
+msgid "Guest Messaging"
+msgstr ""
+
+msgid "Manage email templates and view sent messages."
+msgstr ""
+
+msgid "Email Templates"
+msgstr ""
+
+msgid "Email Log"
+msgstr ""
+
+msgid "New Template"
+msgstr ""
+
+msgid "Trigger"
+msgstr ""
+
+msgid "Subject"
+msgstr ""
+
+msgid "No email templates found."
+msgstr ""
+
+msgid "Edit Template"
+msgstr ""
+
+msgid "Name *"
+msgstr ""
+
+msgid "Slug *"
+msgstr ""
+
+msgid "Trigger Event"
+msgstr ""
+
+msgid "Manual Only"
+msgstr ""
+
+msgid "Booking Confirmed"
+msgstr ""
+
+msgid "Pre-Arrival (1 day before)"
+msgstr ""
+
+msgid "Guest Checked In"
+msgstr ""
+
+msgid "Guest Checked Out"
+msgstr ""
+
+msgid "Subject (English) *"
+msgstr ""
+
+msgid "Subject (Arabic)"
+msgstr ""
+
+msgid "Body (English) *"
+msgstr ""
+
+msgid "Variables: {{guest_name}}, {{booking_number}}, {{check_in}}, {{check_out}}, {{room_type}}, {{room_number}}, {{total_amount}}, {{currency}}, {{hotel_name}}, {{hotel_phone}}"
+msgstr ""
+
+msgid "Body (Arabic)"
+msgstr ""
+
+msgid "Test"
+msgstr ""
+
+msgid "Sent"
+msgstr ""
+
+msgid "Failed"
+msgstr ""
+
+msgid "Queued"
+msgstr ""
+
+msgid "Email or subject..."
+msgstr ""
+
+msgid "No emails sent yet."
+msgstr ""
+
+msgid "Sent At"
+msgstr ""
+
+# ──────────────────────────────────────────────────────────
+# NZL-008: Currency & Exchange Rates
+# ──────────────────────────────────────────────────────────
+
+msgid "Currency & Exchange Rates"
+msgstr ""
+
+msgid "Manage currencies, exchange rates, and pricing rules."
+msgstr ""
+
+msgid "Currencies"
+msgstr ""
+
+msgid "Exchange Rates"
+msgstr ""
+
+msgid "Add Currency"
+msgstr ""
+
+msgid "Symbol"
+msgstr ""
+
+msgid "Exchange Rate"
+msgstr ""
+
+msgid "Default"
+msgstr ""
+
+msgid "Set Default"
+msgstr ""
+
+msgid "No currencies configured."
+msgstr ""
+
+msgid "Syrian / Non-Syrian Pricing"
+msgstr ""
+
+msgid "To set different prices for Syrian and non-Syrian guests, go to Rates & Pricing and create separate rate plans with the \"Guest Type\" field set to \"Syrian\" or \"Non-Syrian\". The system will automatically apply the correct rate based on guest nationality."
+msgstr ""
+
+msgid "Update Exchange Rate"
+msgstr ""
+
+msgid "Save Rate"
+msgstr ""
+
+msgid "Quick Converter"
+msgstr ""
+
+msgid "Amount"
+msgstr ""
+
+msgid "Convert"
+msgstr ""
+
+msgid "Recent Exchange Rate Updates"
+msgstr ""
+
+msgid "Source"
+msgstr ""
+
+msgid "No exchange rate history."
+msgstr ""
+
+msgid "Edit Currency"
+msgstr ""
+
+msgid "Decimal Places"
+msgstr ""
+
+msgid "Symbol *"
+msgstr ""
+
+msgid "Symbol (Arabic)"
+msgstr ""
+
+msgid "Exchange Rate *"
+msgstr ""
+
+msgid "Currency Management"
+msgstr ""
+
+# ──────────────────────────────────────────────────────────
+# Admin Menu Items (NZL-001 to NZL-008)
+# ──────────────────────────────────────────────────────────
+
+msgid "Night Audit"
+msgstr ""
