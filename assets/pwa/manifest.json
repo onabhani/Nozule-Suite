@@ -1,0 +1,42 @@
+{
+  "name": "Nozule - Hotel Management",
+  "short_name": "Nozule",
+  "description": "نزلي - نظام إدارة الفنادق",
+  "start_url": "/wp-admin/admin.php?page=nzl-dashboard",
+  "scope": "/",
+  "display": "standalone",
+  "orientation": "any",
+  "background_color": "#1e3a5f",
+  "theme_color": "#1e3a5f",
+  "dir": "rtl",
+  "lang": "ar",
+  "icons": [
+    {
+      "src": "icon.svg",
+      "sizes": "any",
+      "type": "image/svg+xml",
+      "purpose": "any maskable"
+    }
+  ],
+  "categories": ["business", "productivity"],
+  "shortcuts": [
+    {
+      "name": "Bookings",
+      "short_name": "Bookings",
+      "url": "/wp-admin/admin.php?page=nzl-bookings",
+      "icons": []
+    },
+    {
+      "name": "Calendar",
+      "short_name": "Calendar",
+      "url": "/wp-admin/admin.php?page=nzl-calendar",
+      "icons": []
+    },
+    {
+      "name": "Housekeeping",
+      "short_name": "HK",
+      "url": "/wp-admin/admin.php?page=nzl-housekeeping",
+      "icons": []
+    }
+  ]
+}

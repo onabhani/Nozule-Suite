@@ -88,6 +88,10 @@ class Plugin {
             \Nozule\Modules\Billing\BillingModule::class,
             \Nozule\Modules\Audit\AuditModule::class,
             \Nozule\Modules\Groups\GroupsModule::class,
+            \Nozule\Modules\Promotions\PromotionsModule::class,
+            \Nozule\Modules\Messaging\MessagingModule::class,
+            \Nozule\Modules\Currency\CurrencyModule::class,
+            \Nozule\Modules\Documents\DocumentsModule::class,
         ];
 
         foreach ( $modules as $module_class ) {
@@ -120,6 +124,10 @@ class Plugin {
 
         // Register shortcodes
         $this->registerShortcodes();
+
+        // PWA support (manifest, meta tags, service worker)
+        $pwa = new PWA();
+        $pwa->register();
 
         // Cron events
         add_action( 'nzl_daily_maintenance', [ $this, 'runDailyMaintenance' ] );

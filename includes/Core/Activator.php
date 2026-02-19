@@ -46,6 +46,9 @@ class Activator {
 
         require_once NZL_PLUGIN_DIR . 'migrations/003_create_housekeeping_billing_groups.php';
         nzl_migration_003_create_housekeeping_billing_groups();
+
+        require_once NZL_PLUGIN_DIR . 'migrations/004_create_promotions_messaging_currency_documents.php';
+        nzl_migration_004_create_promotions_messaging_currency_documents();
     }
 
     /**

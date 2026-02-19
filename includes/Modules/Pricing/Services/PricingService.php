@@ -55,12 +55,17 @@ class PricingService {
 	 * taxes, and totals. If no rate plan ID is provided, the default
 	 * plan for the room type is used.
 	 *
-	 * @param int      $roomTypeId  The room type being priced.
-	 * @param string   $checkIn     Check-in date (Y-m-d).
-	 * @param string   $checkOut    Check-out date (Y-m-d).
-	 * @param int      $adults      Number of adult guests.
-	 * @param int      $children    Number of child guests.
-	 * @param int|null $ratePlanId  Specific rate plan, or null for default.
+	 * When $guestType is provided ('syrian' or 'non_syrian'), the system
+	 * selects rate plans matching that guest type first. This supports the
+	 * common Syrian hotel practice of different pricing for locals vs foreigners.
+	 *
+	 * @param int         $roomTypeId  The room type being priced.
+	 * @param string      $checkIn     Check-in date (Y-m-d).
+	 * @param string      $checkOut    Check-out date (Y-m-d).
+	 * @param int         $adults      Number of adult guests.
+	 * @param int         $children    Number of child guests.
+	 * @param int|null    $ratePlanId  Specific rate plan, or null for default.
+	 * @param string|null $guestType   'syrian', 'non_syrian', or null for default ('all').
 	 * @return PricingResult
 	 * @throws \RuntimeException If no rate plan is available or the room type is not found.
 	 */
@@ -70,10 +75,11 @@ class PricingService {
 		string  $checkOut,
 		int     $adults,
 		int     $children   = 0,
-		?int    $ratePlanId = null
+		?int    $ratePlanId = null,
+		?string $guestType  = null
 	): PricingResult {
-		// Resolve the rate plan.
-		$ratePlan = $this->resolveRatePlan( $roomTypeId, $ratePlanId );
+		// Resolve the rate plan (considers guest_type for Syrian/non-Syrian pricing).
+		$ratePlan = $this->resolveRatePlan( $roomTypeId, $ratePlanId, $guestType );
 
 		// Validate stay length against rate plan constraints.
 		$dates  = $this->getDateRange( $checkIn, $checkOut );
@@ -344,9 +350,16 @@ class PricingService {
 	/**
 	 * Resolve the rate plan to use for pricing.
 	 *
+	 * When no explicit rate plan ID is provided, uses the guest type
+	 * (syrian / non_syrian) to find the best matching default plan.
+	 *
+	 * @param int         $roomTypeId Room type ID.
+	 * @param int|null    $ratePlanId Explicit rate plan ID, or null for automatic selection.
+	 * @param string|null $guestType  'syrian', 'non_syrian', or null.
+	 * @return RatePlan
 	 * @throws \RuntimeException If no rate plan is available.
 	 */
-	private function resolveRatePlan( int $roomTypeId, ?int $ratePlanId ): RatePlan {
+	private function resolveRatePlan( int $roomTypeId, ?int $ratePlanId, ?string $guestType = null ): RatePlan {
 		if ( $ratePlanId !== null ) {
 			$ratePlan = $this->ratePlanRepo->find( $ratePlanId );
 
@@ -371,7 +384,8 @@ class PricingService {
 			return $ratePlan;
 		}
 
-		$ratePlan = $this->ratePlanRepo->getDefaultForRoomType( $roomTypeId );
+		// Use guest_type to find the best matching rate plan.
+		$ratePlan = $this->ratePlanRepo->getDefaultForRoomType( $roomTypeId, $guestType );
 
 		if ( ! $ratePlan ) {
 			throw new \RuntimeException(

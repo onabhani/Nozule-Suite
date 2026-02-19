@@ -38,34 +38,45 @@
   - Bulk check-in / check-out
   - Agency / tour operator tracking
 
-- [ ] **NZL-006** — Promo Codes / Discounts
+- [x] **NZL-006** — Promo Codes / Discounts
   - Coupon codes for direct booking engine
   - Percentage / fixed amount discounts
   - Date-range validity
-  - Usage limits
+  - Usage limits (max uses, per-guest limits, min nights)
+  - Bilingual promo names (English/Arabic)
+  - Auto-apply via pricing filter hook
 
-- [ ] **NZL-007** — Guest Messaging (Email)
+- [x] **NZL-007** — Guest Messaging (Email)
   - Automated confirmation emails
   - Pre-arrival information emails
   - Post-checkout thank-you emails
-  - Customizable email templates
+  - Customizable bilingual email templates (English/Arabic)
+  - Template variable substitution ({{guest_name}}, {{booking_number}}, etc.)
+  - Email log with status tracking
+  - Hooks into booking lifecycle (confirmed, checked_in, checked_out)
 
-- [ ] **NZL-008** — Multi-Currency Support
-  - SYP primary + USD support
+- [x] **NZL-008** — Multi-Currency Support
+  - SYP primary + USD/EUR/SAR/AED support
   - Auto-conversion rates
   - Currency per booking
-  - Exchange rate management
+  - Exchange rate management with history
+  - Quick currency converter
+  - Syrian vs non-Syrian guest pricing (guest_type on rate plans)
 
 - [ ] **NZL-009** — Basic Payment Gateway
   - Stripe integration for online bookings
   - PayPal integration
   - Secure card tokenization
 
-- [ ] **NZL-010** — Guest ID / Passport Storage
-  - Scan / upload ID documents
+- [x] **NZL-010** — Guest ID / Passport Storage
+  - Upload ID documents (passport, national ID, driving license, residence permit)
   - Nationality tracking
   - Passport number and expiry fields
   - Document type classification
+  - MRZ (Machine Readable Zone) parser for passports
+  - Bilingual name fields (English/Arabic)
+  - Document verification workflow
+  - OCR-ready architecture (hooks for external OCR services)
 
 - [ ] **NZL-011** — Maintenance Work Orders
   - Ticketing system for room repairs
@@ -73,11 +84,12 @@
   - Track status (open / in-progress / resolved)
   - Link to room and priority levels
 
-- [ ] **NZL-012** — Mobile PWA
+- [x] **NZL-012** — Mobile PWA
   - Progressive web app for front desk staff
-  - Check-in / check-out on mobile
-  - Housekeeping status updates
-  - New booking push notifications
+  - Service worker with cache-first for static assets, network-first for API
+  - Offline fallback page (bilingual Arabic/English)
+  - Web app manifest with RTL Arabic-first support
+  - App shortcuts (Bookings, Calendar, Housekeeping)
 
 ---
 
