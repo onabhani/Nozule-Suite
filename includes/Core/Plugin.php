@@ -84,6 +84,10 @@ class Plugin {
             \Nozule\Modules\Channels\ChannelsModule::class,
             \Nozule\Modules\Reports\ReportsModule::class,
             \Nozule\Modules\Integrations\IntegrationsModule::class,
+            \Nozule\Modules\Housekeeping\HousekeepingModule::class,
+            \Nozule\Modules\Billing\BillingModule::class,
+            \Nozule\Modules\Audit\AuditModule::class,
+            \Nozule\Modules\Groups\GroupsModule::class,
         ];
 
         foreach ( $modules as $module_class ) {

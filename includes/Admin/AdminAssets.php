@@ -109,6 +109,9 @@ class AdminAssets {
             'nozule-admin-channels'         => 'channels.js',
             'nozule-admin-settings'         => 'settings.js',
             'nozule-admin-reports'          => 'reports.js',
+            'nozule-admin-housekeeping'     => 'housekeeping.js',
+            'nozule-admin-billing'          => 'billing.js',
+            'nozule-admin-groups'           => 'groups.js',
         ];
 
         $component_handles = [];

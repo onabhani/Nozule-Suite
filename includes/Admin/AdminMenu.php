@@ -13,6 +13,9 @@ use Nozule\Admin\Pages\InventoryPage;
 use Nozule\Admin\Pages\ReportsPage;
 use Nozule\Admin\Pages\ChannelsPage;
 use Nozule\Admin\Pages\SettingsPage;
+use Nozule\Admin\Pages\HousekeepingPage;
+use Nozule\Admin\Pages\BillingPage;
+use Nozule\Admin\Pages\GroupsPage;
 
 /**
  * Registers the WordPress admin menu structure for the Nozule plugin.
@@ -87,6 +90,33 @@ class AdminMenu {
             'nzl_staff',
             'nzl-guests',
             [ $this, 'renderGuests' ]
+        );
+
+        add_submenu_page(
+            'nzl-dashboard',
+            __( 'Housekeeping', 'nozule' ),
+            __( 'Housekeeping', 'nozule' ),
+            'nzl_staff',
+            'nzl-housekeeping',
+            [ $this, 'renderHousekeeping' ]
+        );
+
+        add_submenu_page(
+            'nzl-dashboard',
+            __( 'Billing', 'nozule' ),
+            __( 'Billing', 'nozule' ),
+            'nzl_staff',
+            'nzl-billing',
+            [ $this, 'renderBilling' ]
+        );
+
+        add_submenu_page(
+            'nzl-dashboard',
+            __( 'Group Bookings', 'nozule' ),
+            __( 'Group Bookings', 'nozule' ),
+            'nzl_staff',
+            'nzl-groups',
+            [ $this, 'renderGroups' ]
         );
 
         // ------------------------------------------------------------------
@@ -189,5 +219,17 @@ class AdminMenu {
 
     public function renderSettings(): void {
         $this->container->get( SettingsPage::class )->render();
+    }
+
+    public function renderHousekeeping(): void {
+        ( new HousekeepingPage() )->render();
+    }
+
+    public function renderBilling(): void {
+        ( new BillingPage() )->render();
+    }
+
+    public function renderGroups(): void {
+        ( new GroupsPage() )->render();
     }
 }
