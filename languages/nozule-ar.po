@@ -1093,3 +1093,658 @@ msgstr "دولار أسترالي"
 
 msgid "Brazilian Real"
 msgstr "ريال برازيلي"
+
+# ──────────────────────────────────────────────────────────
+# NZL-001: Housekeeping
+# ──────────────────────────────────────────────────────────
+
+msgid "Housekeeping"
+msgstr "التدبير المنزلي"
+
+msgid "Mark All Clean"
+msgstr "تنظيف الكل"
+
+msgid "Add Task"
+msgstr "إضافة مهمة"
+
+msgid "Dirty"
+msgstr "متسخ"
+
+msgid "Clean"
+msgstr "نظيف"
+
+msgid "Inspected"
+msgstr "تم الفحص"
+
+msgid "All Priorities"
+msgstr "جميع الأولويات"
+
+msgid "All Rooms"
+msgstr "جميع الغرف"
+
+msgid "Low"
+msgstr "منخفض"
+
+msgid "Normal"
+msgstr "عادي"
+
+msgid "High"
+msgstr "عالي"
+
+msgid "Urgent"
+msgstr "عاجل"
+
+msgid "Type"
+msgstr "النوع"
+
+msgid "Assigned To"
+msgstr "مسند إلى"
+
+msgid "Task Type"
+msgstr "نوع المهمة"
+
+msgid "Mark Clean"
+msgstr "تنظيف"
+
+msgid "Mark Inspected"
+msgstr "فحص"
+
+msgid "Assign"
+msgstr "تعيين"
+
+msgid "No housekeeping tasks found."
+msgstr "لا توجد مهام تدبير منزلي."
+
+msgid "Edit Housekeeping Task"
+msgstr "تعديل مهمة التدبير المنزلي"
+
+msgid "Add Housekeeping Task"
+msgstr "إضافة مهمة تدبير منزلي"
+
+msgid "-- Select Room --"
+msgstr "-- اختر الغرفة --"
+
+msgid "Checkout Clean"
+msgstr "تنظيف مغادرة"
+
+msgid "Stayover Clean"
+msgstr "تنظيف إقامة"
+
+msgid "Deep Clean"
+msgstr "تنظيف عميق"
+
+msgid "Touch Up"
+msgstr "لمسة تجميل"
+
+msgid "Inspection"
+msgstr "فحص"
+
+msgid "-- Unassigned --"
+msgstr "-- غير مُسند --"
+
+msgid "Special instructions or notes..."
+msgstr "تعليمات خاصة أو ملاحظات..."
+
+# ──────────────────────────────────────────────────────────
+# NZL-003: Billing / Folios / Taxes
+# ──────────────────────────────────────────────────────────
+
+msgid "Billing"
+msgstr "الفوترة"
+
+msgid "Add Tax"
+msgstr "إضافة ضريبة"
+
+msgid "Folios"
+msgstr "الفواتير"
+
+msgid "Taxes"
+msgstr "الضرائب"
+
+msgid "Open"
+msgstr "مفتوح"
+
+msgid "Closed"
+msgstr "مغلق"
+
+msgid "Void"
+msgstr "لاغي"
+
+msgid "Folio number..."
+msgstr "رقم الفاتورة..."
+
+msgid "Folio #"
+msgstr "فاتورة #"
+
+msgid "Subtotal"
+msgstr "المجموع الفرعي"
+
+msgid "Tax"
+msgstr "الضريبة"
+
+msgid "Grand Total"
+msgstr "الإجمالي"
+
+msgid "Paid"
+msgstr "مدفوع"
+
+msgid "Close"
+msgstr "إغلاق"
+
+msgid "No folios found."
+msgstr "لا توجد فواتير."
+
+msgid "Name (AR)"
+msgstr "الاسم (ع)"
+
+msgid "Rate"
+msgstr "النسبة"
+
+msgid "Applies To"
+msgstr "ينطبق على"
+
+msgid "Sort Order"
+msgstr "ترتيب العرض"
+
+msgid "No taxes configured."
+msgstr "لا توجد ضرائب مهيأة."
+
+msgid "Folio"
+msgstr "فاتورة"
+
+msgid "Created"
+msgstr "تاريخ الإنشاء"
+
+msgid "Line Items"
+msgstr "بنود الفاتورة"
+
+msgid "Date"
+msgstr "التاريخ"
+
+msgid "Qty"
+msgstr "الكمية"
+
+msgid "Unit Price"
+msgstr "سعر الوحدة"
+
+msgid "No line items yet."
+msgstr "لا توجد بنود بعد."
+
+msgid "Add Item"
+msgstr "إضافة بند"
+
+msgid "Category"
+msgstr "الفئة"
+
+msgid "Room Charge"
+msgstr "رسوم الغرفة"
+
+msgid "Extra"
+msgstr "إضافي"
+
+msgid "Service"
+msgstr "خدمة"
+
+msgid "Food & Beverage"
+msgstr "طعام ومشروبات"
+
+msgid "Minibar"
+msgstr "ميني بار"
+
+msgid "Laundry"
+msgstr "غسيل"
+
+msgid "Item description..."
+msgstr "وصف البند..."
+
+msgid "Add"
+msgstr "إضافة"
+
+msgid "Adding..."
+msgstr "جاري الإضافة..."
+
+msgid "Close Folio"
+msgstr "إغلاق الفاتورة"
+
+msgid "Edit Tax"
+msgstr "تعديل الضريبة"
+
+msgid "e.g. VAT"
+msgstr "مثال: ض.ق.م"
+
+msgid "e.g. ضريبة القيمة المضافة"
+msgstr "مثال: ضريبة القيمة المضافة"
+
+msgid "Percentage (%)"
+msgstr "نسبة مئوية (%)"
+
+msgid "Extras"
+msgstr "الإضافات"
+
+msgid "Services"
+msgstr "الخدمات"
+
+msgid "All"
+msgstr "الكل"
+
+# ──────────────────────────────────────────────────────────
+# NZL-005: Group Bookings
+# ──────────────────────────────────────────────────────────
+
+msgid "Group Bookings"
+msgstr "حجوزات المجموعات"
+
+msgid "New Group"
+msgstr "مجموعة جديدة"
+
+msgid "Tentative"
+msgstr "مبدئي"
+
+msgid "Agency"
+msgstr "الوكالة"
+
+msgid "Group name, agency..."
+msgstr "اسم المجموعة، الوكالة..."
+
+msgid "Group #"
+msgstr "مجموعة #"
+
+msgid "No group bookings found."
+msgstr "لا توجد حجوزات مجموعات."
+
+msgid "Group Details"
+msgstr "تفاصيل المجموعة"
+
+msgid "Contact"
+msgstr "جهة الاتصال"
+
+msgid "Payment Terms"
+msgstr "شروط الدفع"
+
+msgid "Rooming List"
+msgstr "قائمة الغرف"
+
+msgid "Guest Name"
+msgstr "اسم الضيف"
+
+msgid "Rate/Night"
+msgstr "سعر/الليلة"
+
+msgid "Room #"
+msgstr "غرفة #"
+
+msgid "Assign Room"
+msgstr "تخصيص غرفة"
+
+msgid "Remove"
+msgstr "إزالة"
+
+msgid "No rooms added to this group yet."
+msgstr "لا توجد غرف مضافة لهذه المجموعة بعد."
+
+msgid "Total Rooms"
+msgstr "إجمالي الغرف"
+
+msgid "Total Amount"
+msgstr "المبلغ الإجمالي"
+
+msgid "Edit Group"
+msgstr "تعديل المجموعة"
+
+msgid "New Group Booking"
+msgstr "حجز مجموعة جديد"
+
+msgid "Group Information"
+msgstr "معلومات المجموعة"
+
+msgid "Group Name"
+msgstr "اسم المجموعة"
+
+msgid "Group Name (AR)"
+msgstr "اسم المجموعة (ع)"
+
+msgid "الاسم بالعربية"
+msgstr "الاسم بالعربية"
+
+msgid "Agency Name"
+msgstr "اسم الوكالة"
+
+msgid "Agency Name (AR)"
+msgstr "اسم الوكالة (ع)"
+
+msgid "اسم الوكالة بالعربية"
+msgstr "اسم الوكالة بالعربية"
+
+msgid "e.g. Conference Delegates"
+msgstr "مثال: وفد المؤتمر"
+
+msgid "e.g. ABC Travel Agency"
+msgstr "مثال: وكالة ABC للسياحة"
+
+msgid "Contact Person"
+msgstr "الشخص المسؤول"
+
+msgid "Full name"
+msgstr "الاسم الكامل"
+
+msgid "Contact Phone"
+msgstr "هاتف التواصل"
+
+msgid "+966 5xx xxx xxx"
+msgstr "+963 9xx xxx xxx"
+
+msgid "Contact Email"
+msgstr "بريد التواصل"
+
+msgid "Dates & Payment"
+msgstr "التواريخ والدفع"
+
+msgid "SYP - Syrian Pound"
+msgstr "ل.س - ليرة سورية"
+
+msgid "SAR - Saudi Riyal"
+msgstr "ر.س - ريال سعودي"
+
+msgid "USD - US Dollar"
+msgstr "$ - دولار أمريكي"
+
+msgid "EUR - Euro"
+msgstr "€ - يورو"
+
+msgid "GBP - British Pound"
+msgstr "£ - جنيه إسترليني"
+
+msgid "AED - UAE Dirham"
+msgstr "د.إ - درهم إماراتي"
+
+msgid "Prepaid"
+msgstr "دفع مسبق"
+
+msgid "Pay on Arrival"
+msgstr "الدفع عند الوصول"
+
+msgid "Net 15"
+msgstr "صافي 15 يوم"
+
+msgid "Net 30"
+msgstr "صافي 30 يوم"
+
+msgid "Net 60"
+msgstr "صافي 60 يوم"
+
+msgid "Credit"
+msgstr "ائتمان"
+
+msgid "Internal notes about this group..."
+msgstr "ملاحظات داخلية عن هذه المجموعة..."
+
+msgid "Guest name..."
+msgstr "اسم الضيف..."
+
+# ──────────────────────────────────────────────────────────
+# NZL-006: Promotions / Promo Codes
+# ──────────────────────────────────────────────────────────
+
+msgid "Promotions"
+msgstr "العروض الترويجية"
+
+msgid "Promo Codes"
+msgstr "أكواد الخصم"
+
+msgid "Manage discount codes and promotions for bookings."
+msgstr "إدارة أكواد الخصم والعروض الترويجية للحجوزات."
+
+msgid "New Promo Code"
+msgstr "كود خصم جديد"
+
+msgid "Expired"
+msgstr "منتهي الصلاحية"
+
+msgid "Code or name..."
+msgstr "الكود أو الاسم..."
+
+msgid "Discount"
+msgstr "الخصم"
+
+msgid "Validity"
+msgstr "الصلاحية"
+
+msgid "Usage"
+msgstr "الاستخدام"
+
+msgid "Always"
+msgstr "دائماً"
+
+msgid "No promo codes found."
+msgstr "لا توجد أكواد خصم."
+
+msgid "Edit Promo Code"
+msgstr "تعديل كود الخصم"
+
+msgid "Code *"
+msgstr "الكود *"
+
+msgid "Discount Type *"
+msgstr "نوع الخصم *"
+
+msgid "Name (English) *"
+msgstr "الاسم (إنجليزي) *"
+
+msgid "Name (Arabic)"
+msgstr "الاسم (عربي)"
+
+msgid "Discount Value *"
+msgstr "قيمة الخصم *"
+
+msgid "Max Discount Cap"
+msgstr "الحد الأقصى للخصم"
+
+msgid "No limit"
+msgstr "بدون حد"
+
+msgid "Valid From"
+msgstr "صالح من"
+
+msgid "Valid To"
+msgstr "صالح حتى"
+
+msgid "Max Uses"
+msgstr "الحد الأقصى للاستخدام"
+
+msgid "Unlimited"
+msgstr "غير محدود"
+
+msgid "Per Guest Limit"
+msgstr "الحد لكل ضيف"
+
+msgid "Min Nights"
+msgstr "الحد الأدنى للليالي"
+
+msgid "None"
+msgstr "لا يوجد"
+
+msgid "Description (English)"
+msgstr "الوصف (إنجليزي)"
+
+msgid "Description (Arabic)"
+msgstr "الوصف (عربي)"
+
+# ──────────────────────────────────────────────────────────
+# NZL-007: Guest Messaging
+# ──────────────────────────────────────────────────────────
+
+msgid "Guest Messaging"
+msgstr "رسائل الضيوف"
+
+msgid "Manage email templates and view sent messages."
+msgstr "إدارة قوالب البريد الإلكتروني وعرض الرسائل المرسلة."
+
+msgid "Email Templates"
+msgstr "قوالب البريد"
+
+msgid "Email Log"
+msgstr "سجل البريد"
+
+msgid "New Template"
+msgstr "قالب جديد"
+
+msgid "Trigger"
+msgstr "المشغّل"
+
+msgid "Subject"
+msgstr "الموضوع"
+
+msgid "No email templates found."
+msgstr "لا توجد قوالب بريد."
+
+msgid "Edit Template"
+msgstr "تعديل القالب"
+
+msgid "Name *"
+msgstr "الاسم *"
+
+msgid "Slug *"
+msgstr "الرمز التعريفي *"
+
+msgid "Trigger Event"
+msgstr "حدث التشغيل"
+
+msgid "Manual Only"
+msgstr "يدوي فقط"
+
+msgid "Booking Confirmed"
+msgstr "تأكيد الحجز"
+
+msgid "Pre-Arrival (1 day before)"
+msgstr "ما قبل الوصول (يوم واحد قبل)"
+
+msgid "Guest Checked In"
+msgstr "تسجيل وصول الضيف"
+
+msgid "Guest Checked Out"
+msgstr "تسجيل مغادرة الضيف"
+
+msgid "Subject (English) *"
+msgstr "الموضوع (إنجليزي) *"
+
+msgid "Subject (Arabic)"
+msgstr "الموضوع (عربي)"
+
+msgid "Body (English) *"
+msgstr "النص (إنجليزي) *"
+
+msgid "Variables: {{guest_name}}, {{booking_number}}, {{check_in}}, {{check_out}}, {{room_type}}, {{room_number}}, {{total_amount}}, {{currency}}, {{hotel_name}}, {{hotel_phone}}"
+msgstr "المتغيرات: {{guest_name}}، {{booking_number}}، {{check_in}}، {{check_out}}، {{room_type}}، {{room_number}}، {{total_amount}}، {{currency}}، {{hotel_name}}، {{hotel_phone}}"
+
+msgid "Body (Arabic)"
+msgstr "النص (عربي)"
+
+msgid "Test"
+msgstr "اختبار"
+
+msgid "Sent"
+msgstr "مُرسل"
+
+msgid "Failed"
+msgstr "فشل"
+
+msgid "Queued"
+msgstr "في الانتظار"
+
+msgid "Email or subject..."
+msgstr "البريد أو الموضوع..."
+
+msgid "No emails sent yet."
+msgstr "لا توجد رسائل مرسلة بعد."
+
+msgid "Sent At"
+msgstr "وقت الإرسال"
+
+# ──────────────────────────────────────────────────────────
+# NZL-008: Currency & Exchange Rates
+# ──────────────────────────────────────────────────────────
+
+msgid "Currency & Exchange Rates"
+msgstr "العملات وأسعار الصرف"
+
+msgid "Manage currencies, exchange rates, and pricing rules."
+msgstr "إدارة العملات وأسعار الصرف وقواعد التسعير."
+
+msgid "Currencies"
+msgstr "العملات"
+
+msgid "Exchange Rates"
+msgstr "أسعار الصرف"
+
+msgid "Add Currency"
+msgstr "إضافة عملة"
+
+msgid "Symbol"
+msgstr "الرمز"
+
+msgid "Exchange Rate"
+msgstr "سعر الصرف"
+
+msgid "Default"
+msgstr "افتراضي"
+
+msgid "Set Default"
+msgstr "تعيين كافتراضي"
+
+msgid "No currencies configured."
+msgstr "لا توجد عملات مهيأة."
+
+msgid "Syrian / Non-Syrian Pricing"
+msgstr "تسعير السوريين / غير السوريين"
+
+msgid "To set different prices for Syrian and non-Syrian guests, go to Rates & Pricing and create separate rate plans with the \"Guest Type\" field set to \"Syrian\" or \"Non-Syrian\". The system will automatically apply the correct rate based on guest nationality."
+msgstr "لتعيين أسعار مختلفة للضيوف السوريين وغير السوريين، انتقل إلى الأسعار والتسعير وأنشئ خطط أسعار منفصلة مع تعيين حقل \"نوع الضيف\" إلى \"سوري\" أو \"غير سوري\". سيطبق النظام تلقائياً السعر المناسب بناءً على جنسية الضيف."
+
+msgid "Update Exchange Rate"
+msgstr "تحديث سعر الصرف"
+
+msgid "Save Rate"
+msgstr "حفظ السعر"
+
+msgid "Quick Converter"
+msgstr "محوّل سريع"
+
+msgid "Amount"
+msgstr "المبلغ"
+
+msgid "Convert"
+msgstr "تحويل"
+
+msgid "Recent Exchange Rate Updates"
+msgstr "آخر تحديثات أسعار الصرف"
+
+msgid "Source"
+msgstr "المصدر"
+
+msgid "No exchange rate history."
+msgstr "لا يوجد سجل لأسعار الصرف."
+
+msgid "Edit Currency"
+msgstr "تعديل العملة"
+
+msgid "Decimal Places"
+msgstr "المنازل العشرية"
+
+msgid "Symbol *"
+msgstr "الرمز *"
+
+msgid "Symbol (Arabic)"
+msgstr "الرمز (عربي)"
+
+msgid "Exchange Rate *"
+msgstr "سعر الصرف *"
+
+msgid "Currency Management"
+msgstr "إدارة العملات"
+
+# ──────────────────────────────────────────────────────────
+# Admin Menu Items (NZL-001 to NZL-008)
+# ──────────────────────────────────────────────────────────
+
+msgid "Night Audit"
+msgstr "التدقيق الليلي"
