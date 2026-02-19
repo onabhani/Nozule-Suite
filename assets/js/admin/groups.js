@@ -49,6 +49,7 @@ document.addEventListener('alpine:init', function () {
                     group_name: '',
                     group_name_ar: '',
                     agency_name: '',
+                    agency_name_ar: '',
                     contact_person: '',
                     contact_phone: '',
                     contact_email: '',
@@ -120,6 +121,7 @@ document.addEventListener('alpine:init', function () {
                     group_name: group.group_name || '',
                     group_name_ar: group.group_name_ar || '',
                     agency_name: group.agency_name || '',
+                    agency_name_ar: group.agency_name_ar || '',
                     contact_person: group.contact_person || '',
                     contact_phone: group.contact_phone || '',
                     contact_email: group.contact_email || '',
@@ -151,6 +153,7 @@ document.addEventListener('alpine:init', function () {
                 // Include optional fields only if filled
                 if (self.groupForm.group_name_ar) data.group_name_ar = self.groupForm.group_name_ar;
                 if (self.groupForm.agency_name) data.agency_name = self.groupForm.agency_name;
+                if (self.groupForm.agency_name_ar) data.agency_name_ar = self.groupForm.agency_name_ar;
                 if (self.groupForm.contact_person) data.contact_person = self.groupForm.contact_person;
                 if (self.groupForm.contact_phone) data.contact_phone = self.groupForm.contact_phone;
                 if (self.groupForm.contact_email) data.contact_email = self.groupForm.contact_email;

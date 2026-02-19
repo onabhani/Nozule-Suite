@@ -358,6 +358,10 @@ if ( ! defined( 'ABSPATH' ) ) {
                             <input type="text" class="nzl-input" x-model="groupForm.agency_name" placeholder="<?php echo esc_attr__( 'e.g. ABC Travel Agency', 'nozule' ); ?>">
                         </div>
                         <div class="nzl-form-group">
+                            <label><?php esc_html_e( 'Agency Name (AR)', 'nozule' ); ?></label>
+                            <input type="text" class="nzl-input" x-model="groupForm.agency_name_ar" placeholder="<?php echo esc_attr__( 'اسم الوكالة بالعربية', 'nozule' ); ?>" dir="rtl">
+                        </div>
+                        <div class="nzl-form-group">
                             <label><?php esc_html_e( 'Contact Person', 'nozule' ); ?></label>
                             <input type="text" class="nzl-input" x-model="groupForm.contact_person" placeholder="<?php echo esc_attr__( 'Full name', 'nozule' ); ?>">
                         </div>
