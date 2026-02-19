@@ -1,13 +1,13 @@
 <?php
 
-namespace Venezia\Modules\Rooms\Services;
+namespace Nozule\Modules\Rooms\Services;
 
-use Venezia\Core\CacheManager;
-use Venezia\Core\EventDispatcher;
-use Venezia\Core\Logger;
-use Venezia\Modules\Rooms\Models\RoomType;
-use Venezia\Modules\Rooms\Repositories\InventoryRepository;
-use Venezia\Modules\Rooms\Repositories\RoomTypeRepository;
+use Nozule\Core\CacheManager;
+use Nozule\Core\EventDispatcher;
+use Nozule\Core\Logger;
+use Nozule\Modules\Rooms\Models\RoomType;
+use Nozule\Modules\Rooms\Repositories\InventoryRepository;
+use Nozule\Modules\Rooms\Repositories\RoomTypeRepository;
 
 /**
  * Availability service for checking room availability, deducting inventory,

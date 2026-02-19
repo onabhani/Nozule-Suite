@@ -1,6 +1,6 @@
 {
-    "name": "venezia/hotel-manager",
-    "description": "Venezia Hotel Manager - A comprehensive hotel booking management system for WordPress",
+    "name": "nozule",
+    "description": "Nozule - A comprehensive hotel booking management system for WordPress",
     "type": "wordpress-plugin",
     "version": "1.0.0",
     "license": "GPL-2.0-or-later",
@@ -9,7 +9,7 @@
     },
     "autoload": {
         "psr-4": {
-            "Venezia\\": "includes/"
+            "Nozule\\": "includes/"
         }
     },
     "authors": [

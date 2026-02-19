@@ -1,5 +1,5 @@
 /**
- * Venezia Hotel Manager - Availability Calendar Component
+ * Nozule - Availability Calendar Component
  *
  * Visual calendar showing room availability.
  */
@@ -16,7 +16,7 @@ document.addEventListener('alpine:init', function () {
 
             get monthName() {
                 var date = new Date(this.currentYear, this.currentMonth, 1);
-                return date.toLocaleDateString(VeneziaI18n.getLocale(), {
+                return date.toLocaleDateString(NozuleI18n.getLocale(), {
                     month: 'long',
                     year: 'numeric'
                 });
@@ -49,7 +49,7 @@ document.addEventListener('alpine:init', function () {
                         day: d,
                         date: dateStr,
                         available: this.availability[dateStr] || 0,
-                        isPast: dateStr < VeneziaUtils.today(),
+                        isPast: dateStr < NozuleUtils.today(),
                         isSelected: dateStr === this.selectedCheckIn || dateStr === this.selectedCheckOut,
                         isInRange: this.isInSelectedRange(dateStr)
                     });
@@ -91,7 +91,7 @@ document.addEventListener('alpine:init', function () {
                     String(self.daysInMonth).padStart(2, '0');
 
                 self.loading = true;
-                VeneziaAPI.get('/availability', {
+                NozuleAPI.get('/availability', {
                     check_in: startDate,
                     check_out: endDate
                 }).then(function (response) {
@@ -106,7 +106,7 @@ document.addEventListener('alpine:init', function () {
             },
 
             selectDate: function (dateStr) {
-                if (!dateStr || dateStr < VeneziaUtils.today()) return;
+                if (!dateStr || dateStr < NozuleUtils.today()) return;
 
                 if (!this.selectedCheckIn || this.selectedCheckOut) {
                     this.selectedCheckIn = dateStr;

@@ -1,8 +1,8 @@
 <?php
 
-namespace Venezia\Modules\Channels\Services;
+namespace Nozule\Modules\Channels\Services;
 
-use Venezia\Modules\Channels\Models\SyncResult;
+use Nozule\Modules\Channels\Models\SyncResult;
 
 /**
  * Abstract base class for OTA channel connectors.

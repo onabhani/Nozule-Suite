@@ -1,9 +1,9 @@
 /**
- * Venezia Hotel Manager - Internationalization
+ * Nozule - Internationalization
  *
  * Simple i18n helper for frontend translations.
  */
-var VeneziaI18n = (function () {
+var NozuleI18n = (function () {
     'use strict';
 
     var translations = {
@@ -304,11 +304,11 @@ var VeneziaI18n = (function () {
 
 // Initialize locale from config (check both admin and public config)
 (function () {
-    var config = window.VeneziaAdmin || window.VeneziaConfig;
+    var config = window.NozuleAdmin || window.NozuleConfig;
     if (config && config.locale) {
         var locale = config.locale.substring(0, 2);
-        VeneziaI18n.setLocale(locale);
+        NozuleI18n.setLocale(locale);
     }
 })();
 
-window.VeneziaI18n = VeneziaI18n;
+window.NozuleI18n = NozuleI18n;

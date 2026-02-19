@@ -1,8 +1,8 @@
 <?php
 
-namespace Venezia\Modules\Rooms\Controllers;
+namespace Nozule\Modules\Rooms\Controllers;
 
-use Venezia\Modules\Rooms\Services\AvailabilityService;
+use Nozule\Modules\Rooms\Services\AvailabilityService;
 use WP_REST_Request;
 use WP_REST_Response;
 use WP_REST_Server;
@@ -11,7 +11,7 @@ use WP_REST_Server;
  * REST controller for public availability search.
  *
  * Routes:
- *   GET /venezia/v1/availability   Search room availability for a date range
+ *   GET /nozule/v1/availability   Search room availability for a date range
  */
 class AvailabilityController {
 
@@ -25,7 +25,7 @@ class AvailabilityController {
 	 * Register REST routes.
 	 */
 	public function registerRoutes(): void {
-		$namespace = 'venezia/v1';
+		$namespace = 'nozule/v1';
 
 		register_rest_route( $namespace, '/availability', [
 			'methods'             => WP_REST_Server::READABLE,
@@ -36,26 +36,26 @@ class AvailabilityController {
 					'required'          => true,
 					'validate_callback' => [ $this, 'validateDate' ],
 					'sanitize_callback' => 'sanitize_text_field',
-					'description'       => __( 'Check-in date in Y-m-d format.', 'venezia-hotel' ),
+					'description'       => __( 'Check-in date in Y-m-d format.', 'nozule' ),
 				],
 				'check_out' => [
 					'required'          => true,
 					'validate_callback' => [ $this, 'validateDate' ],
 					'sanitize_callback' => 'sanitize_text_field',
-					'description'       => __( 'Check-out date in Y-m-d format.', 'venezia-hotel' ),
+					'description'       => __( 'Check-out date in Y-m-d format.', 'nozule' ),
 				],
 				'guests' => [
 					'required'          => false,
 					'default'           => 1,
 					'validate_callback' => fn( $v ) => is_numeric( $v ) && $v >= 1 && $v <= 20,
 					'sanitize_callback' => 'absint',
-					'description'       => __( 'Number of guests.', 'venezia-hotel' ),
+					'description'       => __( 'Number of guests.', 'nozule' ),
 				],
 				'room_type_id' => [
 					'required'          => false,
 					'validate_callback' => fn( $v ) => is_numeric( $v ) && $v > 0,
 					'sanitize_callback' => 'absint',
-					'description'       => __( 'Optional room type ID to restrict search.', 'venezia-hotel' ),
+					'description'       => __( 'Optional room type ID to restrict search.', 'nozule' ),
 				],
 			],
 		] );
@@ -74,7 +74,7 @@ class AvailabilityController {
 		if ( strtotime( $checkOut ) <= strtotime( $checkIn ) ) {
 			return new WP_REST_Response( [
 				'success' => false,
-				'message' => __( 'Check-out date must be after check-in date.', 'venezia-hotel' ),
+				'message' => __( 'Check-out date must be after check-in date.', 'nozule' ),
 			], 422 );
 		}
 
@@ -82,7 +82,7 @@ class AvailabilityController {
 		if ( strtotime( $checkIn ) < strtotime( 'today' ) ) {
 			return new WP_REST_Response( [
 				'success' => false,
-				'message' => __( 'Check-in date cannot be in the past.', 'venezia-hotel' ),
+				'message' => __( 'Check-in date cannot be in the past.', 'nozule' ),
 			], 422 );
 		}
 

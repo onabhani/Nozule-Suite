@@ -1,17 +1,17 @@
 <?php
 
-namespace Venezia\Modules\Rooms\Services;
+namespace Nozule\Modules\Rooms\Services;
 
-use Venezia\Core\CacheManager;
-use Venezia\Core\EventDispatcher;
-use Venezia\Core\Logger;
-use Venezia\Modules\Rooms\Models\Room;
-use Venezia\Modules\Rooms\Models\RoomType;
-use Venezia\Modules\Rooms\Repositories\InventoryRepository;
-use Venezia\Modules\Rooms\Repositories\RoomRepository;
-use Venezia\Modules\Rooms\Repositories\RoomTypeRepository;
-use Venezia\Modules\Rooms\Validators\RoomTypeValidator;
-use Venezia\Modules\Rooms\Validators\RoomValidator;
+use Nozule\Core\CacheManager;
+use Nozule\Core\EventDispatcher;
+use Nozule\Core\Logger;
+use Nozule\Modules\Rooms\Models\Room;
+use Nozule\Modules\Rooms\Models\RoomType;
+use Nozule\Modules\Rooms\Repositories\InventoryRepository;
+use Nozule\Modules\Rooms\Repositories\RoomRepository;
+use Nozule\Modules\Rooms\Repositories\RoomTypeRepository;
+use Nozule\Modules\Rooms\Validators\RoomTypeValidator;
+use Nozule\Modules\Rooms\Validators\RoomValidator;
 
 /**
  * Service layer orchestrating room type and room operations.
@@ -126,7 +126,7 @@ class RoomService {
 		$roomType = $this->roomTypeRepository->create( $data );
 		if ( ! $roomType ) {
 			$this->logger->error( 'Failed to create room type', [ 'data' => $data ] );
-			return [ 'general' => [ __( 'Failed to create room type.', 'venezia-hotel' ) ] ];
+			return [ 'general' => [ __( 'Failed to create room type.', 'nozule' ) ] ];
 		}
 
 		$this->invalidateRoomTypeCache();
@@ -144,7 +144,7 @@ class RoomService {
 	public function updateRoomType( int $id, array $data ): RoomType|array {
 		$existing = $this->roomTypeRepository->find( $id );
 		if ( ! $existing ) {
-			return [ 'id' => [ __( 'Room type not found.', 'venezia-hotel' ) ] ];
+			return [ 'id' => [ __( 'Room type not found.', 'nozule' ) ] ];
 		}
 
 		if ( ! $this->roomTypeValidator->validateUpdate( $id, $data ) ) {
@@ -154,7 +154,7 @@ class RoomService {
 		$success = $this->roomTypeRepository->update( $id, $data );
 		if ( ! $success ) {
 			$this->logger->error( 'Failed to update room type', [ 'id' => $id ] );
-			return [ 'general' => [ __( 'Failed to update room type.', 'venezia-hotel' ) ] ];
+			return [ 'general' => [ __( 'Failed to update room type.', 'nozule' ) ] ];
 		}
 
 		$updated = $this->roomTypeRepository->find( $id );
@@ -174,14 +174,14 @@ class RoomService {
 	public function deleteRoomType( int $id ): true|array {
 		$existing = $this->roomTypeRepository->find( $id );
 		if ( ! $existing ) {
-			return [ 'id' => [ __( 'Room type not found.', 'venezia-hotel' ) ] ];
+			return [ 'id' => [ __( 'Room type not found.', 'nozule' ) ] ];
 		}
 
 		$roomCount = $this->roomTypeRepository->getRoomCount( $id );
 		if ( $roomCount > 0 ) {
 			return [ 'id' => [
 				sprintf(
-					__( 'Cannot delete room type with %d associated rooms. Remove or reassign rooms first.', 'venezia-hotel' ),
+					__( 'Cannot delete room type with %d associated rooms. Remove or reassign rooms first.', 'nozule' ),
 					$roomCount
 				),
 			] ];
@@ -189,7 +189,7 @@ class RoomService {
 
 		$success = $this->roomTypeRepository->delete( $id );
 		if ( ! $success ) {
-			return [ 'general' => [ __( 'Failed to delete room type.', 'venezia-hotel' ) ] ];
+			return [ 'general' => [ __( 'Failed to delete room type.', 'nozule' ) ] ];
 		}
 
 		$this->invalidateRoomTypeCache();
@@ -266,7 +266,7 @@ class RoomService {
 		$room = $this->roomRepository->create( $data );
 		if ( ! $room ) {
 			$this->logger->error( 'Failed to create room', [ 'data' => $data ] );
-			return [ 'general' => [ __( 'Failed to create room.', 'venezia-hotel' ) ] ];
+			return [ 'general' => [ __( 'Failed to create room.', 'nozule' ) ] ];
 		}
 
 		$this->events->dispatch( 'rooms/room_created', $room );
@@ -283,7 +283,7 @@ class RoomService {
 	public function updateRoom( int $id, array $data ): Room|array {
 		$existing = $this->roomRepository->find( $id );
 		if ( ! $existing ) {
-			return [ 'id' => [ __( 'Room not found.', 'venezia-hotel' ) ] ];
+			return [ 'id' => [ __( 'Room not found.', 'nozule' ) ] ];
 		}
 
 		if ( ! $this->roomValidator->validateUpdate( $id, $data ) ) {
@@ -293,7 +293,7 @@ class RoomService {
 		$success = $this->roomRepository->update( $id, $data );
 		if ( ! $success ) {
 			$this->logger->error( 'Failed to update room', [ 'id' => $id ] );
-			return [ 'general' => [ __( 'Failed to update room.', 'venezia-hotel' ) ] ];
+			return [ 'general' => [ __( 'Failed to update room.', 'nozule' ) ] ];
 		}
 
 		$updated = $this->roomRepository->find( $id );
@@ -310,16 +310,16 @@ class RoomService {
 	public function deleteRoom( int $id ): true|array {
 		$existing = $this->roomRepository->find( $id );
 		if ( ! $existing ) {
-			return [ 'id' => [ __( 'Room not found.', 'venezia-hotel' ) ] ];
+			return [ 'id' => [ __( 'Room not found.', 'nozule' ) ] ];
 		}
 
 		if ( $existing->status === Room::STATUS_OCCUPIED ) {
-			return [ 'status' => [ __( 'Cannot delete an occupied room.', 'venezia-hotel' ) ] ];
+			return [ 'status' => [ __( 'Cannot delete an occupied room.', 'nozule' ) ] ];
 		}
 
 		$success = $this->roomRepository->delete( $id );
 		if ( ! $success ) {
-			return [ 'general' => [ __( 'Failed to delete room.', 'venezia-hotel' ) ] ];
+			return [ 'general' => [ __( 'Failed to delete room.', 'nozule' ) ] ];
 		}
 
 		$this->events->dispatch( 'rooms/room_deleted', $existing );
@@ -340,7 +340,7 @@ class RoomService {
 
 		$success = $this->roomRepository->updateStatus( $id, $status );
 		if ( ! $success ) {
-			return [ 'general' => [ __( 'Failed to update room status.', 'venezia-hotel' ) ] ];
+			return [ 'general' => [ __( 'Failed to update room status.', 'nozule' ) ] ];
 		}
 
 		$room = $this->roomRepository->find( $id );

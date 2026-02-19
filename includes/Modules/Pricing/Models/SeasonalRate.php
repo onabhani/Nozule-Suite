@@ -1,8 +1,8 @@
 <?php
 
-namespace Venezia\Modules\Pricing\Models;
+namespace Nozule\Modules\Pricing\Models;
 
-use Venezia\Core\BaseModel;
+use Nozule\Core\BaseModel;
 
 /**
  * Seasonal Rate model.

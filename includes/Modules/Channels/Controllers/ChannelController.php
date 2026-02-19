@@ -1,17 +1,17 @@
 <?php
 
-namespace Venezia\Modules\Channels\Controllers;
+namespace Nozule\Modules\Channels\Controllers;
 
-use Venezia\Modules\Channels\Services\ChannelService;
-use Venezia\Modules\Channels\Repositories\ChannelMappingRepository;
-use Venezia\Modules\Channels\Validators\ChannelMappingValidator;
+use Nozule\Modules\Channels\Services\ChannelService;
+use Nozule\Modules\Channels\Repositories\ChannelMappingRepository;
+use Nozule\Modules\Channels\Validators\ChannelMappingValidator;
 
 /**
  * REST API controller for channel management.
  *
- * All endpoints require the 'vhm_admin' capability.
+ * All endpoints require the 'nzl_admin' capability.
  *
- * Routes registered under the venezia/v1 namespace:
+ * Routes registered under the nozule/v1 namespace:
  *   GET    /channels                   - List available channels and mappings
  *   POST   /channels/mappings          - Create a new mapping
  *   GET    /channels/mappings/{id}     - Get a single mapping
@@ -27,8 +27,8 @@ class ChannelController {
     private ChannelMappingRepository $repository;
     private ChannelMappingValidator $validator;
 
-    private const NAMESPACE = 'venezia/v1';
-    private const PERMISSION = 'vhm_admin';
+    private const NAMESPACE = 'nozule/v1';
+    private const PERMISSION = 'nzl_admin';
 
     public function __construct(
         ChannelService $service,
@@ -100,7 +100,7 @@ class ChannelController {
     }
 
     /**
-     * Permission check: current user must have the vhm_admin capability.
+     * Permission check: current user must have the nzl_admin capability.
      */
     public function checkPermission(): bool {
         return current_user_can( 'manage_options' ) || current_user_can( self::PERMISSION );
@@ -145,7 +145,7 @@ class ChannelController {
 
         if ( ! $this->validator->validateCreate( $data ) ) {
             return new \WP_REST_Response( [
-                'message' => __( 'Validation failed.', 'venezia-hotel' ),
+                'message' => __( 'Validation failed.', 'nozule' ),
                 'errors'  => $this->validator->getErrors(),
             ], 422 );
         }
@@ -154,12 +154,12 @@ class ChannelController {
 
         if ( ! $mapping ) {
             return new \WP_REST_Response( [
-                'message' => __( 'Failed to create channel mapping.', 'venezia-hotel' ),
+                'message' => __( 'Failed to create channel mapping.', 'nozule' ),
             ], 500 );
         }
 
         return new \WP_REST_Response( [
-            'message' => __( 'Channel mapping created.', 'venezia-hotel' ),
+            'message' => __( 'Channel mapping created.', 'nozule' ),
             'mapping' => $mapping->toArray(),
         ], 201 );
     }
@@ -175,7 +175,7 @@ class ChannelController {
 
         if ( ! $mapping ) {
             return new \WP_REST_Response( [
-                'message' => __( 'Channel mapping not found.', 'venezia-hotel' ),
+                'message' => __( 'Channel mapping not found.', 'nozule' ),
             ], 404 );
         }
 
@@ -195,7 +195,7 @@ class ChannelController {
 
         if ( ! $mapping ) {
             return new \WP_REST_Response( [
-                'message' => __( 'Channel mapping not found.', 'venezia-hotel' ),
+                'message' => __( 'Channel mapping not found.', 'nozule' ),
             ], 404 );
         }
 
@@ -203,7 +203,7 @@ class ChannelController {
 
         if ( ! $this->validator->validateUpdate( $data, $id ) ) {
             return new \WP_REST_Response( [
-                'message' => __( 'Validation failed.', 'venezia-hotel' ),
+                'message' => __( 'Validation failed.', 'nozule' ),
                 'errors'  => $this->validator->getErrors(),
             ], 422 );
         }
@@ -212,14 +212,14 @@ class ChannelController {
 
         if ( ! $updated ) {
             return new \WP_REST_Response( [
-                'message' => __( 'Failed to update channel mapping.', 'venezia-hotel' ),
+                'message' => __( 'Failed to update channel mapping.', 'nozule' ),
             ], 500 );
         }
 
         $mapping = $this->repository->find( $id );
 
         return new \WP_REST_Response( [
-            'message' => __( 'Channel mapping updated.', 'venezia-hotel' ),
+            'message' => __( 'Channel mapping updated.', 'nozule' ),
             'mapping' => $mapping->toArray(),
         ], 200 );
     }
@@ -235,7 +235,7 @@ class ChannelController {
 
         if ( ! $mapping ) {
             return new \WP_REST_Response( [
-                'message' => __( 'Channel mapping not found.', 'venezia-hotel' ),
+                'message' => __( 'Channel mapping not found.', 'nozule' ),
             ], 404 );
         }
 
@@ -243,12 +243,12 @@ class ChannelController {
 
         if ( ! $deleted ) {
             return new \WP_REST_Response( [
-                'message' => __( 'Failed to delete channel mapping.', 'venezia-hotel' ),
+                'message' => __( 'Failed to delete channel mapping.', 'nozule' ),
             ], 500 );
         }
 
         return new \WP_REST_Response( [
-            'message' => __( 'Channel mapping deleted.', 'venezia-hotel' ),
+            'message' => __( 'Channel mapping deleted.', 'nozule' ),
         ], 200 );
     }
 
@@ -267,13 +267,13 @@ class ChannelController {
 
         if ( ! $mapping ) {
             return new \WP_REST_Response( [
-                'message' => __( 'Channel mapping not found.', 'venezia-hotel' ),
+                'message' => __( 'Channel mapping not found.', 'nozule' ),
             ], 404 );
         }
 
         if ( ! $mapping->isActive() ) {
             return new \WP_REST_Response( [
-                'message' => __( 'Channel mapping is not active. Activate it before syncing.', 'venezia-hotel' ),
+                'message' => __( 'Channel mapping is not active. Activate it before syncing.', 'nozule' ),
             ], 422 );
         }
 
@@ -302,7 +302,7 @@ class ChannelController {
         }
 
         return new \WP_REST_Response( [
-            'message' => __( 'Sync operation completed.', 'venezia-hotel' ),
+            'message' => __( 'Sync operation completed.', 'nozule' ),
             'results' => $results,
         ], 200 );
     }
@@ -320,8 +320,8 @@ class ChannelController {
 
             return new \WP_REST_Response( [
                 'message' => $success
-                    ? __( 'Connection test succeeded.', 'venezia-hotel' )
-                    : __( 'Connection test failed.', 'venezia-hotel' ),
+                    ? __( 'Connection test succeeded.', 'nozule' )
+                    : __( 'Connection test failed.', 'nozule' ),
                 'success' => $success,
             ], 200 );
         } catch ( \RuntimeException $e ) {
@@ -345,7 +345,7 @@ class ChannelController {
 
         if ( ! $mapping ) {
             return new \WP_REST_Response( [
-                'message' => __( 'Channel mapping not found.', 'venezia-hotel' ),
+                'message' => __( 'Channel mapping not found.', 'nozule' ),
             ], 404 );
         }
 

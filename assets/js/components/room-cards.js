@@ -1,5 +1,5 @@
 /**
- * Venezia Hotel Manager - Room Cards Component
+ * Nozule - Room Cards Component
  *
  * Displays room types in a card layout.
  */
@@ -19,7 +19,7 @@ document.addEventListener('alpine:init', function () {
                 var self = this;
                 self.loading = true;
 
-                VeneziaAPI.get('/room-types').then(function (response) {
+                NozuleAPI.get('/room-types').then(function (response) {
                     self.rooms = response.data || [];
                 }).catch(function (err) {
                     self.error = err.message;
@@ -47,21 +47,21 @@ document.addEventListener('alpine:init', function () {
             },
 
             getLocalizedName: function (room) {
-                if (VeneziaI18n.isRTL() && room.name_ar) {
+                if (NozuleI18n.isRTL() && room.name_ar) {
                     return room.name_ar;
                 }
                 return room.name;
             },
 
             getLocalizedDescription: function (room) {
-                if (VeneziaI18n.isRTL() && room.description_ar) {
+                if (NozuleI18n.isRTL() && room.description_ar) {
                     return room.description_ar;
                 }
                 return room.description || '';
             },
 
             formatPrice: function (amount) {
-                return VeneziaUtils.formatPrice(amount);
+                return NozuleUtils.formatPrice(amount);
             }
         };
     });

@@ -1,22 +1,22 @@
 <?php
 
-namespace Venezia\Modules\Pricing;
+namespace Nozule\Modules\Pricing;
 
-use Venezia\Core\BaseModule;
-use Venezia\Core\CacheManager;
-use Venezia\Core\Container;
-use Venezia\Core\Database;
-use Venezia\Core\EventDispatcher;
-use Venezia\Core\SettingsManager;
-use Venezia\Modules\Pricing\Controllers\RatePlanController;
-use Venezia\Modules\Pricing\Controllers\SeasonalRateController;
-use Venezia\Modules\Pricing\Repositories\RatePlanRepository;
-use Venezia\Modules\Pricing\Repositories\SeasonalRateRepository;
-use Venezia\Modules\Pricing\Services\PricingService;
-use Venezia\Modules\Pricing\Validators\RatePlanValidator;
-use Venezia\Modules\Pricing\Validators\SeasonalRateValidator;
-use Venezia\Modules\Rooms\Repositories\InventoryRepository;
-use Venezia\Modules\Rooms\Repositories\RoomTypeRepository;
+use Nozule\Core\BaseModule;
+use Nozule\Core\CacheManager;
+use Nozule\Core\Container;
+use Nozule\Core\Database;
+use Nozule\Core\EventDispatcher;
+use Nozule\Core\SettingsManager;
+use Nozule\Modules\Pricing\Controllers\RatePlanController;
+use Nozule\Modules\Pricing\Controllers\SeasonalRateController;
+use Nozule\Modules\Pricing\Repositories\RatePlanRepository;
+use Nozule\Modules\Pricing\Repositories\SeasonalRateRepository;
+use Nozule\Modules\Pricing\Services\PricingService;
+use Nozule\Modules\Pricing\Validators\RatePlanValidator;
+use Nozule\Modules\Pricing\Validators\SeasonalRateValidator;
+use Nozule\Modules\Rooms\Repositories\InventoryRepository;
+use Nozule\Modules\Rooms\Repositories\RoomTypeRepository;
 
 /**
  * Pricing Module bootstrap.

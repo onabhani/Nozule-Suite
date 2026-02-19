@@ -1,9 +1,9 @@
 /**
- * Venezia Hotel Manager - Admin Inventory
+ * Nozule - Admin Inventory
  */
 document.addEventListener('alpine:init', function () {
 
-    Alpine.data('vhmInventory', function () {
+    Alpine.data('nzlInventory', function () {
         return {
             loading: true,
             roomTypes: [],
@@ -11,8 +11,8 @@ document.addEventListener('alpine:init', function () {
             inventoryData: [],
             filters: {
                 roomType: '',
-                from: VeneziaUtils.today(),
-                to: VeneziaUtils.dateOffset(14)
+                from: NozuleUtils.today(),
+                to: NozuleUtils.dateOffset(14)
             },
 
             init: function () {
@@ -22,7 +22,7 @@ document.addEventListener('alpine:init', function () {
 
             loadRoomTypes: function () {
                 var self = this;
-                VeneziaAPI.get('/admin/room-types').then(function (response) {
+                NozuleAPI.get('/admin/room-types').then(function (response) {
                     self.roomTypes = response.data || [];
                 }).catch(function (err) {
                     console.error('Room types load error:', err);
@@ -41,7 +41,7 @@ document.addEventListener('alpine:init', function () {
                     params.room_type_id = self.filters.roomType;
                 }
 
-                VeneziaAPI.get('/admin/inventory', params).then(function (response) {
+                NozuleAPI.get('/admin/inventory', params).then(function (response) {
                     self.inventoryData = response.data.inventory || [];
                     self.dateRange = response.data.dates || self.generateDateRange();
                 }).catch(function (err) {
@@ -84,15 +84,15 @@ document.addEventListener('alpine:init', function () {
                 if (newCount === null) return;
 
                 var self = this;
-                VeneziaAPI.post('/admin/inventory', {
+                NozuleAPI.post('/admin/inventory', {
                     room_type_id: typeId,
                     date: date,
                     available: parseInt(newCount)
                 }).then(function () {
                     self.loadInventory();
-                    VeneziaUtils.toast('Inventory updated', 'success');
+                    NozuleUtils.toast('Inventory updated', 'success');
                 }).catch(function (err) {
-                    VeneziaUtils.toast(err.message, 'error');
+                    NozuleUtils.toast(err.message, 'error');
                 });
             },
 
@@ -106,16 +106,16 @@ document.addEventListener('alpine:init', function () {
                 if (count === null) return;
 
                 var self = this;
-                VeneziaAPI.post('/admin/inventory/bulk', {
+                NozuleAPI.post('/admin/inventory/bulk', {
                     room_type_id: typeId ? parseInt(typeId) : null,
                     start_date: startDate,
                     end_date: endDate,
                     available: parseInt(count)
                 }).then(function () {
                     self.loadInventory();
-                    VeneziaUtils.toast('Bulk update complete', 'success');
+                    NozuleUtils.toast('Bulk update complete', 'success');
                 }).catch(function (err) {
-                    VeneziaUtils.toast(err.message, 'error');
+                    NozuleUtils.toast(err.message, 'error');
                 });
             }
         };

@@ -1,9 +1,9 @@
 /**
- * Venezia Hotel Manager - Admin Channels
+ * Nozule - Admin Channels
  */
 document.addEventListener('alpine:init', function () {
 
-    Alpine.data('vhmChannels', function () {
+    Alpine.data('nzlChannels', function () {
         return {
             loading: true,
             channels: [],
@@ -42,7 +42,7 @@ document.addEventListener('alpine:init', function () {
                 var self = this;
                 self.loading = true;
 
-                VeneziaAPI.get('/admin/channels').then(function (response) {
+                NozuleAPI.get('/admin/channels').then(function (response) {
                     // listChannels returns { available_channels, mappings, total, pages }
                     self.channels = (response.mappings || []).map(function (m) {
                         return {
@@ -59,7 +59,7 @@ document.addEventListener('alpine:init', function () {
                     self.availableChannels = response.available_channels || [];
                 }).catch(function (err) {
                     console.error('Channels load error:', err);
-                    VeneziaUtils.toast(err.message || 'Failed to load channels', 'error');
+                    NozuleUtils.toast(err.message || 'Failed to load channels', 'error');
                 }).finally(function () {
                     self.loading = false;
                 });
@@ -67,11 +67,11 @@ document.addEventListener('alpine:init', function () {
 
             loadRoomTypes: function () {
                 var self = this;
-                VeneziaAPI.get('/admin/room-types').then(function (response) {
+                NozuleAPI.get('/admin/room-types').then(function (response) {
                     self.roomTypes = response.room_types || response || [];
                 }).catch(function (err) {
                     console.error('Room types load error:', err);
-                    VeneziaUtils.toast(err.message || 'Failed to load room types', 'error');
+                    NozuleUtils.toast(err.message || 'Failed to load room types', 'error');
                 });
             },
 
@@ -114,21 +114,21 @@ document.addEventListener('alpine:init', function () {
 
                 var request;
                 if (self.editingChannelId) {
-                    request = VeneziaAPI.put('/admin/channels/' + self.editingChannelId, payload);
+                    request = NozuleAPI.put('/admin/channels/' + self.editingChannelId, payload);
                 } else {
-                    request = VeneziaAPI.post('/admin/channels', payload);
+                    request = NozuleAPI.post('/admin/channels', payload);
                 }
 
                 request.then(function () {
                     self.showCreateModal = false;
                     self.loadChannels();
-                    VeneziaUtils.toast(
-                        VeneziaI18n.t(self.editingChannelId ? 'channel_updated' : 'channel_created'),
+                    NozuleUtils.toast(
+                        NozuleI18n.t(self.editingChannelId ? 'channel_updated' : 'channel_created'),
                         'success'
                     );
                 }).catch(function (err) {
-                    VeneziaUtils.toast(
-                        err.message || VeneziaI18n.t('failed_save_channel'),
+                    NozuleUtils.toast(
+                        err.message || NozuleI18n.t('failed_save_channel'),
                         'error'
                     );
                 });
@@ -138,24 +138,24 @@ document.addEventListener('alpine:init', function () {
                 var self = this;
                 self.syncing = id;
 
-                VeneziaAPI.post('/admin/channels/' + id + '/sync').then(function () {
+                NozuleAPI.post('/admin/channels/' + id + '/sync').then(function () {
                     self.loadChannels();
-                    VeneziaUtils.toast(VeneziaI18n.t('channel_synced'), 'success');
+                    NozuleUtils.toast(NozuleI18n.t('channel_synced'), 'success');
                 }).catch(function (err) {
-                    VeneziaUtils.toast(err.message || VeneziaI18n.t('sync_failed'), 'error');
+                    NozuleUtils.toast(err.message || NozuleI18n.t('sync_failed'), 'error');
                 }).finally(function () {
                     self.syncing = null;
                 });
             },
 
             deleteChannel: function (id) {
-                if (!confirm(VeneziaI18n.t('confirm_delete_channel'))) return;
+                if (!confirm(NozuleI18n.t('confirm_delete_channel'))) return;
                 var self = this;
-                VeneziaAPI.delete('/admin/channels/' + id).then(function () {
+                NozuleAPI.delete('/admin/channels/' + id).then(function () {
                     self.loadChannels();
-                    VeneziaUtils.toast(VeneziaI18n.t('channel_deleted'), 'success');
+                    NozuleUtils.toast(NozuleI18n.t('channel_deleted'), 'success');
                 }).catch(function (err) {
-                    VeneziaUtils.toast(err.message || VeneziaI18n.t('failed_delete_channel'), 'error');
+                    NozuleUtils.toast(err.message || NozuleI18n.t('failed_delete_channel'), 'error');
                 });
             }
         };

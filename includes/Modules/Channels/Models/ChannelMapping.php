@@ -1,8 +1,8 @@
 <?php
 
-namespace Venezia\Modules\Channels\Models;
+namespace Nozule\Modules\Channels\Models;
 
-use Venezia\Core\BaseModel;
+use Nozule\Core\BaseModel;
 
 /**
  * Channel Mapping model.

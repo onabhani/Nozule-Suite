@@ -1,9 +1,9 @@
 /**
- * Venezia Hotel Manager - Admin Booking Manager
+ * Nozule - Admin Booking Manager
  */
 document.addEventListener('alpine:init', function () {
 
-    Alpine.data('vhmBookingManager', function () {
+    Alpine.data('nzlBookingManager', function () {
         return {
             bookings: [],
             currentPage: 1,
@@ -42,14 +42,14 @@ document.addEventListener('alpine:init', function () {
                 if (self.filters.to) params.date_to = self.filters.to;
                 if (self.filters.search) params.search = self.filters.search;
 
-                VeneziaAPI.get('/admin/bookings', params).then(function (response) {
+                NozuleAPI.get('/admin/bookings', params).then(function (response) {
                     self.bookings = response.data.items || response.data || [];
                     if (response.data.pagination) {
                         self.currentPage = response.data.pagination.page || 1;
                         self.totalPages = response.data.pagination.total_pages || 1;
                     }
                 }).catch(function (err) {
-                    VeneziaUtils.toast(err.message, 'error');
+                    NozuleUtils.toast(err.message, 'error');
                 }).finally(function () {
                     self.loading = false;
                 });
@@ -81,21 +81,21 @@ document.addEventListener('alpine:init', function () {
 
             loadRoomTypes: function () {
                 var self = this;
-                VeneziaAPI.get('/admin/room-types').then(function (response) {
+                NozuleAPI.get('/admin/room-types').then(function (response) {
                     self.roomTypes = response.data.items || response.data || [];
                 }).catch(function (err) {
-                    VeneziaUtils.toast(err.message, 'error');
+                    NozuleUtils.toast(err.message, 'error');
                 });
             },
 
             saveBooking: function () {
                 var self = this;
-                VeneziaAPI.post('/admin/bookings', self.bookingForm).then(function () {
+                NozuleAPI.post('/admin/bookings', self.bookingForm).then(function () {
                     self.showCreateModal = false;
                     self.loadBookings();
-                    VeneziaUtils.toast('Booking created successfully', 'success');
+                    NozuleUtils.toast('Booking created successfully', 'success');
                 }).catch(function (err) {
-                    VeneziaUtils.toast(err.message, 'error');
+                    NozuleUtils.toast(err.message, 'error');
                 });
             },
 
@@ -117,11 +117,11 @@ document.addEventListener('alpine:init', function () {
                 var self = this;
                 self.showDetail = true;
 
-                VeneziaAPI.get('/admin/bookings/' + id).then(function (response) {
+                NozuleAPI.get('/admin/bookings/' + id).then(function (response) {
                     self.selectedBooking = response.data;
                 });
 
-                VeneziaAPI.get('/admin/bookings/' + id + '/logs').then(function (response) {
+                NozuleAPI.get('/admin/bookings/' + id + '/logs').then(function (response) {
                     self.bookingLogs = response.data || [];
                 });
             },
@@ -134,11 +134,11 @@ document.addEventListener('alpine:init', function () {
 
             confirmBooking: function (id) {
                 var self = this;
-                VeneziaAPI.post('/admin/bookings/' + id + '/confirm').then(function () {
+                NozuleAPI.post('/admin/bookings/' + id + '/confirm').then(function () {
                     self.loadBookings();
-                    VeneziaUtils.toast('Booking confirmed', 'success');
+                    NozuleUtils.toast('Booking confirmed', 'success');
                 }).catch(function (err) {
-                    VeneziaUtils.toast(err.message, 'error');
+                    NozuleUtils.toast(err.message, 'error');
                 });
             },
 
@@ -147,34 +147,34 @@ document.addEventListener('alpine:init', function () {
                 if (!reason) return;
 
                 var self = this;
-                VeneziaAPI.post('/admin/bookings/' + id + '/cancel', {
+                NozuleAPI.post('/admin/bookings/' + id + '/cancel', {
                     reason: reason
                 }).then(function () {
                     self.loadBookings();
                     self.closeDetail();
-                    VeneziaUtils.toast('Booking cancelled', 'success');
+                    NozuleUtils.toast('Booking cancelled', 'success');
                 }).catch(function (err) {
-                    VeneziaUtils.toast(err.message, 'error');
+                    NozuleUtils.toast(err.message, 'error');
                 });
             },
 
             checkIn: function (id) {
                 var self = this;
-                VeneziaAPI.post('/admin/bookings/' + id + '/check-in').then(function () {
+                NozuleAPI.post('/admin/bookings/' + id + '/check-in').then(function () {
                     self.loadBookings();
-                    VeneziaUtils.toast('Guest checked in', 'success');
+                    NozuleUtils.toast('Guest checked in', 'success');
                 }).catch(function (err) {
-                    VeneziaUtils.toast(err.message, 'error');
+                    NozuleUtils.toast(err.message, 'error');
                 });
             },
 
             checkOut: function (id) {
                 var self = this;
-                VeneziaAPI.post('/admin/bookings/' + id + '/check-out').then(function () {
+                NozuleAPI.post('/admin/bookings/' + id + '/check-out').then(function () {
                     self.loadBookings();
-                    VeneziaUtils.toast('Guest checked out', 'success');
+                    NozuleUtils.toast('Guest checked out', 'success');
                 }).catch(function (err) {
-                    VeneziaUtils.toast(err.message, 'error');
+                    NozuleUtils.toast(err.message, 'error');
                 });
             },
 
@@ -182,13 +182,13 @@ document.addEventListener('alpine:init', function () {
                 if (!this.paymentData.amount) return;
 
                 var self = this;
-                VeneziaAPI.post('/admin/bookings/' + id + '/payments', self.paymentData).then(function () {
+                NozuleAPI.post('/admin/bookings/' + id + '/payments', self.paymentData).then(function () {
                     self.showPaymentForm = false;
                     self.paymentData = { amount: '', method: 'cash', notes: '' };
                     self.loadBookings();
-                    VeneziaUtils.toast('Payment recorded', 'success');
+                    NozuleUtils.toast('Payment recorded', 'success');
                 }).catch(function (err) {
-                    VeneziaUtils.toast(err.message, 'error');
+                    NozuleUtils.toast(err.message, 'error');
                 });
             },
 
@@ -206,11 +206,11 @@ document.addEventListener('alpine:init', function () {
             },
 
             formatPrice: function (amount) {
-                return VeneziaUtils.formatPrice(amount);
+                return NozuleUtils.formatPrice(amount);
             },
 
             formatDate: function (date) {
-                return VeneziaUtils.formatDate(date);
+                return NozuleUtils.formatDate(date);
             }
         };
     });

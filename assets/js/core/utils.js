@@ -1,7 +1,7 @@
 /**
- * Venezia Hotel Manager - Utility Functions
+ * Nozule - Utility Functions
  */
-var VeneziaUtils = (function () {
+var NozuleUtils = (function () {
     'use strict';
 
     return {
@@ -9,7 +9,7 @@ var VeneziaUtils = (function () {
          * Format a price with currency.
          */
         formatPrice: function (amount, currency) {
-            var config = window.VeneziaConfig || {};
+            var config = window.NozuleConfig || {};
             currency = currency || config.currency || 'USD';
 
             try {
@@ -30,7 +30,7 @@ var VeneziaUtils = (function () {
         formatDate: function (dateStr, format) {
             if (!dateStr) return '';
             var date = new Date(dateStr + 'T00:00:00');
-            var config = window.VeneziaConfig || {};
+            var config = window.NozuleConfig || {};
 
             try {
                 return date.toLocaleDateString(config.locale || 'en-US', {
@@ -89,7 +89,7 @@ var VeneziaUtils = (function () {
          * Generate a simple unique ID.
          */
         uniqueId: function (prefix) {
-            return (prefix || 'vhm_') + Date.now().toString(36) + Math.random().toString(36).substr(2, 5);
+            return (prefix || 'nzl_') + Date.now().toString(36) + Math.random().toString(36).substr(2, 5);
         },
 
         /**
@@ -135,4 +135,4 @@ var VeneziaUtils = (function () {
     };
 })();
 
-window.VeneziaUtils = VeneziaUtils;
+window.NozuleUtils = NozuleUtils;

@@ -1,8 +1,8 @@
 <?php
 
-namespace Venezia\Modules\Notifications\Models;
+namespace Nozule\Modules\Notifications\Models;
 
-use Venezia\Core\BaseModel;
+use Nozule\Core\BaseModel;
 
 /**
  * Notification model representing a queued or sent notification.

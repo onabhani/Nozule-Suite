@@ -1,6 +1,6 @@
 <?php
 
-namespace Venezia\Core;
+namespace Nozule\Core;
 
 /**
  * Base Repository with common database operations.

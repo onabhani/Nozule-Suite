@@ -1,17 +1,17 @@
 <?php
 
-namespace Venezia\Modules\Integrations\Controllers;
+namespace Nozule\Modules\Integrations\Controllers;
 
-use Venezia\Modules\Integrations\Services\IntegrationService;
-use Venezia\Modules\Integrations\Services\OdooConnector;
-use Venezia\Modules\Integrations\Services\WebhookConnector;
+use Nozule\Modules\Integrations\Services\IntegrationService;
+use Nozule\Modules\Integrations\Services\OdooConnector;
+use Nozule\Modules\Integrations\Services\WebhookConnector;
 
 /**
  * REST API controller for integration management.
  */
 class IntegrationController {
 
-	private const NAMESPACE = 'venezia/v1';
+	private const NAMESPACE = 'nozule/v1';
 
 	private IntegrationService $service;
 	private OdooConnector $odoo;
@@ -49,7 +49,7 @@ class IntegrationController {
 	}
 
 	public function checkPermission(): bool {
-		return current_user_can( 'vhm_admin' );
+		return current_user_can( 'nzl_admin' );
 	}
 
 	/**
@@ -70,7 +70,7 @@ class IntegrationController {
 			default:
 				$result = [
 					'success' => false,
-					'message' => __( 'Unknown provider.', 'venezia-hotel' ),
+					'message' => __( 'Unknown provider.', 'nozule' ),
 				];
 		}
 

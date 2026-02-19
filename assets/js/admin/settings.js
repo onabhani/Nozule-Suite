@@ -1,9 +1,9 @@
 /**
- * Venezia Hotel Manager - Admin Settings
+ * Nozule - Admin Settings
  */
 document.addEventListener('alpine:init', function () {
 
-    Alpine.data('vhmSettings', function () {
+    Alpine.data('nzlSettings', function () {
         return {
             loading: true,
             activeTab: 'general',
@@ -67,7 +67,7 @@ document.addEventListener('alpine:init', function () {
                 var self = this;
                 self.loading = true;
 
-                VeneziaAPI.get('/admin/settings').then(function (response) {
+                NozuleAPI.get('/admin/settings').then(function (response) {
                     if (response.data) {
                         var data = response.data;
                         if (data.general) self.settings.general = Object.assign(self.settings.general, data.general);
@@ -96,12 +96,12 @@ document.addEventListener('alpine:init', function () {
                 self.saving = true;
                 self.saved = false;
 
-                VeneziaAPI.post('/admin/settings', self.settings).then(function () {
+                NozuleAPI.post('/admin/settings', self.settings).then(function () {
                     self.saved = true;
-                    VeneziaUtils.toast(VeneziaI18n.__('settings_saved'), 'success');
+                    NozuleUtils.toast(NozuleI18n.__('settings_saved'), 'success');
                     setTimeout(function () { self.saved = false; }, 3000);
                 }).catch(function (err) {
-                    VeneziaUtils.toast(err.message || VeneziaI18n.__('failed_save_settings'), 'error');
+                    NozuleUtils.toast(err.message || NozuleI18n.__('failed_save_settings'), 'error');
                 }).finally(function () {
                     self.saving = false;
                 });
@@ -127,7 +127,7 @@ document.addEventListener('alpine:init', function () {
                 var provider = self.settings.integrations.provider;
 
                 if (provider === 'none') {
-                    VeneziaUtils.toast(VeneziaI18n.__('select_provider_first'), 'warning');
+                    NozuleUtils.toast(NozuleI18n.__('select_provider_first'), 'warning');
                     return;
                 }
 
@@ -135,18 +135,18 @@ document.addEventListener('alpine:init', function () {
                 self.testingConnection = true;
                 self.connectionResult = null;
 
-                VeneziaAPI.post('/admin/settings', self.settings).then(function () {
-                    return VeneziaAPI.post('/admin/integrations/test', { provider: provider });
+                NozuleAPI.post('/admin/settings', self.settings).then(function () {
+                    return NozuleAPI.post('/admin/integrations/test', { provider: provider });
                 }).then(function (response) {
                     self.connectionResult = response.data || response;
                     if (self.connectionResult.success) {
-                        VeneziaUtils.toast(self.connectionResult.message, 'success');
+                        NozuleUtils.toast(self.connectionResult.message, 'success');
                     } else {
-                        VeneziaUtils.toast(self.connectionResult.message, 'error');
+                        NozuleUtils.toast(self.connectionResult.message, 'error');
                     }
                 }).catch(function (err) {
                     self.connectionResult = { success: false, message: err.message };
-                    VeneziaUtils.toast(err.message || VeneziaI18n.__('connection_test_failed'), 'error');
+                    NozuleUtils.toast(err.message || NozuleI18n.__('connection_test_failed'), 'error');
                 }).finally(function () {
                     self.testingConnection = false;
                 });

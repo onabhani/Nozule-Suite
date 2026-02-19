@@ -1,16 +1,16 @@
 <?php
 
-namespace Venezia\Modules\Guests\Controllers;
+namespace Nozule\Modules\Guests\Controllers;
 
-use Venezia\Modules\Guests\Services\GuestService;
-use Venezia\Modules\Guests\Repositories\GuestRepository;
+use Nozule\Modules\Guests\Services\GuestService;
+use Nozule\Modules\Guests\Repositories\GuestRepository;
 
 /**
  * REST API controller for admin guest management.
  */
 class GuestController {
 
-    private const NAMESPACE = 'venezia/v1';
+    private const NAMESPACE = 'nozule/v1';
 
     private GuestService $service;
     private GuestRepository $repository;
@@ -77,10 +77,10 @@ class GuestController {
     }
 
     /**
-     * Permission callback: user must have the vhm_staff capability.
+     * Permission callback: user must have the nzl_staff capability.
      */
     public function checkPermission( \WP_REST_Request $request ): bool {
-        return current_user_can( 'manage_options' ) || current_user_can( 'vhm_staff' );
+        return current_user_can( 'manage_options' ) || current_user_can( 'nzl_staff' );
     }
 
     // Standard CRUD aliases (used by RestController admin routes)
@@ -149,7 +149,7 @@ class GuestController {
 
         if ( ! $guest ) {
             return new \WP_REST_Response(
-                [ 'message' => __( 'Guest not found.', 'venezia-hotel' ) ],
+                [ 'message' => __( 'Guest not found.', 'nozule' ) ],
                 404
             );
         }
@@ -183,7 +183,7 @@ class GuestController {
 
         if ( empty( $data ) ) {
             return new \WP_REST_Response(
-                [ 'message' => __( 'No data provided for update.', 'venezia-hotel' ) ],
+                [ 'message' => __( 'No data provided for update.', 'nozule' ) ],
                 400
             );
         }

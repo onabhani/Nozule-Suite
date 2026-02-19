@@ -1,17 +1,17 @@
 <?php
 
-namespace Venezia\Modules\Pricing\Controllers;
+namespace Nozule\Modules\Pricing\Controllers;
 
-use Venezia\Core\EventDispatcher;
-use Venezia\Modules\Pricing\Models\SeasonalRate;
-use Venezia\Modules\Pricing\Repositories\SeasonalRateRepository;
-use Venezia\Modules\Pricing\Validators\SeasonalRateValidator;
+use Nozule\Core\EventDispatcher;
+use Nozule\Modules\Pricing\Models\SeasonalRate;
+use Nozule\Modules\Pricing\Repositories\SeasonalRateRepository;
+use Nozule\Modules\Pricing\Validators\SeasonalRateValidator;
 
 /**
  * REST API controller for seasonal rate admin CRUD operations.
  *
  * All endpoints require the 'manage_options' capability.
- * Registered under the venezia/v1/seasonal-rates namespace.
+ * Registered under the nozule/v1/seasonal-rates namespace.
  */
 class SeasonalRateController {
 
@@ -33,7 +33,7 @@ class SeasonalRateController {
 	 * Register REST API routes.
 	 */
 	public function registerRoutes(): void {
-		$namespace = 'venezia/v1';
+		$namespace = 'nozule/v1';
 
 		register_rest_route( $namespace, '/seasonal-rates', [
 			[
@@ -77,7 +77,7 @@ class SeasonalRateController {
 	/**
 	 * List seasonal rates.
 	 *
-	 * GET /venezia/v1/seasonal-rates
+	 * GET /nozule/v1/seasonal-rates
 	 *
 	 * Supports optional ?room_type_id= filter.
 	 */
@@ -102,7 +102,7 @@ class SeasonalRateController {
 	/**
 	 * Show a single seasonal rate.
 	 *
-	 * GET /venezia/v1/seasonal-rates/{id}
+	 * GET /nozule/v1/seasonal-rates/{id}
 	 */
 	public function show( \WP_REST_Request $request ): \WP_REST_Response {
 		$rate = $this->repository->find( (int) $request->get_param( 'id' ) );
@@ -112,7 +112,7 @@ class SeasonalRateController {
 				'success' => false,
 				'error'   => [
 					'code'    => 'NOT_FOUND',
-					'message' => __( 'Seasonal rate not found.', 'venezia-hotel' ),
+					'message' => __( 'Seasonal rate not found.', 'nozule' ),
 				],
 			], 404 );
 		}
@@ -126,7 +126,7 @@ class SeasonalRateController {
 	/**
 	 * Create a new seasonal rate.
 	 *
-	 * POST /venezia/v1/seasonal-rates
+	 * POST /nozule/v1/seasonal-rates
 	 */
 	public function store( \WP_REST_Request $request ): \WP_REST_Response {
 		$data = $request->get_json_params();
@@ -150,7 +150,7 @@ class SeasonalRateController {
 				'success' => false,
 				'error'   => [
 					'code'    => 'CREATE_FAILED',
-					'message' => __( 'Failed to create seasonal rate.', 'venezia-hotel' ),
+					'message' => __( 'Failed to create seasonal rate.', 'nozule' ),
 				],
 			], 500 );
 		}
@@ -166,7 +166,7 @@ class SeasonalRateController {
 	/**
 	 * Update an existing seasonal rate.
 	 *
-	 * PUT/PATCH /venezia/v1/seasonal-rates/{id}
+	 * PUT/PATCH /nozule/v1/seasonal-rates/{id}
 	 */
 	public function update( \WP_REST_Request $request ): \WP_REST_Response {
 		$id   = (int) $request->get_param( 'id' );
@@ -177,7 +177,7 @@ class SeasonalRateController {
 				'success' => false,
 				'error'   => [
 					'code'    => 'NOT_FOUND',
-					'message' => __( 'Seasonal rate not found.', 'venezia-hotel' ),
+					'message' => __( 'Seasonal rate not found.', 'nozule' ),
 				],
 			], 404 );
 		}
@@ -207,7 +207,7 @@ class SeasonalRateController {
 				'success' => false,
 				'error'   => [
 					'code'    => 'UPDATE_FAILED',
-					'message' => __( 'Failed to update seasonal rate.', 'venezia-hotel' ),
+					'message' => __( 'Failed to update seasonal rate.', 'nozule' ),
 				],
 			], 500 );
 		}
@@ -224,7 +224,7 @@ class SeasonalRateController {
 	/**
 	 * Delete a seasonal rate.
 	 *
-	 * DELETE /venezia/v1/seasonal-rates/{id}
+	 * DELETE /nozule/v1/seasonal-rates/{id}
 	 */
 	public function destroy( \WP_REST_Request $request ): \WP_REST_Response {
 		$id   = (int) $request->get_param( 'id' );
@@ -235,7 +235,7 @@ class SeasonalRateController {
 				'success' => false,
 				'error'   => [
 					'code'    => 'NOT_FOUND',
-					'message' => __( 'Seasonal rate not found.', 'venezia-hotel' ),
+					'message' => __( 'Seasonal rate not found.', 'nozule' ),
 				],
 			], 404 );
 		}
@@ -247,7 +247,7 @@ class SeasonalRateController {
 				'success' => false,
 				'error'   => [
 					'code'    => 'DELETE_FAILED',
-					'message' => __( 'Failed to delete seasonal rate.', 'venezia-hotel' ),
+					'message' => __( 'Failed to delete seasonal rate.', 'nozule' ),
 				],
 			], 500 );
 		}
@@ -256,7 +256,7 @@ class SeasonalRateController {
 
 		return new \WP_REST_Response( [
 			'success' => true,
-			'message' => __( 'Seasonal rate deleted successfully.', 'venezia-hotel' ),
+			'message' => __( 'Seasonal rate deleted successfully.', 'nozule' ),
 		] );
 	}
 

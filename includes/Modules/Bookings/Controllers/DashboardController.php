@@ -1,11 +1,11 @@
 <?php
 
-namespace Venezia\Modules\Bookings\Controllers;
+namespace Nozule\Modules\Bookings\Controllers;
 
-use Venezia\Modules\Bookings\Models\Booking;
-use Venezia\Modules\Bookings\Repositories\BookingRepository;
-use Venezia\Modules\Bookings\Services\BookingService;
-use Venezia\Modules\Rooms\Repositories\RoomRepository;
+use Nozule\Modules\Bookings\Models\Booking;
+use Nozule\Modules\Bookings\Repositories\BookingRepository;
+use Nozule\Modules\Bookings\Services\BookingService;
+use Nozule\Modules\Rooms\Repositories\RoomRepository;
 
 /**
  * REST controller for the admin dashboard.
@@ -13,7 +13,7 @@ use Venezia\Modules\Rooms\Repositories\RoomRepository;
  * Provides aggregate stats and today's operational lists (arrivals,
  * departures, in-house guests).
  *
- * Route namespace: venezia/v1
+ * Route namespace: nozule/v1
  */
 class DashboardController {
 
@@ -21,7 +21,7 @@ class DashboardController {
 	private BookingRepository $bookingRepository;
 	private RoomRepository $roomRepository;
 
-	private const NAMESPACE = 'venezia/v1';
+	private const NAMESPACE = 'nozule/v1';
 
 	public function __construct(
 		BookingService $service,

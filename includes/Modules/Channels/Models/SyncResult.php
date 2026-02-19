@@ -1,6 +1,6 @@
 <?php
 
-namespace Venezia\Modules\Channels\Models;
+namespace Nozule\Modules\Channels\Models;
 
 /**
  * Value object representing the result of a channel sync operation.

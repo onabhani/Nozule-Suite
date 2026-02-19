@@ -1,11 +1,11 @@
 <?php
 
-namespace Venezia\Modules\Guests\Services;
+namespace Nozule\Modules\Guests\Services;
 
-use Venezia\Core\EventDispatcher;
-use Venezia\Modules\Guests\Models\Guest;
-use Venezia\Modules\Guests\Repositories\GuestRepository;
-use Venezia\Modules\Guests\Validators\GuestValidator;
+use Nozule\Core\EventDispatcher;
+use Nozule\Modules\Guests\Models\Guest;
+use Nozule\Modules\Guests\Repositories\GuestRepository;
+use Nozule\Modules\Guests\Validators\GuestValidator;
 
 /**
  * Service layer for guest business logic.
@@ -40,7 +40,7 @@ class GuestService {
         $email = $data['email'] ?? '';
 
         if ( empty( $email ) ) {
-            throw new \RuntimeException( __( 'Email address is required.', 'venezia-hotel' ) );
+            throw new \RuntimeException( __( 'Email address is required.', 'nozule' ) );
         }
 
         // Try to find an existing guest by email.
@@ -88,7 +88,7 @@ class GuestService {
         $guest = $this->repository->create( $sanitized );
 
         if ( ! $guest ) {
-            throw new \RuntimeException( __( 'Failed to create guest profile.', 'venezia-hotel' ) );
+            throw new \RuntimeException( __( 'Failed to create guest profile.', 'nozule' ) );
         }
 
         $this->events->dispatch( 'guests/created', $guest );
@@ -108,7 +108,7 @@ class GuestService {
 
         if ( ! $guest ) {
             throw new \RuntimeException(
-                sprintf( __( 'Guest with ID %d not found.', 'venezia-hotel' ), $guest_id )
+                sprintf( __( 'Guest with ID %d not found.', 'nozule' ), $guest_id )
             );
         }
 
@@ -123,7 +123,7 @@ class GuestService {
         $updated = $this->repository->update( $guest_id, $sanitized );
 
         if ( ! $updated ) {
-            throw new \RuntimeException( __( 'Failed to update guest profile.', 'venezia-hotel' ) );
+            throw new \RuntimeException( __( 'Failed to update guest profile.', 'nozule' ) );
         }
 
         $guest = $this->repository->find( $guest_id );
@@ -148,7 +148,7 @@ class GuestService {
 
         if ( ! $guest ) {
             throw new \RuntimeException(
-                sprintf( __( 'Guest with ID %d not found.', 'venezia-hotel' ), $guest_id )
+                sprintf( __( 'Guest with ID %d not found.', 'nozule' ), $guest_id )
             );
         }
 

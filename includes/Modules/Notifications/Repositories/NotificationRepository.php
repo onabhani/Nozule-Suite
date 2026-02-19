@@ -1,10 +1,10 @@
 <?php
 
-namespace Venezia\Modules\Notifications\Repositories;
+namespace Nozule\Modules\Notifications\Repositories;
 
-use Venezia\Core\BaseRepository;
-use Venezia\Core\Database;
-use Venezia\Modules\Notifications\Models\Notification;
+use Nozule\Core\BaseRepository;
+use Nozule\Core\Database;
+use Nozule\Modules\Notifications\Models\Notification;
 
 /**
  * Repository for notification database operations.

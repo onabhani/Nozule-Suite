@@ -1,10 +1,10 @@
 <?php
 
-namespace Venezia\Modules\Bookings\Validators;
+namespace Nozule\Modules\Bookings\Validators;
 
-use Venezia\Core\BaseValidator;
-use Venezia\Modules\Bookings\Models\Booking;
-use Venezia\Modules\Bookings\Models\Payment;
+use Nozule\Core\BaseValidator;
+use Nozule\Modules\Bookings\Models\Booking;
+use Nozule\Modules\Bookings\Models\Payment;
 
 /**
  * Validator for booking and payment data.
@@ -28,7 +28,7 @@ class BookingValidator extends BaseValidator {
 		// Cross-field: check_out must be after check_in.
 		if ( ! empty( $data['check_in'] ) && ! empty( $data['check_out'] ) ) {
 			if ( strtotime( $data['check_out'] ) <= strtotime( $data['check_in'] ) ) {
-				$this->errors['check_out'][] = __( 'Check-out date must be after check-in date.', 'venezia-hotel' );
+				$this->errors['check_out'][] = __( 'Check-out date must be after check-in date.', 'nozule' );
 				$valid = false;
 			}
 		}
@@ -36,15 +36,15 @@ class BookingValidator extends BaseValidator {
 		// Guest info: either guest_id or at least email + name.
 		if ( empty( $data['guest_id'] ) ) {
 			if ( empty( $data['guest_email'] ) ) {
-				$this->errors['guest_email'][] = __( 'Guest email is required when no guest ID is provided.', 'venezia-hotel' );
+				$this->errors['guest_email'][] = __( 'Guest email is required when no guest ID is provided.', 'nozule' );
 				$valid = false;
 			}
 			if ( empty( $data['guest_first_name'] ) ) {
-				$this->errors['guest_first_name'][] = __( 'Guest first name is required when no guest ID is provided.', 'venezia-hotel' );
+				$this->errors['guest_first_name'][] = __( 'Guest first name is required when no guest ID is provided.', 'nozule' );
 				$valid = false;
 			}
 			if ( empty( $data['guest_last_name'] ) ) {
-				$this->errors['guest_last_name'][] = __( 'Guest last name is required when no guest ID is provided.', 'venezia-hotel' );
+				$this->errors['guest_last_name'][] = __( 'Guest last name is required when no guest ID is provided.', 'nozule' );
 				$valid = false;
 			}
 		}
@@ -85,7 +85,7 @@ class BookingValidator extends BaseValidator {
 
 		if ( $check_in && $check_out ) {
 			if ( strtotime( $check_out ) <= strtotime( $check_in ) ) {
-				$this->errors['check_out'][] = __( 'Check-out date must be after check-in date.', 'venezia-hotel' );
+				$this->errors['check_out'][] = __( 'Check-out date must be after check-in date.', 'nozule' );
 				$valid = false;
 			}
 		}

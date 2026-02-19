@@ -1,20 +1,20 @@
 <?php
 
-namespace Venezia\Modules\Bookings\Controllers;
+namespace Nozule\Modules\Bookings\Controllers;
 
-use Venezia\Modules\Bookings\Exceptions\InvalidStateException;
-use Venezia\Modules\Bookings\Exceptions\NoAvailabilityException;
-use Venezia\Modules\Bookings\Models\Booking;
-use Venezia\Modules\Bookings\Repositories\BookingRepository;
-use Venezia\Modules\Bookings\Repositories\PaymentRepository;
-use Venezia\Modules\Bookings\Services\BookingService;
-use Venezia\Modules\Bookings\Validators\BookingValidator;
+use Nozule\Modules\Bookings\Exceptions\InvalidStateException;
+use Nozule\Modules\Bookings\Exceptions\NoAvailabilityException;
+use Nozule\Modules\Bookings\Models\Booking;
+use Nozule\Modules\Bookings\Repositories\BookingRepository;
+use Nozule\Modules\Bookings\Repositories\PaymentRepository;
+use Nozule\Modules\Bookings\Services\BookingService;
+use Nozule\Modules\Bookings\Validators\BookingValidator;
 
 /**
  * REST controller for admin booking management.
  *
  * All endpoints require the 'manage_options' capability.
- * Route namespace: venezia/v1
+ * Route namespace: nozule/v1
  */
 class AdminBookingController {
 
@@ -23,7 +23,7 @@ class AdminBookingController {
 	private PaymentRepository $paymentRepository;
 	private BookingValidator $validator;
 
-	private const NAMESPACE = 'venezia/v1';
+	private const NAMESPACE = 'nozule/v1';
 
 	public function __construct(
 		BookingService $service,
@@ -197,7 +197,7 @@ class AdminBookingController {
 		if ( ! $booking ) {
 			return new \WP_REST_Response( [
 				'success' => false,
-				'message' => __( 'Booking not found.', 'venezia-hotel' ),
+				'message' => __( 'Booking not found.', 'nozule' ),
 			], 404 );
 		}
 
@@ -233,7 +233,7 @@ class AdminBookingController {
 		} catch ( \Throwable $e ) {
 			return new \WP_REST_Response( [
 				'success' => false,
-				'message' => __( 'Failed to create booking.', 'venezia-hotel' ),
+				'message' => __( 'Failed to create booking.', 'nozule' ),
 			], 500 );
 		}
 	}
@@ -251,7 +251,7 @@ class AdminBookingController {
 		if ( ! $booking ) {
 			return new \WP_REST_Response( [
 				'success' => false,
-				'message' => __( 'Booking not found.', 'venezia-hotel' ),
+				'message' => __( 'Booking not found.', 'nozule' ),
 			], 404 );
 		}
 
@@ -292,7 +292,7 @@ class AdminBookingController {
 		if ( ! $success ) {
 			return new \WP_REST_Response( [
 				'success' => false,
-				'message' => __( 'Failed to update booking.', 'venezia-hotel' ),
+				'message' => __( 'Failed to update booking.', 'nozule' ),
 			], 500 );
 		}
 
@@ -329,7 +329,7 @@ class AdminBookingController {
 		} catch ( \Throwable $e ) {
 			return new \WP_REST_Response( [
 				'success' => false,
-				'message' => __( 'Failed to confirm booking.', 'venezia-hotel' ),
+				'message' => __( 'Failed to confirm booking.', 'nozule' ),
 			], 500 );
 		}
 	}
@@ -356,7 +356,7 @@ class AdminBookingController {
 		} catch ( \Throwable $e ) {
 			return new \WP_REST_Response( [
 				'success' => false,
-				'message' => __( 'Failed to cancel booking.', 'venezia-hotel' ),
+				'message' => __( 'Failed to cancel booking.', 'nozule' ),
 			], 500 );
 		}
 	}
@@ -381,7 +381,7 @@ class AdminBookingController {
 		} catch ( \Throwable $e ) {
 			return new \WP_REST_Response( [
 				'success' => false,
-				'message' => __( 'Failed to check in.', 'venezia-hotel' ),
+				'message' => __( 'Failed to check in.', 'nozule' ),
 			], 500 );
 		}
 	}
@@ -405,7 +405,7 @@ class AdminBookingController {
 		} catch ( \Throwable $e ) {
 			return new \WP_REST_Response( [
 				'success' => false,
-				'message' => __( 'Failed to check out.', 'venezia-hotel' ),
+				'message' => __( 'Failed to check out.', 'nozule' ),
 			], 500 );
 		}
 	}
@@ -423,7 +423,7 @@ class AdminBookingController {
 		if ( ! $booking ) {
 			return new \WP_REST_Response( [
 				'success' => false,
-				'message' => __( 'Booking not found.', 'venezia-hotel' ),
+				'message' => __( 'Booking not found.', 'nozule' ),
 			], 404 );
 		}
 
@@ -434,7 +434,7 @@ class AdminBookingController {
 		$this->bookingRepository->createLog( [
 			'booking_id' => $id,
 			'action'     => 'room_assigned',
-			'details'    => sprintf( __( 'Room ID %d assigned.', 'venezia-hotel' ), $roomId ),
+			'details'    => sprintf( __( 'Room ID %d assigned.', 'nozule' ), $roomId ),
 			'user_id'    => get_current_user_id() ?: null,
 			'ip_address' => BookingService::getClientIP(),
 		] );
@@ -469,7 +469,7 @@ class AdminBookingController {
 		} catch ( \Throwable $e ) {
 			return new \WP_REST_Response( [
 				'success' => false,
-				'message' => __( 'Failed to record payment.', 'venezia-hotel' ),
+				'message' => __( 'Failed to record payment.', 'nozule' ),
 			], 500 );
 		}
 	}
@@ -486,7 +486,7 @@ class AdminBookingController {
 		if ( ! $booking ) {
 			return new \WP_REST_Response( [
 				'success' => false,
-				'message' => __( 'Booking not found.', 'venezia-hotel' ),
+				'message' => __( 'Booking not found.', 'nozule' ),
 			], 404 );
 		}
 
@@ -510,7 +510,7 @@ class AdminBookingController {
 		if ( ! $booking ) {
 			return new \WP_REST_Response( [
 				'success' => false,
-				'message' => __( 'Booking not found.', 'venezia-hotel' ),
+				'message' => __( 'Booking not found.', 'nozule' ),
 			], 404 );
 		}
 

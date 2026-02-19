@@ -1,21 +1,21 @@
 <?php
 
-namespace Venezia\Admin;
+namespace Nozule\Admin;
 
-use Venezia\Core\Container;
-use Venezia\Admin\Pages\DashboardPage;
-use Venezia\Admin\Pages\BookingsPage;
-use Venezia\Admin\Pages\CalendarPage;
-use Venezia\Admin\Pages\GuestsPage;
-use Venezia\Admin\Pages\RoomsPage;
-use Venezia\Admin\Pages\RatesPage;
-use Venezia\Admin\Pages\InventoryPage;
-use Venezia\Admin\Pages\ReportsPage;
-use Venezia\Admin\Pages\ChannelsPage;
-use Venezia\Admin\Pages\SettingsPage;
+use Nozule\Core\Container;
+use Nozule\Admin\Pages\DashboardPage;
+use Nozule\Admin\Pages\BookingsPage;
+use Nozule\Admin\Pages\CalendarPage;
+use Nozule\Admin\Pages\GuestsPage;
+use Nozule\Admin\Pages\RoomsPage;
+use Nozule\Admin\Pages\RatesPage;
+use Nozule\Admin\Pages\InventoryPage;
+use Nozule\Admin\Pages\ReportsPage;
+use Nozule\Admin\Pages\ChannelsPage;
+use Nozule\Admin\Pages\SettingsPage;
 
 /**
- * Registers the WordPress admin menu structure for the Hotel Manager plugin.
+ * Registers the WordPress admin menu structure for the Nozule plugin.
  */
 class AdminMenu {
 
@@ -41,10 +41,10 @@ class AdminMenu {
         // Top-level menu
         // ------------------------------------------------------------------
         add_menu_page(
-            __( 'Hotel Manager', 'venezia-hotel' ),
-            __( 'Hotel Manager', 'venezia-hotel' ),
-            'vhm_staff',                   // minimum capability
-            'vhm-dashboard',               // menu slug
+            __( 'Nozule', 'nozule' ),
+            __( 'Nozule', 'nozule' ),
+            'nzl_staff',                   // minimum capability
+            'nzl-dashboard',               // menu slug
             [ $this, 'renderDashboard' ],
             'dashicons-building',
             30
@@ -54,38 +54,38 @@ class AdminMenu {
         // Sub-menus (staff-level)
         // ------------------------------------------------------------------
         add_submenu_page(
-            'vhm-dashboard',
-            __( 'Dashboard', 'venezia-hotel' ),
-            __( 'Dashboard', 'venezia-hotel' ),
-            'vhm_staff',
-            'vhm-dashboard',
+            'nzl-dashboard',
+            __( 'Dashboard', 'nozule' ),
+            __( 'Dashboard', 'nozule' ),
+            'nzl_staff',
+            'nzl-dashboard',
             [ $this, 'renderDashboard' ]
         );
 
         add_submenu_page(
-            'vhm-dashboard',
-            __( 'Bookings', 'venezia-hotel' ),
-            __( 'Bookings', 'venezia-hotel' ),
-            'vhm_staff',
-            'vhm-bookings',
+            'nzl-dashboard',
+            __( 'Bookings', 'nozule' ),
+            __( 'Bookings', 'nozule' ),
+            'nzl_staff',
+            'nzl-bookings',
             [ $this, 'renderBookings' ]
         );
 
         add_submenu_page(
-            'vhm-dashboard',
-            __( 'Calendar', 'venezia-hotel' ),
-            __( 'Calendar', 'venezia-hotel' ),
-            'vhm_staff',
-            'vhm-calendar',
+            'nzl-dashboard',
+            __( 'Calendar', 'nozule' ),
+            __( 'Calendar', 'nozule' ),
+            'nzl_staff',
+            'nzl-calendar',
             [ $this, 'renderCalendar' ]
         );
 
         add_submenu_page(
-            'vhm-dashboard',
-            __( 'Guests', 'venezia-hotel' ),
-            __( 'Guests', 'venezia-hotel' ),
-            'vhm_staff',
-            'vhm-guests',
+            'nzl-dashboard',
+            __( 'Guests', 'nozule' ),
+            __( 'Guests', 'nozule' ),
+            'nzl_staff',
+            'nzl-guests',
             [ $this, 'renderGuests' ]
         );
 
@@ -93,56 +93,56 @@ class AdminMenu {
         // Sub-menus (admin-level)
         // ------------------------------------------------------------------
         add_submenu_page(
-            'vhm-dashboard',
-            __( 'Rooms', 'venezia-hotel' ),
-            __( 'Rooms', 'venezia-hotel' ),
-            'vhm_admin',
-            'vhm-rooms',
+            'nzl-dashboard',
+            __( 'Rooms', 'nozule' ),
+            __( 'Rooms', 'nozule' ),
+            'nzl_admin',
+            'nzl-rooms',
             [ $this, 'renderRooms' ]
         );
 
         add_submenu_page(
-            'vhm-dashboard',
-            __( 'Rates & Pricing', 'venezia-hotel' ),
-            __( 'Rates & Pricing', 'venezia-hotel' ),
-            'vhm_admin',
-            'vhm-rates',
+            'nzl-dashboard',
+            __( 'Rates & Pricing', 'nozule' ),
+            __( 'Rates & Pricing', 'nozule' ),
+            'nzl_admin',
+            'nzl-rates',
             [ $this, 'renderRates' ]
         );
 
         add_submenu_page(
-            'vhm-dashboard',
-            __( 'Inventory', 'venezia-hotel' ),
-            __( 'Inventory', 'venezia-hotel' ),
-            'vhm_admin',
-            'vhm-inventory',
+            'nzl-dashboard',
+            __( 'Inventory', 'nozule' ),
+            __( 'Inventory', 'nozule' ),
+            'nzl_admin',
+            'nzl-inventory',
             [ $this, 'renderInventory' ]
         );
 
         add_submenu_page(
-            'vhm-dashboard',
-            __( 'Reports', 'venezia-hotel' ),
-            __( 'Reports', 'venezia-hotel' ),
-            'vhm_admin',
-            'vhm-reports',
+            'nzl-dashboard',
+            __( 'Reports', 'nozule' ),
+            __( 'Reports', 'nozule' ),
+            'nzl_admin',
+            'nzl-reports',
             [ $this, 'renderReports' ]
         );
 
         add_submenu_page(
-            'vhm-dashboard',
-            __( 'Channel Manager', 'venezia-hotel' ),
-            __( 'Channel Manager', 'venezia-hotel' ),
-            'vhm_admin',
-            'vhm-channels',
+            'nzl-dashboard',
+            __( 'Channel Manager', 'nozule' ),
+            __( 'Channel Manager', 'nozule' ),
+            'nzl_admin',
+            'nzl-channels',
             [ $this, 'renderChannels' ]
         );
 
         add_submenu_page(
-            'vhm-dashboard',
-            __( 'Settings', 'venezia-hotel' ),
-            __( 'Settings', 'venezia-hotel' ),
-            'vhm_admin',
-            'vhm-settings',
+            'nzl-dashboard',
+            __( 'Settings', 'nozule' ),
+            __( 'Settings', 'nozule' ),
+            'nzl_admin',
+            'nzl-settings',
             [ $this, 'renderSettings' ]
         );
     }

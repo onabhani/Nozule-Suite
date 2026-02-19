@@ -1,13 +1,13 @@
 <?php
 
-namespace Venezia\Core;
+namespace Nozule\Core;
 
 /**
  * Cache Manager using WordPress object cache and transients.
  */
 class CacheManager {
 
-    private const GROUP = 'venezia';
+    private const GROUP = 'nozule';
 
     /**
      * Get a cached value.
@@ -21,7 +21,7 @@ class CacheManager {
         }
 
         // Fallback to transient
-        return get_transient( 'vhm_' . $key );
+        return get_transient( 'nzl_' . $key );
     }
 
     /**
@@ -31,7 +31,7 @@ class CacheManager {
      */
     public function set( string $key, $value, int $ttl = 300 ): bool {
         wp_cache_set( $key, $value, self::GROUP, $ttl );
-        return set_transient( 'vhm_' . $key, $value, $ttl );
+        return set_transient( 'nzl_' . $key, $value, $ttl );
     }
 
     /**
@@ -39,7 +39,7 @@ class CacheManager {
      */
     public function delete( string $key ): bool {
         wp_cache_delete( $key, self::GROUP );
-        return delete_transient( 'vhm_' . $key );
+        return delete_transient( 'nzl_' . $key );
     }
 
     /**
@@ -67,7 +67,7 @@ class CacheManager {
 
         global $wpdb;
         $wpdb->query(
-            "DELETE FROM {$wpdb->options} WHERE option_name LIKE '_transient_vhm_%' OR option_name LIKE '_transient_timeout_vhm_%'"
+            "DELETE FROM {$wpdb->options} WHERE option_name LIKE '_transient_nzl_%' OR option_name LIKE '_transient_timeout_nzl_%'"
         );
     }
 }

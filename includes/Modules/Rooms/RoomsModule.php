@@ -1,24 +1,24 @@
 <?php
 
-namespace Venezia\Modules\Rooms;
+namespace Nozule\Modules\Rooms;
 
-use Venezia\Core\BaseModule;
-use Venezia\Core\CacheManager;
-use Venezia\Core\Container;
-use Venezia\Core\Database;
-use Venezia\Core\EventDispatcher;
-use Venezia\Core\Logger;
-use Venezia\Modules\Rooms\Controllers\AvailabilityController;
-use Venezia\Modules\Rooms\Controllers\InventoryController;
-use Venezia\Modules\Rooms\Controllers\RoomController;
-use Venezia\Modules\Rooms\Controllers\RoomTypeController;
-use Venezia\Modules\Rooms\Repositories\InventoryRepository;
-use Venezia\Modules\Rooms\Repositories\RoomRepository;
-use Venezia\Modules\Rooms\Repositories\RoomTypeRepository;
-use Venezia\Modules\Rooms\Services\AvailabilityService;
-use Venezia\Modules\Rooms\Services\RoomService;
-use Venezia\Modules\Rooms\Validators\RoomTypeValidator;
-use Venezia\Modules\Rooms\Validators\RoomValidator;
+use Nozule\Core\BaseModule;
+use Nozule\Core\CacheManager;
+use Nozule\Core\Container;
+use Nozule\Core\Database;
+use Nozule\Core\EventDispatcher;
+use Nozule\Core\Logger;
+use Nozule\Modules\Rooms\Controllers\AvailabilityController;
+use Nozule\Modules\Rooms\Controllers\InventoryController;
+use Nozule\Modules\Rooms\Controllers\RoomController;
+use Nozule\Modules\Rooms\Controllers\RoomTypeController;
+use Nozule\Modules\Rooms\Repositories\InventoryRepository;
+use Nozule\Modules\Rooms\Repositories\RoomRepository;
+use Nozule\Modules\Rooms\Repositories\RoomTypeRepository;
+use Nozule\Modules\Rooms\Services\AvailabilityService;
+use Nozule\Modules\Rooms\Services\RoomService;
+use Nozule\Modules\Rooms\Validators\RoomTypeValidator;
+use Nozule\Modules\Rooms\Validators\RoomValidator;
 
 /**
  * Rooms module bootstrap.

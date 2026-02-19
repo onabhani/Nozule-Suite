@@ -1,14 +1,14 @@
 <?php
 
-namespace Venezia\Modules\Reports;
+namespace Nozule\Modules\Reports;
 
-use Venezia\Core\BaseModule;
-use Venezia\Core\CacheManager;
-use Venezia\Core\Container;
-use Venezia\Core\Database;
-use Venezia\Modules\Reports\Controllers\ReportController;
-use Venezia\Modules\Reports\Services\ExportService;
-use Venezia\Modules\Reports\Services\ReportService;
+use Nozule\Core\BaseModule;
+use Nozule\Core\CacheManager;
+use Nozule\Core\Container;
+use Nozule\Core\Database;
+use Nozule\Modules\Reports\Controllers\ReportController;
+use Nozule\Modules\Reports\Services\ExportService;
+use Nozule\Modules\Reports\Services\ReportService;
 
 /**
  * Reports module bootstrap.

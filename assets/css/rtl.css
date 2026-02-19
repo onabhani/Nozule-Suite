@@ -1,112 +1,112 @@
 /**
- * Venezia Hotel Manager - RTL (Right-to-Left) Styles
+ * Nozule - RTL (Right-to-Left) Styles
  */
 
 /* Direction */
-.vhm-widget,
-.vhm-admin-wrap {
+.nzl-widget,
+.nzl-admin-wrap {
     direction: rtl;
     text-align: right;
 }
 
 /* Flip horizontal layout */
-.vhm-booking-widget.vhm-horizontal {
+.nzl-booking-widget.nzl-horizontal {
     flex-direction: row-reverse;
 }
 
 /* Tables */
-.vhm-table th,
-.vhm-table td {
+.nzl-table th,
+.nzl-table td {
     text-align: right;
 }
 
 /* Toast notifications - flip to left side */
-.vhm-toast-container {
+.nzl-toast-container {
     right: auto;
     left: 1rem;
 }
 
-.vhm-toast-info { border-left: none; border-right: 4px solid var(--vhm-info); }
-.vhm-toast-success { border-left: none; border-right: 4px solid var(--vhm-success); }
-.vhm-toast-error { border-left: none; border-right: 4px solid var(--vhm-danger); }
-.vhm-toast-warning { border-left: none; border-right: 4px solid var(--vhm-warning); }
+.nzl-toast-info { border-left: none; border-right: 4px solid var(--nzl-info); }
+.nzl-toast-success { border-left: none; border-right: 4px solid var(--nzl-success); }
+.nzl-toast-error { border-left: none; border-right: 4px solid var(--nzl-danger); }
+.nzl-toast-warning { border-left: none; border-right: 4px solid var(--nzl-warning); }
 
-@keyframes vhm-slide-in {
+@keyframes nzl-slide-in {
     from { transform: translateX(-100%); opacity: 0; }
     to { transform: translateX(0); opacity: 1; }
 }
 
 /* Modal slides from left in RTL */
-.vhm-modal-overlay {
+.nzl-modal-overlay {
     justify-content: flex-start;
 }
 
-@keyframes vhm-slide-in-right {
+@keyframes nzl-slide-in-right {
     from { transform: translateX(-100%); }
     to { transform: translateX(0); }
 }
 
-.vhm-sidebar-panel {
+.nzl-sidebar-panel {
     box-shadow: 4px 0 15px rgba(0, 0, 0, 0.1);
 }
 
 /* Admin header */
-.vhm-admin-wrap {
+.nzl-admin-wrap {
     margin: 20px 0 0 20px;
 }
 
 /* Pagination */
-.vhm-pagination {
+.nzl-pagination {
     flex-direction: row-reverse;
 }
 
 /* Filter bar */
-.vhm-filters {
+.nzl-filters {
     direction: rtl;
 }
 
 /* Input fields in RTL */
-.vhm-input {
+.nzl-input {
     text-align: right;
 }
 
 /* Calendar */
-.vhm-calendar-table {
+.nzl-calendar-table {
     direction: rtl;
 }
 
-.vhm-calendar-room-col {
+.nzl-calendar-room-col {
     text-align: right;
 }
 
-.vhm-calendar-room-label {
+.nzl-calendar-room-label {
     border-right: none;
     border-left: 1px solid #e2e8f0;
 }
 
-.vhm-calendar-header-cell {
+.nzl-calendar-header-cell {
     border-right: none;
     border-left: 1px solid #e2e8f0;
 }
 
-.vhm-calendar-cell {
+.nzl-calendar-cell {
     border-right: none;
     border-left: 1px solid #f1f5f9;
 }
 
 /* Navigation arrows — flip for RTL */
-.vhm-nav-arrow {
+.nzl-nav-arrow {
     display: inline-block;
     transform: scaleX(-1);
 }
 
 /* Legend — keep RTL direction */
-.vhm-calendar-legend {
+.nzl-calendar-legend {
     direction: rtl;
 }
 
 @media (max-width: 782px) {
-    .vhm-admin-wrap {
+    .nzl-admin-wrap {
         margin: 10px;
     }
 }

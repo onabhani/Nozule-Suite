@@ -1,6 +1,6 @@
 <?php
 
-namespace Venezia\Modules\Bookings\Exceptions;
+namespace Nozule\Modules\Bookings\Exceptions;
 
 /**
  * Thrown when a booking state transition is not allowed.

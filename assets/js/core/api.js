@@ -1,15 +1,15 @@
 /**
- * Venezia Hotel Manager - API Client
+ * Nozule - API Client
  *
  * Provides a simple interface for communicating with the REST API.
  */
-const VeneziaAPI = {
+const NozuleAPI = {
     get config() {
-        return window.VeneziaAdmin || window.VeneziaConfig || {};
+        return window.NozuleAdmin || window.NozuleConfig || {};
     },
 
     get baseURL() {
-        return this.config.apiBase || '/wp-json/venezia/v1';
+        return this.config.apiBase || '/wp-json/nozule/v1';
     },
 
     get nonce() {
@@ -95,30 +95,30 @@ const VeneziaAPI = {
      * GET request.
      */
     get: function (endpoint, params) {
-        return VeneziaAPI.request('GET', endpoint, params);
+        return NozuleAPI.request('GET', endpoint, params);
     },
 
     /**
      * POST request.
      */
     post: function (endpoint, data) {
-        return VeneziaAPI.request('POST', endpoint, data);
+        return NozuleAPI.request('POST', endpoint, data);
     },
 
     /**
      * PUT request.
      */
     put: function (endpoint, data) {
-        return VeneziaAPI.request('PUT', endpoint, data);
+        return NozuleAPI.request('PUT', endpoint, data);
     },
 
     /**
      * DELETE request.
      */
     delete: function (endpoint) {
-        return VeneziaAPI.request('DELETE', endpoint);
+        return NozuleAPI.request('DELETE', endpoint);
     }
 };
 
 // Export for use in other scripts
-window.VeneziaAPI = VeneziaAPI;
+window.NozuleAPI = NozuleAPI;

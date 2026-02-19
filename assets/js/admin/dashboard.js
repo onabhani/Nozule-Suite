@@ -1,9 +1,9 @@
 /**
- * Venezia Hotel Manager - Admin Dashboard
+ * Nozule - Admin Dashboard
  */
 document.addEventListener('alpine:init', function () {
 
-    Alpine.data('vhmDashboard', function () {
+    Alpine.data('nzlDashboard', function () {
         return {
             stats: null,
             arrivals: [],
@@ -23,10 +23,10 @@ document.addEventListener('alpine:init', function () {
                 self.loading = true;
 
                 Promise.all([
-                    VeneziaAPI.get('/admin/dashboard/stats'),
-                    VeneziaAPI.get('/admin/dashboard/arrivals'),
-                    VeneziaAPI.get('/admin/dashboard/departures'),
-                    VeneziaAPI.get('/admin/dashboard/in-house')
+                    NozuleAPI.get('/admin/dashboard/stats'),
+                    NozuleAPI.get('/admin/dashboard/arrivals'),
+                    NozuleAPI.get('/admin/dashboard/departures'),
+                    NozuleAPI.get('/admin/dashboard/in-house')
                 ]).then(function (responses) {
                     self.stats = responses[0].data;
                     self.arrivals = responses[1].data || [];
@@ -41,7 +41,7 @@ document.addEventListener('alpine:init', function () {
 
             initSSE: function () {
                 var self = this;
-                var config = window.VeneziaAdmin || window.VeneziaConfig || {};
+                var config = window.NozuleAdmin || window.NozuleConfig || {};
                 if (!config.apiBase) return;
 
                 try {
@@ -53,7 +53,7 @@ document.addEventListener('alpine:init', function () {
                         var data = JSON.parse(e.data);
                         self.loadData();
                         Alpine.store('notifications').add({
-                            id: VeneziaUtils.uniqueId(),
+                            id: NozuleUtils.uniqueId(),
                             message: 'New booking: ' + data.booking_number,
                             type: 'info',
                             persistent: true
@@ -87,40 +87,40 @@ document.addEventListener('alpine:init', function () {
 
             confirmBooking: function (id) {
                 var self = this;
-                VeneziaAPI.post('/admin/bookings/' + id + '/confirm').then(function () {
+                NozuleAPI.post('/admin/bookings/' + id + '/confirm').then(function () {
                     self.loadData();
-                    VeneziaUtils.toast('Booking confirmed', 'success');
+                    NozuleUtils.toast('Booking confirmed', 'success');
                 }).catch(function (err) {
-                    VeneziaUtils.toast(err.message, 'error');
+                    NozuleUtils.toast(err.message, 'error');
                 });
             },
 
             checkIn: function (id) {
                 var self = this;
-                VeneziaAPI.post('/admin/bookings/' + id + '/check-in').then(function () {
+                NozuleAPI.post('/admin/bookings/' + id + '/check-in').then(function () {
                     self.loadData();
-                    VeneziaUtils.toast('Guest checked in', 'success');
+                    NozuleUtils.toast('Guest checked in', 'success');
                 }).catch(function (err) {
-                    VeneziaUtils.toast(err.message, 'error');
+                    NozuleUtils.toast(err.message, 'error');
                 });
             },
 
             checkOut: function (id) {
                 var self = this;
-                VeneziaAPI.post('/admin/bookings/' + id + '/check-out').then(function () {
+                NozuleAPI.post('/admin/bookings/' + id + '/check-out').then(function () {
                     self.loadData();
-                    VeneziaUtils.toast('Guest checked out', 'success');
+                    NozuleUtils.toast('Guest checked out', 'success');
                 }).catch(function (err) {
-                    VeneziaUtils.toast(err.message, 'error');
+                    NozuleUtils.toast(err.message, 'error');
                 });
             },
 
             formatPrice: function (amount) {
-                return VeneziaUtils.formatPrice(amount);
+                return NozuleUtils.formatPrice(amount);
             },
 
             formatDate: function (date) {
-                return VeneziaUtils.formatDate(date);
+                return NozuleUtils.formatDate(date);
             },
 
             destroy: function () {

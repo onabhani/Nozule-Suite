@@ -1,11 +1,11 @@
 /**
- * Venezia Hotel Manager - Admin Guests (CRM)
+ * Nozule - Admin Guests (CRM)
  *
  * Full guest management: list, create, edit, detail with booking history.
  */
 document.addEventListener('alpine:init', function () {
 
-    Alpine.data('vhmGuests', function () {
+    Alpine.data('nzlGuests', function () {
         return {
             loading: true,
             saving: false,
@@ -65,7 +65,7 @@ document.addEventListener('alpine:init', function () {
                     params.search = self.search;
                 }
 
-                VeneziaAPI.get('/admin/guests', params).then(function (response) {
+                NozuleAPI.get('/admin/guests', params).then(function (response) {
                     self.guests = response.data.items || response.data || [];
                     if (response.data.pagination) {
                         self.currentPage = response.data.pagination.page || 1;
@@ -73,7 +73,7 @@ document.addEventListener('alpine:init', function () {
                     }
                 }).catch(function (err) {
                     console.error('Guests load error:', err);
-                    VeneziaUtils.toast(err.message || VeneziaI18n.t('failed_load_guests'), 'error');
+                    NozuleUtils.toast(err.message || NozuleI18n.t('failed_load_guests'), 'error');
                 }).finally(function () {
                     self.loading = false;
                 });
@@ -131,7 +131,7 @@ document.addEventListener('alpine:init', function () {
                 }
 
                 if (!data.first_name || !data.last_name || !data.email || !data.phone) {
-                    VeneziaUtils.toast(VeneziaI18n.t('fill_required_fields'), 'error');
+                    NozuleUtils.toast(NozuleI18n.t('fill_required_fields'), 'error');
                     return;
                 }
 
@@ -139,20 +139,20 @@ document.addEventListener('alpine:init', function () {
 
                 var promise;
                 if (self.editingGuestId) {
-                    promise = VeneziaAPI.put('/guests/' + self.editingGuestId, data);
+                    promise = NozuleAPI.put('/guests/' + self.editingGuestId, data);
                 } else {
-                    promise = VeneziaAPI.post('/guests', data);
+                    promise = NozuleAPI.post('/guests', data);
                 }
 
                 promise.then(function () {
                     self.showGuestModal = false;
                     self.loadGuests();
-                    VeneziaUtils.toast(
-                        VeneziaI18n.t(self.editingGuestId ? 'guest_updated' : 'guest_created'),
+                    NozuleUtils.toast(
+                        NozuleI18n.t(self.editingGuestId ? 'guest_updated' : 'guest_created'),
                         'success'
                     );
                 }).catch(function (err) {
-                    VeneziaUtils.toast(err.message || VeneziaI18n.t('failed_save_guest'), 'error');
+                    NozuleUtils.toast(err.message || NozuleI18n.t('failed_save_guest'), 'error');
                 }).finally(function () {
                     self.saving = false;
                 });
@@ -167,11 +167,11 @@ document.addEventListener('alpine:init', function () {
                 self.selectedGuest = null;
                 self.guestBookings = [];
 
-                VeneziaAPI.get('/guests/' + id + '/history').then(function (response) {
+                NozuleAPI.get('/guests/' + id + '/history').then(function (response) {
                     self.selectedGuest = response.guest || null;
                     self.guestBookings = response.bookings || [];
                 }).catch(function (err) {
-                    VeneziaUtils.toast(err.message || VeneziaI18n.t('failed_load_guest'), 'error');
+                    NozuleUtils.toast(err.message || NozuleI18n.t('failed_load_guest'), 'error');
                     self.showDetailPanel = false;
                 }).finally(function () {
                     self.loadingDetail = false;
@@ -203,15 +203,15 @@ document.addEventListener('alpine:init', function () {
             // ---- Helpers ----
 
             formatDate: function (date) {
-                return VeneziaUtils.formatDate(date);
+                return NozuleUtils.formatDate(date);
             },
 
             formatPrice: function (amount) {
-                return VeneziaUtils.formatPrice(amount);
+                return NozuleUtils.formatPrice(amount);
             },
 
             statusLabel: function (status) {
-                return VeneziaI18n.t(status);
+                return NozuleI18n.t(status);
             }
         };
     });

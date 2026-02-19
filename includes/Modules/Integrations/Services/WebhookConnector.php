@@ -1,8 +1,8 @@
 <?php
 
-namespace Venezia\Modules\Integrations\Services;
+namespace Nozule\Modules\Integrations\Services;
 
-use Venezia\Core\SettingsManager;
+use Nozule\Core\SettingsManager;
 
 /**
  * Generic webhook connector.
@@ -27,7 +27,7 @@ class WebhookConnector {
 		$url = $this->getUrl();
 
 		if ( empty( $url ) ) {
-			return [ 'success' => false, 'message' => __( 'Webhook URL is not configured.', 'venezia-hotel' ) ];
+			return [ 'success' => false, 'message' => __( 'Webhook URL is not configured.', 'nozule' ) ];
 		}
 
 		$testPayload = [
@@ -41,7 +41,7 @@ class WebhookConnector {
 		if ( is_wp_error( $result ) ) {
 			return [
 				'success' => false,
-				'message' => sprintf( __( 'Webhook test failed: %s', 'venezia-hotel' ), $result->get_error_message() ),
+				'message' => sprintf( __( 'Webhook test failed: %s', 'nozule' ), $result->get_error_message() ),
 			];
 		}
 
@@ -50,13 +50,13 @@ class WebhookConnector {
 		if ( $statusCode >= 200 && $statusCode < 300 ) {
 			return [
 				'success' => true,
-				'message' => sprintf( __( 'Webhook responded with HTTP %d', 'venezia-hotel' ), $statusCode ),
+				'message' => sprintf( __( 'Webhook responded with HTTP %d', 'nozule' ), $statusCode ),
 			];
 		}
 
 		return [
 			'success' => false,
-			'message' => sprintf( __( 'Webhook returned HTTP %d', 'venezia-hotel' ), $statusCode ),
+			'message' => sprintf( __( 'Webhook returned HTTP %d', 'nozule' ), $statusCode ),
 		];
 	}
 
@@ -73,7 +73,7 @@ class WebhookConnector {
 		$result = $this->post( $url, $payload );
 
 		if ( is_wp_error( $result ) ) {
-			do_action( 'venezia/log', 'error', 'Webhook dispatch failed', [
+			do_action( 'nozule/log', 'error', 'Webhook dispatch failed', [
 				'url'   => $url,
 				'event' => $payload['event'] ?? 'unknown',
 				'error' => $result->get_error_message(),
@@ -101,14 +101,14 @@ class WebhookConnector {
 
 		$headers = [
 			'Content-Type'        => 'application/json',
-			'X-Venezia-Event'     => $payload['event'] ?? 'unknown',
-			'X-Venezia-Timestamp' => $payload['timestamp'] ?? current_time( 'c' ),
+			'X-Nozule-Event'     => $payload['event'] ?? 'unknown',
+			'X-Nozule-Timestamp' => $payload['timestamp'] ?? current_time( 'c' ),
 		];
 
 		// HMAC signature for payload verification.
 		$secret = $this->getSecret();
 		if ( ! empty( $secret ) ) {
-			$headers['X-Venezia-Signature'] = 'sha256=' . hash_hmac( 'sha256', $body, $secret );
+			$headers['X-Nozule-Signature'] = 'sha256=' . hash_hmac( 'sha256', $body, $secret );
 		}
 
 		return wp_remote_post( $url, [

@@ -1,17 +1,17 @@
 <?php
 
-namespace Venezia\Modules\Pricing\Controllers;
+namespace Nozule\Modules\Pricing\Controllers;
 
-use Venezia\Core\EventDispatcher;
-use Venezia\Modules\Pricing\Models\RatePlan;
-use Venezia\Modules\Pricing\Repositories\RatePlanRepository;
-use Venezia\Modules\Pricing\Validators\RatePlanValidator;
+use Nozule\Core\EventDispatcher;
+use Nozule\Modules\Pricing\Models\RatePlan;
+use Nozule\Modules\Pricing\Repositories\RatePlanRepository;
+use Nozule\Modules\Pricing\Validators\RatePlanValidator;
 
 /**
  * REST API controller for rate plan admin CRUD operations.
  *
  * All endpoints require the 'manage_options' capability.
- * Registered under the venezia/v1/rate-plans namespace.
+ * Registered under the nozule/v1/rate-plans namespace.
  */
 class RatePlanController {
 
@@ -33,7 +33,7 @@ class RatePlanController {
 	 * Register REST API routes.
 	 */
 	public function registerRoutes(): void {
-		$namespace = 'venezia/v1';
+		$namespace = 'nozule/v1';
 
 		register_rest_route( $namespace, '/rate-plans', [
 			[
@@ -77,7 +77,7 @@ class RatePlanController {
 	/**
 	 * List all rate plans.
 	 *
-	 * GET /venezia/v1/rate-plans
+	 * GET /nozule/v1/rate-plans
 	 */
 	public function index( \WP_REST_Request $request ): \WP_REST_Response {
 		$status = $request->get_param( 'status' );
@@ -100,7 +100,7 @@ class RatePlanController {
 	/**
 	 * Show a single rate plan.
 	 *
-	 * GET /venezia/v1/rate-plans/{id}
+	 * GET /nozule/v1/rate-plans/{id}
 	 */
 	public function show( \WP_REST_Request $request ): \WP_REST_Response {
 		$plan = $this->repository->find( (int) $request->get_param( 'id' ) );
@@ -110,7 +110,7 @@ class RatePlanController {
 				'success' => false,
 				'error'   => [
 					'code'    => 'NOT_FOUND',
-					'message' => __( 'Rate plan not found.', 'venezia-hotel' ),
+					'message' => __( 'Rate plan not found.', 'nozule' ),
 				],
 			], 404 );
 		}
@@ -124,7 +124,7 @@ class RatePlanController {
 	/**
 	 * Create a new rate plan.
 	 *
-	 * POST /venezia/v1/rate-plans
+	 * POST /nozule/v1/rate-plans
 	 */
 	public function store( \WP_REST_Request $request ): \WP_REST_Response {
 		$data = $request->get_json_params();
@@ -148,7 +148,7 @@ class RatePlanController {
 				'success' => false,
 				'error'   => [
 					'code'    => 'CREATE_FAILED',
-					'message' => __( 'Failed to create rate plan.', 'venezia-hotel' ),
+					'message' => __( 'Failed to create rate plan.', 'nozule' ),
 				],
 			], 500 );
 		}
@@ -164,7 +164,7 @@ class RatePlanController {
 	/**
 	 * Update an existing rate plan.
 	 *
-	 * PUT/PATCH /venezia/v1/rate-plans/{id}
+	 * PUT/PATCH /nozule/v1/rate-plans/{id}
 	 */
 	public function update( \WP_REST_Request $request ): \WP_REST_Response {
 		$id   = (int) $request->get_param( 'id' );
@@ -175,7 +175,7 @@ class RatePlanController {
 				'success' => false,
 				'error'   => [
 					'code'    => 'NOT_FOUND',
-					'message' => __( 'Rate plan not found.', 'venezia-hotel' ),
+					'message' => __( 'Rate plan not found.', 'nozule' ),
 				],
 			], 404 );
 		}
@@ -205,7 +205,7 @@ class RatePlanController {
 				'success' => false,
 				'error'   => [
 					'code'    => 'UPDATE_FAILED',
-					'message' => __( 'Failed to update rate plan.', 'venezia-hotel' ),
+					'message' => __( 'Failed to update rate plan.', 'nozule' ),
 				],
 			], 500 );
 		}
@@ -222,7 +222,7 @@ class RatePlanController {
 	/**
 	 * Delete a rate plan.
 	 *
-	 * DELETE /venezia/v1/rate-plans/{id}
+	 * DELETE /nozule/v1/rate-plans/{id}
 	 */
 	public function destroy( \WP_REST_Request $request ): \WP_REST_Response {
 		$id   = (int) $request->get_param( 'id' );
@@ -233,7 +233,7 @@ class RatePlanController {
 				'success' => false,
 				'error'   => [
 					'code'    => 'NOT_FOUND',
-					'message' => __( 'Rate plan not found.', 'venezia-hotel' ),
+					'message' => __( 'Rate plan not found.', 'nozule' ),
 				],
 			], 404 );
 		}
@@ -245,7 +245,7 @@ class RatePlanController {
 				'success' => false,
 				'error'   => [
 					'code'    => 'DELETE_FAILED',
-					'message' => __( 'Failed to delete rate plan.', 'venezia-hotel' ),
+					'message' => __( 'Failed to delete rate plan.', 'nozule' ),
 				],
 			], 500 );
 		}
@@ -254,7 +254,7 @@ class RatePlanController {
 
 		return new \WP_REST_Response( [
 			'success' => true,
-			'message' => __( 'Rate plan deleted successfully.', 'venezia-hotel' ),
+			'message' => __( 'Rate plan deleted successfully.', 'nozule' ),
 		] );
 	}
 

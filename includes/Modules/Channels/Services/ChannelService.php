@@ -1,13 +1,13 @@
 <?php
 
-namespace Venezia\Modules\Channels\Services;
+namespace Nozule\Modules\Channels\Services;
 
-use Venezia\Core\Database;
-use Venezia\Core\EventDispatcher;
-use Venezia\Core\Logger;
-use Venezia\Modules\Channels\Models\ChannelMapping;
-use Venezia\Modules\Channels\Models\SyncResult;
-use Venezia\Modules\Channels\Repositories\ChannelMappingRepository;
+use Nozule\Core\Database;
+use Nozule\Core\EventDispatcher;
+use Nozule\Core\Logger;
+use Nozule\Modules\Channels\Models\ChannelMapping;
+use Nozule\Modules\Channels\Models\SyncResult;
+use Nozule\Modules\Channels\Repositories\ChannelMappingRepository;
 
 /**
  * Channel service orchestrator.
@@ -261,7 +261,7 @@ class ChannelService {
         if ( ! isset( $this->connectorRegistry[ $channelName ] ) ) {
             throw new \RuntimeException(
                 sprintf(
-                    __( 'No connector registered for channel "%s".', 'venezia-hotel' ),
+                    __( 'No connector registered for channel "%s".', 'nozule' ),
                     $channelName
                 )
             );
@@ -284,7 +284,7 @@ class ChannelService {
 
         if ( ! $mapping ) {
             throw new \RuntimeException(
-                sprintf( __( 'Channel mapping with ID %d not found.', 'venezia-hotel' ), $channelId )
+                sprintf( __( 'Channel mapping with ID %d not found.', 'nozule' ), $channelId )
             );
         }
 
@@ -412,7 +412,7 @@ class ChannelService {
          * @param array<string, class-string<AbstractChannelConnector>> $registry
          */
         $this->connectorRegistry = apply_filters(
-            'venezia/channels/connector_registry',
+            'nozule/channels/connector_registry',
             $this->connectorRegistry
         );
     }

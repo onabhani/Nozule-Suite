@@ -1,8 +1,8 @@
 <?php
 
-namespace Venezia\Modules\Integrations\Services;
+namespace Nozule\Modules\Integrations\Services;
 
-use Venezia\Core\SettingsManager;
+use Nozule\Core\SettingsManager;
 
 /**
  * Odoo ERP connector via JSON-RPC 2.0.
@@ -50,7 +50,7 @@ class OdooConnector {
 		$url = $this->getUrl();
 
 		if ( empty( $url ) ) {
-			return [ 'success' => false, 'message' => __( 'Odoo URL is not configured.', 'venezia-hotel' ) ];
+			return [ 'success' => false, 'message' => __( 'Odoo URL is not configured.', 'nozule' ) ];
 		}
 
 		// 1. Check server version (no auth needed).
@@ -63,7 +63,7 @@ class OdooConnector {
 		if ( is_wp_error( $versionResult ) ) {
 			return [
 				'success' => false,
-				'message' => sprintf( __( 'Cannot reach Odoo: %s', 'venezia-hotel' ), $versionResult->get_error_message() ),
+				'message' => sprintf( __( 'Cannot reach Odoo: %s', 'nozule' ), $versionResult->get_error_message() ),
 			];
 		}
 
@@ -75,14 +75,14 @@ class OdooConnector {
 		if ( $uid === null ) {
 			return [
 				'success' => false,
-				'message' => __( 'Connected to Odoo but authentication failed. Check your credentials.', 'venezia-hotel' ),
+				'message' => __( 'Connected to Odoo but authentication failed. Check your credentials.', 'nozule' ),
 				'version' => $version,
 			];
 		}
 
 		return [
 			'success' => true,
-			'message' => sprintf( __( 'Connected to Odoo %s (UID: %d)', 'venezia-hotel' ), $version, $uid ),
+			'message' => sprintf( __( 'Connected to Odoo %s (UID: %d)', 'nozule' ), $version, $uid ),
 			'version' => $version,
 		];
 	}
@@ -131,7 +131,7 @@ class OdooConnector {
 			'street'  => $guest['address'] ?? '',
 			'city'    => $guest['city'] ?? '',
 			'country_id' => false,
-			'comment' => sprintf( 'VHM Guest ID: %s', $guest['id'] ?? 'N/A' ),
+			'comment' => sprintf( 'NZL Guest ID: %s', $guest['id'] ?? 'N/A' ),
 			'customer_rank' => 1,
 		];
 
@@ -218,7 +218,7 @@ class OdooConnector {
 	}
 
 	/**
-	 * Find an Odoo partner by VHM guest reference in the comment field.
+	 * Find an Odoo partner by NZL guest reference in the comment field.
 	 */
 	private function findPartnerByRef( int $guestId ): ?int {
 		if ( $guestId <= 0 ) {
@@ -226,7 +226,7 @@ class OdooConnector {
 		}
 
 		$result = $this->execute( 'res.partner', 'search', [
-			[ [ 'comment', 'ilike', 'VHM Guest ID: ' . $guestId ] ],
+			[ [ 'comment', 'ilike', 'NZL Guest ID: ' . $guestId ] ],
 		] );
 
 		if ( ! empty( $result ) && is_array( $result ) ) {

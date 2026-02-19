@@ -1,14 +1,14 @@
 <?php
 
-namespace Venezia\Modules\Integrations;
+namespace Nozule\Modules\Integrations;
 
-use Venezia\Core\BaseModule;
-use Venezia\Core\Container;
-use Venezia\Core\SettingsManager;
-use Venezia\Modules\Integrations\Controllers\IntegrationController;
-use Venezia\Modules\Integrations\Services\IntegrationService;
-use Venezia\Modules\Integrations\Services\OdooConnector;
-use Venezia\Modules\Integrations\Services\WebhookConnector;
+use Nozule\Core\BaseModule;
+use Nozule\Core\Container;
+use Nozule\Core\SettingsManager;
+use Nozule\Modules\Integrations\Controllers\IntegrationController;
+use Nozule\Modules\Integrations\Services\IntegrationService;
+use Nozule\Modules\Integrations\Services\OdooConnector;
+use Nozule\Modules\Integrations\Services\WebhookConnector;
 
 /**
  * Integrations module bootstrap.
@@ -56,7 +56,7 @@ class IntegrationsModule extends BaseModule {
 		} );
 
 		// Hook into plugin events after boot.
-		add_action( 'venezia/booted', function () {
+		add_action( 'nozule/booted', function () {
 			$this->container->get( IntegrationService::class )->subscribeToEvents();
 		} );
 	}

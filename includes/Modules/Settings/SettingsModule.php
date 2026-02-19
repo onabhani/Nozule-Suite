@@ -1,12 +1,12 @@
 <?php
 
-namespace Venezia\Modules\Settings;
+namespace Nozule\Modules\Settings;
 
-use Venezia\Core\BaseModule;
-use Venezia\Core\CacheManager;
-use Venezia\Core\Container;
-use Venezia\Core\SettingsManager;
-use Venezia\Modules\Settings\Controllers\SettingsController;
+use Nozule\Core\BaseModule;
+use Nozule\Core\CacheManager;
+use Nozule\Core\Container;
+use Nozule\Core\SettingsManager;
+use Nozule\Modules\Settings\Controllers\SettingsController;
 
 /**
  * Settings module bootstrap.

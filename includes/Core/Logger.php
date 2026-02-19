@@ -1,6 +1,6 @@
 <?php
 
-namespace Venezia\Core;
+namespace Nozule\Core;
 
 /**
  * Plugin logger.
@@ -48,7 +48,7 @@ class Logger {
      */
     private function log( string $level, string $message, array $context = [] ): void {
         $formatted = sprintf(
-            '[Venezia %s] %s %s',
+            '[Nozule %s] %s %s',
             strtoupper( $level ),
             $message,
             ! empty( $context ) ? wp_json_encode( $context ) : ''
@@ -58,7 +58,7 @@ class Logger {
             error_log( $formatted ); // phpcs:ignore WordPress.PHP.DevelopmentFunctions.error_log_error_log
         }
 
-        do_action( 'venezia/log', $level, $message, $context );
+        do_action( 'nozule/log', $level, $message, $context );
     }
 
     /**

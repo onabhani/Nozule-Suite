@@ -1,22 +1,22 @@
 <?php
 
-namespace Venezia\Modules\Bookings\Controllers;
+namespace Nozule\Modules\Bookings\Controllers;
 
-use Venezia\Modules\Bookings\Exceptions\NoAvailabilityException;
-use Venezia\Modules\Bookings\Repositories\BookingRepository;
-use Venezia\Modules\Bookings\Services\BookingService;
+use Nozule\Modules\Bookings\Exceptions\NoAvailabilityException;
+use Nozule\Modules\Bookings\Repositories\BookingRepository;
+use Nozule\Modules\Bookings\Services\BookingService;
 
 /**
  * REST controller for public-facing booking operations.
  *
- * Route namespace: venezia/v1
+ * Route namespace: nozule/v1
  */
 class BookingController {
 
 	private BookingService $service;
 	private BookingRepository $repository;
 
-	private const NAMESPACE = 'venezia/v1';
+	private const NAMESPACE = 'nozule/v1';
 
 	public function __construct( BookingService $service, BookingRepository $repository ) {
 		$this->service    = $service;
@@ -112,7 +112,7 @@ class BookingController {
 		} catch ( \Throwable $e ) {
 			return new \WP_REST_Response( [
 				'success' => false,
-				'message' => __( 'An unexpected error occurred. Please try again.', 'venezia-hotel' ),
+				'message' => __( 'An unexpected error occurred. Please try again.', 'nozule' ),
 			], 500 );
 		}
 	}
@@ -133,7 +133,7 @@ class BookingController {
 		if ( ! $booking ) {
 			return new \WP_REST_Response( [
 				'success' => false,
-				'message' => __( 'Booking not found.', 'venezia-hotel' ),
+				'message' => __( 'Booking not found.', 'nozule' ),
 			], 404 );
 		}
 
@@ -143,7 +143,7 @@ class BookingController {
 		if ( ! $guest || strtolower( $guest->email ) !== strtolower( $email ) ) {
 			return new \WP_REST_Response( [
 				'success' => false,
-				'message' => __( 'Booking not found.', 'venezia-hotel' ),
+				'message' => __( 'Booking not found.', 'nozule' ),
 			], 404 );
 		}
 
@@ -182,7 +182,7 @@ class BookingController {
 		if ( ! $booking ) {
 			return new \WP_REST_Response( [
 				'success' => false,
-				'message' => __( 'Booking not found.', 'venezia-hotel' ),
+				'message' => __( 'Booking not found.', 'nozule' ),
 			], 404 );
 		}
 
@@ -192,7 +192,7 @@ class BookingController {
 		if ( ! $guest || strtolower( $guest->email ) !== strtolower( $email ) ) {
 			return new \WP_REST_Response( [
 				'success' => false,
-				'message' => __( 'Booking not found.', 'venezia-hotel' ),
+				'message' => __( 'Booking not found.', 'nozule' ),
 			], 404 );
 		}
 
@@ -206,7 +206,7 @@ class BookingController {
 					'status'         => $updated->status,
 				],
 			], 200 );
-		} catch ( \Venezia\Modules\Bookings\Exceptions\InvalidStateException $e ) {
+		} catch ( \Nozule\Modules\Bookings\Exceptions\InvalidStateException $e ) {
 			return new \WP_REST_Response( [
 				'success' => false,
 				'message' => $e->getMessage(),
@@ -214,7 +214,7 @@ class BookingController {
 		} catch ( \Throwable $e ) {
 			return new \WP_REST_Response( [
 				'success' => false,
-				'message' => __( 'An unexpected error occurred. Please try again.', 'venezia-hotel' ),
+				'message' => __( 'An unexpected error occurred. Please try again.', 'nozule' ),
 			], 500 );
 		}
 	}
@@ -224,15 +224,15 @@ class BookingController {
 	/**
 	 * Retrieve the guest associated with a booking.
 	 *
-	 * @return \Venezia\Modules\Guests\Models\Guest|null
+	 * @return \Nozule\Modules\Guests\Models\Guest|null
 	 */
 	private function getGuestForBooking( $booking ) {
 		if ( ! $booking->guest_id ) {
 			return null;
 		}
 
-		/** @var \Venezia\Modules\Guests\Repositories\GuestRepository $guestRepo */
-		$guestRepo = apply_filters( 'venezia/container/get', null, \Venezia\Modules\Guests\Repositories\GuestRepository::class );
+		/** @var \Nozule\Modules\Guests\Repositories\GuestRepository $guestRepo */
+		$guestRepo = apply_filters( 'nozule/container/get', null, \Nozule\Modules\Guests\Repositories\GuestRepository::class );
 
 		if ( $guestRepo ) {
 			return $guestRepo->find( $booking->guest_id );

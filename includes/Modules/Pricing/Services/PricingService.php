@@ -1,17 +1,17 @@
 <?php
 
-namespace Venezia\Modules\Pricing\Services;
+namespace Nozule\Modules\Pricing\Services;
 
-use Venezia\Core\CacheManager;
-use Venezia\Core\EventDispatcher;
-use Venezia\Core\SettingsManager;
-use Venezia\Modules\Pricing\Models\PricingResult;
-use Venezia\Modules\Pricing\Models\RatePlan;
-use Venezia\Modules\Pricing\Models\SeasonalRate;
-use Venezia\Modules\Pricing\Repositories\RatePlanRepository;
-use Venezia\Modules\Pricing\Repositories\SeasonalRateRepository;
-use Venezia\Modules\Rooms\Repositories\InventoryRepository;
-use Venezia\Modules\Rooms\Repositories\RoomTypeRepository;
+use Nozule\Core\CacheManager;
+use Nozule\Core\EventDispatcher;
+use Nozule\Core\SettingsManager;
+use Nozule\Modules\Pricing\Models\PricingResult;
+use Nozule\Modules\Pricing\Models\RatePlan;
+use Nozule\Modules\Pricing\Models\SeasonalRate;
+use Nozule\Modules\Pricing\Repositories\RatePlanRepository;
+use Nozule\Modules\Pricing\Repositories\SeasonalRateRepository;
+use Nozule\Modules\Rooms\Repositories\InventoryRepository;
+use Nozule\Modules\Rooms\Repositories\RoomTypeRepository;
 
 /**
  * Main pricing service.
@@ -81,14 +81,14 @@ class PricingService {
 
 		if ( $nights === 0 ) {
 			throw new \RuntimeException(
-				__( 'Check-out date must be after check-in date.', 'venezia-hotel' )
+				__( 'Check-out date must be after check-in date.', 'nozule' )
 			);
 		}
 
 		if ( ! $ratePlan->isValidForStayLength( $nights ) ) {
 			throw new \RuntimeException(
 				sprintf(
-					__( 'This rate plan requires a stay between %d and %d nights.', 'venezia-hotel' ),
+					__( 'This rate plan requires a stay between %d and %d nights.', 'nozule' ),
 					$ratePlan->min_stay,
 					$ratePlan->max_stay > 0 ? $ratePlan->max_stay : PHP_INT_MAX
 				)
@@ -352,19 +352,19 @@ class PricingService {
 
 			if ( ! $ratePlan ) {
 				throw new \RuntimeException(
-					sprintf( __( 'Rate plan with ID %d not found.', 'venezia-hotel' ), $ratePlanId )
+					sprintf( __( 'Rate plan with ID %d not found.', 'nozule' ), $ratePlanId )
 				);
 			}
 
 			if ( ! $ratePlan->isActive() ) {
 				throw new \RuntimeException(
-					__( 'The selected rate plan is not currently active.', 'venezia-hotel' )
+					__( 'The selected rate plan is not currently active.', 'nozule' )
 				);
 			}
 
 			if ( ! $ratePlan->appliesToRoomType( $roomTypeId ) ) {
 				throw new \RuntimeException(
-					__( 'The selected rate plan does not apply to this room type.', 'venezia-hotel' )
+					__( 'The selected rate plan does not apply to this room type.', 'nozule' )
 				);
 			}
 
@@ -375,7 +375,7 @@ class PricingService {
 
 		if ( ! $ratePlan ) {
 			throw new \RuntimeException(
-				__( 'No rate plan is available for this room type.', 'venezia-hotel' )
+				__( 'No rate plan is available for this room type.', 'nozule' )
 			);
 		}
 

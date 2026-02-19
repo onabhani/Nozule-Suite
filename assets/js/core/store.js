@@ -1,5 +1,5 @@
 /**
- * Venezia Hotel Manager - Alpine.js Global Store
+ * Nozule - Alpine.js Global Store
  *
  * Manages booking selection state across components.
  */
@@ -12,7 +12,7 @@ document.addEventListener('alpine:init', function () {
         setSelection: function (data) {
             this.selection = data;
             try {
-                sessionStorage.setItem('vhm_selection', JSON.stringify(data));
+                sessionStorage.setItem('nzl_selection', JSON.stringify(data));
             } catch (e) {
                 // Ignore storage errors
             }
@@ -26,7 +26,7 @@ document.addEventListener('alpine:init', function () {
             this.selection = null;
             this.confirmation = null;
             try {
-                sessionStorage.removeItem('vhm_selection');
+                sessionStorage.removeItem('nzl_selection');
             } catch (e) {
                 // Ignore storage errors
             }
@@ -34,12 +34,12 @@ document.addEventListener('alpine:init', function () {
 
         init: function () {
             try {
-                var saved = sessionStorage.getItem('vhm_selection');
+                var saved = sessionStorage.getItem('nzl_selection');
                 if (saved) {
                     this.selection = JSON.parse(saved);
                 }
             } catch (e) {
-                sessionStorage.removeItem('vhm_selection');
+                sessionStorage.removeItem('nzl_selection');
             }
         }
     });

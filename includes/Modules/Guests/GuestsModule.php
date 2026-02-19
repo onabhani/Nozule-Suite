@@ -1,14 +1,14 @@
 <?php
 
-namespace Venezia\Modules\Guests;
+namespace Nozule\Modules\Guests;
 
-use Venezia\Core\BaseModule;
-use Venezia\Core\Database;
-use Venezia\Core\EventDispatcher;
-use Venezia\Modules\Guests\Controllers\GuestController;
-use Venezia\Modules\Guests\Repositories\GuestRepository;
-use Venezia\Modules\Guests\Services\GuestService;
-use Venezia\Modules\Guests\Validators\GuestValidator;
+use Nozule\Core\BaseModule;
+use Nozule\Core\Database;
+use Nozule\Core\EventDispatcher;
+use Nozule\Modules\Guests\Controllers\GuestController;
+use Nozule\Modules\Guests\Repositories\GuestRepository;
+use Nozule\Modules\Guests\Services\GuestService;
+use Nozule\Modules\Guests\Validators\GuestValidator;
 
 /**
  * Guests module bootstrap.

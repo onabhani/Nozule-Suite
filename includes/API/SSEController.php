@@ -1,9 +1,9 @@
 <?php
 
-namespace Venezia\API;
+namespace Nozule\API;
 
-use Venezia\Core\Container;
-use Venezia\Core\Database;
+use Nozule\Core\Container;
+use Nozule\Core\Database;
 use WP_REST_Request;
 
 /**
@@ -18,8 +18,8 @@ use WP_REST_Request;
  */
 class SSEController {
 
-    private const NAMESPACE       = 'venezia/v1';
-    private const TRANSIENT_KEY   = 'vhm_sse_events';
+    private const NAMESPACE       = 'nozule/v1';
+    private const TRANSIENT_KEY   = 'nzl_sse_events';
     private const HEARTBEAT_SEC   = 15;
     private const MAX_RUNTIME_SEC = 55;
 
@@ -36,7 +36,7 @@ class SSEController {
         register_rest_route( self::NAMESPACE, '/admin/events/stream', [
             'methods'             => 'GET',
             'callback'            => [ $this, 'stream' ],
-            'permission_callback' => fn() => current_user_can( 'vhm_staff' ),
+            'permission_callback' => fn() => current_user_can( 'nzl_staff' ),
         ] );
     }
 

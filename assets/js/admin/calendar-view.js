@@ -1,9 +1,9 @@
 /**
- * Venezia Hotel Manager - Admin Calendar View
+ * Nozule - Admin Calendar View
  */
 document.addEventListener('alpine:init', function () {
 
-    Alpine.data('vhmCalendarView', function () {
+    Alpine.data('nzlCalendarView', function () {
         return {
             currentDate: new Date(),
             viewMode: '2week',
@@ -15,7 +15,7 @@ document.addEventListener('alpine:init', function () {
 
             get periodLabel() {
                 if (this.dates.length === 0) return '';
-                var config = window.VeneziaAdmin || window.VeneziaConfig || {};
+                var config = window.NozuleAdmin || window.NozuleConfig || {};
                 var locale = config.locale || 'en-US';
                 var first = new Date(this.dates[0] + 'T00:00:00');
                 var last = new Date(this.dates[this.dates.length - 1] + 'T00:00:00');
@@ -43,7 +43,7 @@ document.addEventListener('alpine:init', function () {
                 var endDate = self.dates[self.dates.length - 1];
 
                 // Load room types, rooms, and calendar data in parallel
-                var roomTypesP = VeneziaAPI.get('/admin/room-types').then(function (response) {
+                var roomTypesP = NozuleAPI.get('/admin/room-types').then(function (response) {
                     var types = response.data || [];
                     var map = {};
                     types.forEach(function (rt) {
@@ -55,13 +55,13 @@ document.addEventListener('alpine:init', function () {
                     return [];
                 });
 
-                var roomsP = VeneziaAPI.get('/admin/rooms').then(function (response) {
+                var roomsP = NozuleAPI.get('/admin/rooms').then(function (response) {
                     return response.data || [];
                 }).catch(function () {
                     return [];
                 });
 
-                var calendarP = VeneziaAPI.get('/admin/calendar', {
+                var calendarP = NozuleAPI.get('/admin/calendar', {
                     start: startDate,
                     end: endDate
                 }).then(function (response) {
@@ -145,11 +145,11 @@ document.addEventListener('alpine:init', function () {
             },
 
             isToday: function (dateStr) {
-                return dateStr === VeneziaUtils.today();
+                return dateStr === NozuleUtils.today();
             },
 
             formatDayName: function (dateStr) {
-                var config = window.VeneziaAdmin || window.VeneziaConfig || {};
+                var config = window.NozuleAdmin || window.NozuleConfig || {};
                 var locale = config.locale || undefined;
                 var date = new Date(dateStr + 'T00:00:00');
                 return date.toLocaleDateString(locale, { weekday: 'short' });
@@ -188,15 +188,15 @@ document.addEventListener('alpine:init', function () {
             onCellClick: function (roomId, date) {
                 var booking = this.getBookingForCell(roomId, date);
                 if (booking) {
-                    var config = window.VeneziaAdmin || window.VeneziaConfig || {};
+                    var config = window.NozuleAdmin || window.NozuleConfig || {};
                     if (config.adminUrl) {
-                        window.location.href = config.adminUrl + 'admin.php?page=vhm-bookings&booking_id=' + booking.id;
+                        window.location.href = config.adminUrl + 'admin.php?page=nzl-bookings&booking_id=' + booking.id;
                     }
                 }
             },
 
             formatDate: function (date) {
-                return VeneziaUtils.formatDate(date);
+                return NozuleUtils.formatDate(date);
             }
         };
     });
