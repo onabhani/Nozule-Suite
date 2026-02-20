@@ -1832,6 +1832,70 @@ msgstr "الجمعة"
 msgid "Saturday"
 msgstr "السبت"
 
+msgid "Day-of-Week"
+msgstr "أيام الأسبوع"
+
+msgid "Day of Week"
+msgstr "يوم الأسبوع"
+
+msgid "Threshold (%)"
+msgstr "الحد (%)"
+
+msgid "Add Day-of-Week Rule"
+msgstr "إضافة قاعدة يوم الأسبوع"
+
+msgid "Edit Occupancy Rule"
+msgstr "تعديل قاعدة الإشغال"
+
+msgid "Edit Day-of-Week Rule"
+msgstr "تعديل قاعدة يوم الأسبوع"
+
+msgid "Edit Event Override"
+msgstr "تعديل تجاوز الحدث"
+
+msgid "No occupancy rules found."
+msgstr "لا توجد قواعد إشغال."
+
+msgid "No day-of-week rules found."
+msgstr "لا توجد قواعد أيام الأسبوع."
+
+msgid "No event overrides found."
+msgstr "لا توجد تجاوزات أحداث."
+
+msgid ""
+"Automatically adjust rates based on hotel occupancy levels. When occupancy "
+"exceeds the threshold, the modifier is applied."
+msgstr ""
+"ضبط الأسعار تلقائياً بناءً على مستويات إشغال الفندق. عندما يتجاوز الإشغال الحد "
+"المحدد، يتم تطبيق المعدّل."
+
+msgid ""
+"Set different rate modifiers for specific days of the week. For example, "
+"increase rates on Fridays and Saturdays."
+msgstr ""
+"تعيين معدّلات أسعار مختلفة لأيام محددة من الأسبوع. على سبيل المثال، زيادة "
+"الأسعار في أيام الجمعة والسبت."
+
+msgid ""
+"Create rate overrides for named events and holidays with specific date "
+"ranges."
+msgstr "إنشاء تجاوزات أسعار للأحداث والعطلات المسمّاة ضمن نطاقات تواريخ محددة."
+
+msgid "e.g. 70"
+msgstr "مثال: 70"
+
+msgid "e.g. 10 for +10%"
+msgstr "مثال: 10 لـ +10%"
+
+msgid "e.g. 15 for +15%"
+msgstr "مثال: 15 لـ +15%"
+
+msgid "e.g. 50 for +50%"
+msgstr "مثال: 50 لـ +50%"
+
+msgid "e.g. Eid Holiday"
+msgstr "مثال: عطلة العيد"
+
 # ──────────────────────────────────────────────────────────
 # Reviews & Reputation (NZL-020)
 # ──────────────────────────────────────────────────────────

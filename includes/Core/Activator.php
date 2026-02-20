@@ -50,11 +50,36 @@ class Activator {
         require_once NZL_PLUGIN_DIR . 'migrations/004_create_promotions_messaging_currency_documents.php';
         nzl_migration_004_create_promotions_messaging_currency_documents();
 
+        require_once NZL_PLUGIN_DIR . 'migrations/005_create_dynamic_pricing.php';
+        nzl_migration_005_create_dynamic_pricing();
+
         require_once NZL_PLUGIN_DIR . 'migrations/006_create_reviews_whatsapp.php';
         nzl_migration_006_create_reviews_whatsapp();
 
         require_once NZL_PLUGIN_DIR . 'migrations/007_create_channel_sync.php';
         nzl_migration_007_create_channel_sync();
+
+        require_once NZL_PLUGIN_DIR . 'migrations/008_create_rate_restrictions.php';
+        nzl_migration_008_up();
+    }
+
+    /**
+     * Run upgrade migrations when the DB version has changed.
+     *
+     * Called from plugins_loaded so that new tables are created even
+     * when the plugin is updated without a deactivate/reactivate cycle.
+     */
+    public static function maybeUpgrade(): void {
+        $installed = get_option( 'nzl_db_version', '0' );
+
+        if ( version_compare( $installed, NZL_DB_VERSION, '>=' ) ) {
+            return;
+        }
+
+        self::createTables();
+        self::seedDefaultSettings();
+
+        update_option( 'nzl_db_version', NZL_DB_VERSION );
     }
 
     /**
