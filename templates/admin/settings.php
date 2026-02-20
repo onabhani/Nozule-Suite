@@ -41,11 +41,37 @@ if ( ! defined( 'ABSPATH' ) ) {
                 <button class="nzl-tab" :class="{'active': activeTab === 'integrations'}" @click="activeTab = 'integrations'">
                     <?php esc_html_e( 'Integrations', 'nozule' ); ?>
                 </button>
+                <button class="nzl-tab" :class="{'active': activeTab === 'compliance'}" @click="activeTab = 'compliance'"
+                        x-show="countryProfile && countryProfile.features && (countryProfile.features.zatca || countryProfile.features.shomos)">
+                    <?php esc_html_e( 'Compliance', 'nozule' ); ?>
+                </button>
             </div>
 
             <!-- General -->
             <template x-if="activeTab === 'general'">
-                <div class="nzl-card">
+                <div>
+                    <!-- Country Selector -->
+                    <div class="nzl-card" style="margin-bottom:1rem; background:#f0f9ff; border-color:#bae6fd;">
+                        <div style="display:flex; align-items:center; gap:1rem; flex-wrap:wrap;">
+                            <div style="flex:1; min-width:200px;">
+                                <label class="nzl-label" style="font-weight:600; color:#0369a1; margin-bottom:0.5rem;"><?php esc_html_e( 'Operating Country', 'nozule' ); ?></label>
+                                <select x-model="settings.general.operating_country" class="nzl-input" @change="onCountryChange()" style="max-width:300px;">
+                                    <option value=""><?php esc_html_e( '-- Select Country --', 'nozule' ); ?></option>
+                                    <option value="SY"><?php esc_html_e( 'Syria', 'nozule' ); ?> (سوريا)</option>
+                                    <option value="SA"><?php esc_html_e( 'Saudi Arabia', 'nozule' ); ?> (المملكة العربية السعودية)</option>
+                                </select>
+                                <p style="font-size:0.75rem; color:#0284c7; margin-top:0.25rem;"><?php esc_html_e( 'Sets default currency, timezone, taxes, and feature visibility.', 'nozule' ); ?></p>
+                            </div>
+                            <div x-show="settings.general.operating_country">
+                                <button class="nzl-btn nzl-btn-primary" @click="applyCountryDefaults()" :disabled="applyingProfile">
+                                    <span x-show="!applyingProfile"><?php esc_html_e( 'Apply Country Defaults', 'nozule' ); ?></span>
+                                    <span x-show="applyingProfile"><?php esc_html_e( 'Applying...', 'nozule' ); ?></span>
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="nzl-card">
                     <h2 style="font-size:1.125rem; font-weight:600; margin-bottom:1rem;"><?php esc_html_e( 'General Settings', 'nozule' ); ?></h2>
                     <div class="nzl-form-grid">
                         <div class="nzl-form-row">
@@ -69,6 +95,7 @@ if ( ! defined( 'ABSPATH' ) ) {
                             <select x-model="settings.general.timezone" class="nzl-input">
                                 <option value=""><?php esc_html_e( '-- Select Timezone --', 'nozule' ); ?></option>
                                 <optgroup label="<?php esc_attr_e( 'Middle East', 'nozule' ); ?>">
+                                    <option value="Asia/Damascus">Asia/Damascus (UTC+3)</option>
                                     <option value="Asia/Riyadh">Asia/Riyadh (UTC+3)</option>
                                     <option value="Asia/Dubai">Asia/Dubai (UTC+4)</option>
                                     <option value="Asia/Qatar">Asia/Qatar (UTC+3)</option>
@@ -129,6 +156,7 @@ if ( ! defined( 'ABSPATH' ) ) {
                             <input type="time" x-model="settings.general.check_out_time" class="nzl-input">
                         </div>
                     </div>
+                    </div>
                 </div>
             </template>
 
@@ -140,6 +168,7 @@ if ( ! defined( 'ABSPATH' ) ) {
                         <div class="nzl-form-row">
                             <label class="nzl-label"><?php esc_html_e( 'Default Currency', 'nozule' ); ?></label>
                             <select x-model="settings.currency.default" class="nzl-input" @change="onCurrencyChange()">
+                                <option value="SYP">SYP - <?php esc_html_e( 'Syrian Pound', 'nozule' ); ?></option>
                                 <option value="SAR">SAR - <?php esc_html_e( 'Saudi Riyal', 'nozule' ); ?></option>
                                 <option value="AED">AED - <?php esc_html_e( 'UAE Dirham', 'nozule' ); ?></option>
                                 <option value="QAR">QAR - <?php esc_html_e( 'Qatari Riyal', 'nozule' ); ?></option>
@@ -375,6 +404,78 @@ if ( ! defined( 'ABSPATH' ) ) {
                             </div>
                         </div>
                     </template>
+                </div>
+            </template>
+
+            <!-- Compliance (SA-specific) -->
+            <template x-if="activeTab === 'compliance'">
+                <div>
+                    <!-- ZATCA E-Invoicing -->
+                    <div class="nzl-card" style="margin-bottom:1rem;">
+                        <div style="display:flex; justify-content:space-between; align-items:flex-start;">
+                            <div>
+                                <h2 style="font-size:1.125rem; font-weight:600; margin-bottom:0.25rem;"><?php esc_html_e( 'ZATCA E-Invoicing', 'nozule' ); ?></h2>
+                                <p style="font-size:0.875rem; color:#64748b; margin:0;">
+                                    <?php esc_html_e( 'Integration with Saudi Arabia\'s Zakat, Tax and Customs Authority for electronic invoicing compliance (Fatoorah).', 'nozule' ); ?>
+                                </p>
+                            </div>
+                            <span style="background:#fef3c7; color:#92400e; font-size:0.75rem; font-weight:600; padding:0.25rem 0.75rem; border-radius:9999px; white-space:nowrap;"><?php esc_html_e( 'Coming Soon', 'nozule' ); ?></span>
+                        </div>
+                        <div style="margin-top:1rem; padding:1rem; background:#f8fafc; border-radius:0.5rem; border:1px dashed #cbd5e1;">
+                            <div class="nzl-form-grid" style="max-width:600px; opacity:0.5; pointer-events:none;">
+                                <div class="nzl-form-row">
+                                    <label class="nzl-label"><?php esc_html_e( 'ZATCA Environment', 'nozule' ); ?></label>
+                                    <select class="nzl-input" disabled>
+                                        <option><?php esc_html_e( 'Sandbox (Testing)', 'nozule' ); ?></option>
+                                        <option><?php esc_html_e( 'Production', 'nozule' ); ?></option>
+                                    </select>
+                                </div>
+                                <div class="nzl-form-row">
+                                    <label class="nzl-label"><?php esc_html_e( 'Tax Registration Number (TIN)', 'nozule' ); ?></label>
+                                    <input type="text" class="nzl-input" disabled placeholder="3XXXXXXXXXX0003">
+                                </div>
+                                <div class="nzl-form-row">
+                                    <label class="nzl-label"><?php esc_html_e( 'Commercial Registration (CR)', 'nozule' ); ?></label>
+                                    <input type="text" class="nzl-input" disabled>
+                                </div>
+                                <div class="nzl-form-row">
+                                    <label class="nzl-label"><?php esc_html_e( 'CSID (Compliance)', 'nozule' ); ?></label>
+                                    <input type="text" class="nzl-input" disabled>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Shomos Tourism Platform -->
+                    <div class="nzl-card">
+                        <div style="display:flex; justify-content:space-between; align-items:flex-start;">
+                            <div>
+                                <h2 style="font-size:1.125rem; font-weight:600; margin-bottom:0.25rem;"><?php esc_html_e( 'Shomos Tourism Platform', 'nozule' ); ?></h2>
+                                <p style="font-size:0.875rem; color:#64748b; margin:0;">
+                                    <?php esc_html_e( 'Integration with Saudi Tourism Authority\'s Shomos platform for hotel registration and guest reporting.', 'nozule' ); ?>
+                                </p>
+                            </div>
+                            <span style="background:#fef3c7; color:#92400e; font-size:0.75rem; font-weight:600; padding:0.25rem 0.75rem; border-radius:9999px; white-space:nowrap;"><?php esc_html_e( 'Coming Soon', 'nozule' ); ?></span>
+                        </div>
+                        <div style="margin-top:1rem; padding:1rem; background:#f8fafc; border-radius:0.5rem; border:1px dashed #cbd5e1;">
+                            <div class="nzl-form-grid" style="max-width:600px; opacity:0.5; pointer-events:none;">
+                                <div class="nzl-form-row">
+                                    <label class="nzl-label"><?php esc_html_e( 'Shomos License Number', 'nozule' ); ?></label>
+                                    <input type="text" class="nzl-input" disabled>
+                                </div>
+                                <div class="nzl-form-row">
+                                    <label class="nzl-label"><?php esc_html_e( 'Establishment ID', 'nozule' ); ?></label>
+                                    <input type="text" class="nzl-input" disabled>
+                                </div>
+                                <div class="nzl-form-row" style="grid-column: span 2;">
+                                    <label style="display:flex; align-items:center; gap:0.5rem; cursor:default; opacity:0.5;">
+                                        <input type="checkbox" disabled>
+                                        <?php esc_html_e( 'Auto-report guest check-ins to Shomos', 'nozule' ); ?>
+                                    </label>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
                 </div>
             </template>
 

@@ -34,16 +34,18 @@ class BookingValidator extends BaseValidator {
 		}
 
 		// Guest info: either guest_id or at least email + name.
+		// Support both flat (guest_email) and nested (guest.email) formats.
 		if ( empty( $data['guest_id'] ) ) {
-			if ( empty( $data['guest_email'] ) ) {
+			$nested = $data['guest'] ?? [];
+			if ( empty( $data['guest_email'] ) && empty( $nested['email'] ) ) {
 				$this->errors['guest_email'][] = __( 'Guest email is required when no guest ID is provided.', 'nozule' );
 				$valid = false;
 			}
-			if ( empty( $data['guest_first_name'] ) ) {
+			if ( empty( $data['guest_first_name'] ) && empty( $nested['first_name'] ) ) {
 				$this->errors['guest_first_name'][] = __( 'Guest first name is required when no guest ID is provided.', 'nozule' );
 				$valid = false;
 			}
-			if ( empty( $data['guest_last_name'] ) ) {
+			if ( empty( $data['guest_last_name'] ) && empty( $nested['last_name'] ) ) {
 				$this->errors['guest_last_name'][] = __( 'Guest last name is required when no guest ID is provided.', 'nozule' );
 				$valid = false;
 			}

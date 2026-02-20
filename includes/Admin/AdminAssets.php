@@ -2,6 +2,9 @@
 
 namespace Nozule\Admin;
 
+use Nozule\Core\Container;
+use Nozule\Core\SettingsManager;
+
 /**
  * Enqueues CSS and JavaScript assets for the Nozule admin pages.
  *
@@ -9,6 +12,12 @@ namespace Nozule\Admin;
  * (screen ID starts with "nozule" or "toplevel_page_nzl").
  */
 class AdminAssets {
+
+    private Container $container;
+
+    public function __construct( Container $container ) {
+        $this->container = $container;
+    }
 
     /**
      * Hook into WordPress to register asset enqueueing.
@@ -115,6 +124,11 @@ class AdminAssets {
             'nozule-admin-promotions'       => 'promotions.js',
             'nozule-admin-messaging'        => 'messaging.js',
             'nozule-admin-currency'         => 'currency.js',
+            'nozule-admin-dynamic-pricing'  => 'dynamic-pricing.js',
+            'nozule-admin-reviews'          => 'reviews.js',
+            'nozule-admin-whatsapp'         => 'whatsapp.js',
+            'nozule-admin-channel-sync'     => 'channel-sync.js',
+            'nozule-admin-metasearch'       => 'metasearch.js',
         ];
 
         $component_handles = [];
@@ -146,6 +160,9 @@ class AdminAssets {
 
         $current_user = wp_get_current_user();
 
+        $settingsMgr = $this->container->get( SettingsManager::class );
+        $operatingCountry = $settingsMgr ? $settingsMgr->get( 'general.operating_country', '' ) : '';
+
         wp_localize_script( 'nozule-api', 'NozuleAdmin', [
             'nonce'        => wp_create_nonce( 'wp_rest' ),
             'apiBase'      => rest_url( 'nozule/v1' ),
@@ -154,6 +171,7 @@ class AdminAssets {
             'version'      => NZL_VERSION,
             'locale'       => get_locale(),
             'isRtl'        => is_rtl(),
+            'operatingCountry' => $operatingCountry,
             'user'         => [
                 'id'           => $current_user->ID,
                 'display_name' => $current_user->display_name,

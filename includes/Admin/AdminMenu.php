@@ -19,6 +19,11 @@ use Nozule\Admin\Pages\GroupsPage;
 use Nozule\Admin\Pages\PromotionsPage;
 use Nozule\Admin\Pages\MessagingPage;
 use Nozule\Admin\Pages\CurrencyPage;
+use Nozule\Admin\Pages\DynamicPricingPage;
+use Nozule\Admin\Pages\ReviewsPage;
+use Nozule\Admin\Pages\WhatsAppPage;
+use Nozule\Admin\Pages\ChannelSyncPage;
+use Nozule\Admin\Pages\MetasearchPage;
 
 /**
  * Registers the WordPress admin menu structure for the Nozule plugin.
@@ -190,11 +195,56 @@ class AdminMenu {
 
         add_submenu_page(
             'nzl-dashboard',
+            __( 'Dynamic Pricing', 'nozule' ),
+            __( 'Dynamic Pricing', 'nozule' ),
+            'nzl_admin',
+            'nzl-dynamic-pricing',
+            [ $this, 'renderDynamicPricing' ]
+        );
+
+        add_submenu_page(
+            'nzl-dashboard',
             __( 'Currency', 'nozule' ),
             __( 'Currency', 'nozule' ),
             'nzl_admin',
             'nzl-currency',
             [ $this, 'renderCurrency' ]
+        );
+
+        add_submenu_page(
+            'nzl-dashboard',
+            __( 'Channel Sync', 'nozule' ),
+            __( 'Channel Sync', 'nozule' ),
+            'nzl_admin',
+            'nzl-channel-sync',
+            [ $this, 'renderChannelSync' ]
+        );
+
+        add_submenu_page(
+            'nzl-dashboard',
+            __( 'Reviews', 'nozule' ),
+            __( 'Reviews', 'nozule' ),
+            'nzl_admin',
+            'nzl-reviews',
+            [ $this, 'renderReviews' ]
+        );
+
+        add_submenu_page(
+            'nzl-dashboard',
+            __( 'WhatsApp', 'nozule' ),
+            __( 'WhatsApp', 'nozule' ),
+            'nzl_admin',
+            'nzl-whatsapp',
+            [ $this, 'renderWhatsApp' ]
+        );
+
+        add_submenu_page(
+            'nzl-dashboard',
+            __( 'Metasearch', 'nozule' ),
+            __( 'Metasearch', 'nozule' ),
+            'nzl_admin',
+            'nzl-metasearch',
+            [ $this, 'renderMetasearch' ]
         );
 
         add_submenu_page(
@@ -273,5 +323,25 @@ class AdminMenu {
 
     public function renderCurrency(): void {
         ( new CurrencyPage() )->render();
+    }
+
+    public function renderDynamicPricing(): void {
+        ( new DynamicPricingPage() )->render();
+    }
+
+    public function renderReviews(): void {
+        ( new ReviewsPage() )->render();
+    }
+
+    public function renderWhatsApp(): void {
+        ( new WhatsAppPage() )->render();
+    }
+
+    public function renderChannelSync(): void {
+        ( new ChannelSyncPage() )->render();
+    }
+
+    public function renderMetasearch(): void {
+        ( new MetasearchPage() )->render();
     }
 }

@@ -9,8 +9,10 @@ use Nozule\Core\Database;
 use Nozule\Core\EventDispatcher;
 use Nozule\Core\SettingsManager;
 use Nozule\Modules\Pricing\Controllers\RatePlanController;
+use Nozule\Modules\Pricing\Controllers\RateRestrictionController;
 use Nozule\Modules\Pricing\Controllers\SeasonalRateController;
 use Nozule\Modules\Pricing\Repositories\RatePlanRepository;
+use Nozule\Modules\Pricing\Repositories\RateRestrictionRepository;
 use Nozule\Modules\Pricing\Repositories\SeasonalRateRepository;
 use Nozule\Modules\Pricing\Services\PricingService;
 use Nozule\Modules\Pricing\Validators\RatePlanValidator;
@@ -48,6 +50,10 @@ class PricingModule extends BaseModule {
 		$this->container->singleton( SeasonalRateRepository::class, function ( Container $c ) {
 			return new SeasonalRateRepository( $c->get( Database::class ) );
 		} );
+
+		$this->container->singleton( RateRestrictionRepository::class, function ( Container $c ) {
+			return new RateRestrictionRepository( $c->get( Database::class ) );
+		} );
 	}
 
 	/**
@@ -68,7 +74,7 @@ class PricingModule extends BaseModule {
 	 */
 	private function registerServices(): void {
 		$this->container->singleton( PricingService::class, function ( Container $c ) {
-			return new PricingService(
+			$service = new PricingService(
 				$c->get( RatePlanRepository::class ),
 				$c->get( SeasonalRateRepository::class ),
 				$c->get( InventoryRepository::class ),
@@ -77,6 +83,13 @@ class PricingModule extends BaseModule {
 				$c->get( CacheManager::class ),
 				$c->get( EventDispatcher::class )
 			);
+
+			// NZL-017: Inject restriction repository for enforcement.
+			$service->setRestrictionRepository(
+				$c->get( RateRestrictionRepository::class )
+			);
+
+			return $service;
 		} );
 	}
 
@@ -99,6 +112,13 @@ class PricingModule extends BaseModule {
 				$c->get( EventDispatcher::class )
 			);
 		} );
+
+		$this->container->singleton( RateRestrictionController::class, function ( Container $c ) {
+			return new RateRestrictionController(
+				$c->get( RateRestrictionRepository::class ),
+				$c->get( EventDispatcher::class )
+			);
+		} );
 	}
 
 	/**
@@ -109,9 +129,10 @@ class PricingModule extends BaseModule {
 		add_action( 'rest_api_init', function () {
 			$this->container->get( RatePlanController::class )->registerRoutes();
 			$this->container->get( SeasonalRateController::class )->registerRoutes();
+			$this->container->get( RateRestrictionController::class )->registerRoutes();
 		} );
 
-		// Invalidate pricing cache when rate plans or seasonal rates change.
+		// Invalidate pricing cache when rate plans, seasonal rates, or restrictions change.
 		$events = $this->container->get( EventDispatcher::class );
 		$cache  = $this->container->get( CacheManager::class );
 
@@ -125,5 +146,8 @@ class PricingModule extends BaseModule {
 		$events->listen( 'pricing/seasonal_rate_created', $invalidateCache );
 		$events->listen( 'pricing/seasonal_rate_updated', $invalidateCache );
 		$events->listen( 'pricing/seasonal_rate_deleted', $invalidateCache );
+		$events->listen( 'pricing/restriction_created', $invalidateCache );
+		$events->listen( 'pricing/restriction_updated', $invalidateCache );
+		$events->listen( 'pricing/restriction_deleted', $invalidateCache );
 	}
 }

@@ -79,9 +79,11 @@ class Plugin {
             \Nozule\Modules\Rooms\RoomsModule::class,
             \Nozule\Modules\Guests\GuestsModule::class,
             \Nozule\Modules\Pricing\PricingModule::class,
+            \Nozule\Modules\Pricing\DynamicPricingModule::class,
             \Nozule\Modules\Bookings\BookingsModule::class,
             \Nozule\Modules\Notifications\NotificationsModule::class,
             \Nozule\Modules\Channels\ChannelsModule::class,
+            \Nozule\Modules\Channels\ChannelSyncModule::class,
             \Nozule\Modules\Reports\ReportsModule::class,
             \Nozule\Modules\Integrations\IntegrationsModule::class,
             \Nozule\Modules\Housekeeping\HousekeepingModule::class,
@@ -90,6 +92,9 @@ class Plugin {
             \Nozule\Modules\Groups\GroupsModule::class,
             \Nozule\Modules\Promotions\PromotionsModule::class,
             \Nozule\Modules\Messaging\MessagingModule::class,
+            \Nozule\Modules\WhatsApp\WhatsAppModule::class,
+            \Nozule\Modules\Reviews\ReviewModule::class,
+            \Nozule\Modules\Metasearch\MetasearchModule::class,
             \Nozule\Modules\Currency\CurrencyModule::class,
             \Nozule\Modules\Documents\DocumentsModule::class,
         ];
@@ -115,7 +120,7 @@ class Plugin {
             $admin_menu = new \Nozule\Admin\AdminMenu( $this->container );
             $admin_menu->register();
 
-            $admin_assets = new \Nozule\Admin\AdminAssets();
+            $admin_assets = new \Nozule\Admin\AdminAssets( $this->container );
             $admin_assets->register();
         }
 

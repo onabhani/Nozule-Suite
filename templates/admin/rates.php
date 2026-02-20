@@ -13,11 +13,14 @@ if ( ! defined( 'ABSPATH' ) ) {
     <div class="nzl-admin-header">
         <h1><?php esc_html_e( 'Rates & Pricing', 'nozule' ); ?></h1>
         <div style="display:flex; gap:0.5rem;">
-            <button class="nzl-btn nzl-btn-primary" @click="openRatePlanModal()">
+            <button class="nzl-btn nzl-btn-primary" x-show="activeTab === 'rate_plans'" @click="openRatePlanModal()">
                 <?php esc_html_e( 'Add Rate Plan', 'nozule' ); ?>
             </button>
-            <button class="nzl-btn nzl-btn-primary" @click="openSeasonalModal()">
+            <button class="nzl-btn nzl-btn-primary" x-show="activeTab === 'seasonal'" @click="openSeasonalModal()">
                 <?php esc_html_e( 'Add Seasonal Rate', 'nozule' ); ?>
+            </button>
+            <button class="nzl-btn nzl-btn-primary" x-show="activeTab === 'restrictions'" @click="openRestrictionModal()">
+                <?php esc_html_e( 'Add Restriction', 'nozule' ); ?>
             </button>
         </div>
     </div>
@@ -29,6 +32,9 @@ if ( ! defined( 'ABSPATH' ) ) {
         </button>
         <button class="nzl-tab" :class="{'active': activeTab === 'seasonal'}" @click="activeTab = 'seasonal'">
             <?php esc_html_e( 'Seasonal Rates', 'nozule' ); ?>
+        </button>
+        <button class="nzl-tab" :class="{'active': activeTab === 'restrictions'}" @click="switchTab('restrictions')">
+            <?php esc_html_e( 'Restrictions', 'nozule' ); ?>
         </button>
     </div>
 
@@ -189,6 +195,181 @@ if ( ! defined( 'ABSPATH' ) ) {
                     <button class="nzl-btn" @click="showRatePlanModal = false"><?php esc_html_e( 'Cancel', 'nozule' ); ?></button>
                     <button class="nzl-btn nzl-btn-primary" @click="saveRatePlan()" :disabled="saving">
                         <span x-show="!saving" x-text="editingRatePlanId ? '<?php echo esc_js( __( 'Update', 'nozule' ) ); ?>' : '<?php echo esc_js( __( 'Create', 'nozule' ) ); ?>'"></span>
+                        <span x-show="saving"><?php esc_html_e( 'Saving...', 'nozule' ); ?></span>
+                    </button>
+                </div>
+            </div>
+        </div>
+    </template>
+
+    <!-- ======================= RESTRICTIONS TABLE (NZL-017) ======================= -->
+    <template x-if="!loading && activeTab === 'restrictions'">
+        <div>
+            <!-- Filters -->
+            <div style="display:flex; gap:0.75rem; margin-bottom:1rem; flex-wrap:wrap;">
+                <select x-model="restrictionFilters.room_type_id" @change="loadRestrictions()" class="nzl-input" style="min-width:180px;">
+                    <option value=""><?php esc_html_e( 'All Room Types', 'nozule' ); ?></option>
+                    <template x-for="rt in roomTypes" :key="rt.id">
+                        <option :value="rt.id" x-text="rt.name"></option>
+                    </template>
+                </select>
+                <select x-model="restrictionFilters.restriction_type" @change="loadRestrictions()" class="nzl-input" style="min-width:180px;">
+                    <option value=""><?php esc_html_e( 'All Types', 'nozule' ); ?></option>
+                    <option value="min_stay"><?php esc_html_e( 'Min Stay', 'nozule' ); ?></option>
+                    <option value="max_stay"><?php esc_html_e( 'Max Stay', 'nozule' ); ?></option>
+                    <option value="cta"><?php esc_html_e( 'Closed to Arrival (CTA)', 'nozule' ); ?></option>
+                    <option value="ctd"><?php esc_html_e( 'Closed to Departure (CTD)', 'nozule' ); ?></option>
+                    <option value="stop_sell"><?php esc_html_e( 'Stop Sell', 'nozule' ); ?></option>
+                </select>
+            </div>
+
+            <div class="nzl-table-wrap">
+                <table class="nzl-table">
+                    <thead>
+                        <tr>
+                            <th><?php esc_html_e( 'Type', 'nozule' ); ?></th>
+                            <th><?php esc_html_e( 'Room Type', 'nozule' ); ?></th>
+                            <th><?php esc_html_e( 'Date Range', 'nozule' ); ?></th>
+                            <th><?php esc_html_e( 'Value', 'nozule' ); ?></th>
+                            <th><?php esc_html_e( 'Days', 'nozule' ); ?></th>
+                            <th><?php esc_html_e( 'Channel', 'nozule' ); ?></th>
+                            <th><?php esc_html_e( 'Status', 'nozule' ); ?></th>
+                            <th><?php esc_html_e( 'Actions', 'nozule' ); ?></th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <template x-for="r in restrictions" :key="r.id">
+                            <tr>
+                                <td>
+                                    <span class="nzl-badge"
+                                          :class="{
+                                              'nzl-badge-info': r.restriction_type === 'min_stay' || r.restriction_type === 'max_stay',
+                                              'nzl-badge-warning': r.restriction_type === 'cta' || r.restriction_type === 'ctd',
+                                              'nzl-badge-cancelled': r.restriction_type === 'stop_sell'
+                                          }"
+                                          x-text="restrictionTypeLabel(r.restriction_type)"></span>
+                                </td>
+                                <td x-text="getRoomTypeName(r.room_type_id)"></td>
+                                <td dir="ltr" style="font-size:0.875rem;" x-text="formatDate(r.date_from) + ' → ' + formatDate(r.date_to)"></td>
+                                <td x-text="(r.restriction_type === 'min_stay' || r.restriction_type === 'max_stay') ? (r.value + ' ' + NozuleI18n.t('nights')) : '—'"></td>
+                                <td style="font-size:0.8rem;" x-text="r.days_of_week ? r.days_of_week : NozuleI18n.t('all_days')"></td>
+                                <td x-text="r.channel || NozuleI18n.t('all_channels')"></td>
+                                <td>
+                                    <span class="nzl-badge" :class="r.is_active ? 'nzl-badge-confirmed' : 'nzl-badge-cancelled'" x-text="r.is_active ? NozuleI18n.t('active') : NozuleI18n.t('inactive')"></span>
+                                </td>
+                                <td>
+                                    <div style="display:flex; gap:0.5rem;">
+                                        <button class="nzl-btn nzl-btn-sm" @click="editRestriction(r)"><?php esc_html_e( 'Edit', 'nozule' ); ?></button>
+                                        <button class="nzl-btn nzl-btn-sm nzl-btn-danger" @click="deleteRestriction(r.id)"><?php esc_html_e( 'Delete', 'nozule' ); ?></button>
+                                    </div>
+                                </td>
+                            </tr>
+                        </template>
+                        <template x-if="restrictions.length === 0">
+                            <tr><td colspan="8" style="text-align:center; color:#94a3b8;"><?php esc_html_e( 'No restrictions found.', 'nozule' ); ?></td></tr>
+                        </template>
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </template>
+
+    <!-- ======================= RESTRICTION MODAL (NZL-017) ======================= -->
+    <template x-if="showRestrictionModal">
+        <div class="nzl-modal-overlay" @click.self="showRestrictionModal = false">
+            <div class="nzl-modal" style="max-width:560px;">
+                <div class="nzl-modal-header">
+                    <h3 x-text="editingRestrictionId ? '<?php echo esc_js( __( 'Edit Restriction', 'nozule' ) ); ?>' : '<?php echo esc_js( __( 'Add Restriction', 'nozule' ) ); ?>'"></h3>
+                    <button class="nzl-modal-close" @click="showRestrictionModal = false">&times;</button>
+                </div>
+                <div class="nzl-modal-body">
+                    <div class="nzl-form-grid">
+                        <div class="nzl-form-group">
+                            <label><?php esc_html_e( 'Restriction Type', 'nozule' ); ?> <span style="color:#ef4444;">*</span></label>
+                            <select class="nzl-input" x-model="rrForm.restriction_type">
+                                <option value="min_stay"><?php esc_html_e( 'Min Stay', 'nozule' ); ?></option>
+                                <option value="max_stay"><?php esc_html_e( 'Max Stay', 'nozule' ); ?></option>
+                                <option value="cta"><?php esc_html_e( 'Closed to Arrival (CTA)', 'nozule' ); ?></option>
+                                <option value="ctd"><?php esc_html_e( 'Closed to Departure (CTD)', 'nozule' ); ?></option>
+                                <option value="stop_sell"><?php esc_html_e( 'Stop Sell', 'nozule' ); ?></option>
+                            </select>
+                        </div>
+                        <div class="nzl-form-group">
+                            <label><?php esc_html_e( 'Room Type', 'nozule' ); ?> <span style="color:#ef4444;">*</span></label>
+                            <select class="nzl-input" x-model.number="rrForm.room_type_id">
+                                <template x-for="rt in roomTypes" :key="rt.id">
+                                    <option :value="rt.id" x-text="rt.name"></option>
+                                </template>
+                            </select>
+                        </div>
+                        <div class="nzl-form-group">
+                            <label><?php esc_html_e( 'Start Date', 'nozule' ); ?> <span style="color:#ef4444;">*</span></label>
+                            <input type="date" class="nzl-input" x-model="rrForm.date_from">
+                        </div>
+                        <div class="nzl-form-group">
+                            <label><?php esc_html_e( 'End Date', 'nozule' ); ?> <span style="color:#ef4444;">*</span></label>
+                            <input type="date" class="nzl-input" x-model="rrForm.date_to">
+                        </div>
+                    </div>
+
+                    <!-- Value (for min_stay / max_stay) -->
+                    <div class="nzl-form-group" style="margin-top:0.75rem;"
+                         x-show="rrForm.restriction_type === 'min_stay' || rrForm.restriction_type === 'max_stay'">
+                        <label><?php esc_html_e( 'Nights', 'nozule' ); ?> <span style="color:#ef4444;">*</span></label>
+                        <input type="number" min="1" class="nzl-input" x-model.number="rrForm.value" style="max-width:150px;">
+                    </div>
+
+                    <!-- Channel (for stop_sell) -->
+                    <div class="nzl-form-group" style="margin-top:0.75rem;"
+                         x-show="rrForm.restriction_type === 'stop_sell'">
+                        <label><?php esc_html_e( 'Channel', 'nozule' ); ?></label>
+                        <select class="nzl-input" x-model="rrForm.channel">
+                            <option value=""><?php esc_html_e( 'All Channels', 'nozule' ); ?></option>
+                            <option value="booking_com">Booking.com</option>
+                            <option value="expedia">Expedia</option>
+                            <option value="google_hpa">Google Hotel Ads</option>
+                            <option value="website"><?php esc_html_e( 'Direct Website', 'nozule' ); ?></option>
+                        </select>
+                    </div>
+
+                    <!-- Rate Plan (optional) -->
+                    <div class="nzl-form-group" style="margin-top:0.75rem;">
+                        <label><?php esc_html_e( 'Rate Plan (optional)', 'nozule' ); ?></label>
+                        <select class="nzl-input" x-model="rrForm.rate_plan_id">
+                            <option value=""><?php esc_html_e( 'All Rate Plans', 'nozule' ); ?></option>
+                            <template x-for="rp in ratePlans" :key="rp.id">
+                                <option :value="rp.id" x-text="rp.name"></option>
+                            </template>
+                        </select>
+                    </div>
+
+                    <!-- Days of week -->
+                    <div class="nzl-form-group" style="margin-top:0.75rem;">
+                        <label><?php esc_html_e( 'Days of Week', 'nozule' ); ?></label>
+                        <div style="display:flex; flex-wrap:wrap; gap:0.5rem; margin-top:0.25rem;">
+                            <template x-for="day in ['sun','mon','tue','wed','thu','fri','sat']" :key="day">
+                                <label style="display:flex; align-items:center; gap:0.25rem; cursor:pointer; font-size:0.875rem;">
+                                    <input type="checkbox" :value="day" x-model="rrForm.daysArray">
+                                    <span x-text="NozuleI18n.t('day_' + day)"></span>
+                                </label>
+                            </template>
+                        </div>
+                        <p style="font-size:0.75rem; color:#94a3b8; margin-top:0.25rem;"><?php esc_html_e( 'Leave unchecked for all days.', 'nozule' ); ?></p>
+                    </div>
+
+                    <!-- Status -->
+                    <div class="nzl-form-group" style="margin-top:0.75rem;">
+                        <label><?php esc_html_e( 'Status', 'nozule' ); ?></label>
+                        <select class="nzl-input" x-model="rrForm.is_active" style="max-width:180px;">
+                            <option :value="true"><?php esc_html_e( 'Active', 'nozule' ); ?></option>
+                            <option :value="false"><?php esc_html_e( 'Inactive', 'nozule' ); ?></option>
+                        </select>
+                    </div>
+                </div>
+                <div class="nzl-modal-footer">
+                    <button class="nzl-btn" @click="showRestrictionModal = false"><?php esc_html_e( 'Cancel', 'nozule' ); ?></button>
+                    <button class="nzl-btn nzl-btn-primary" @click="saveRestriction()" :disabled="saving">
+                        <span x-show="!saving" x-text="editingRestrictionId ? '<?php echo esc_js( __( 'Update', 'nozule' ) ); ?>' : '<?php echo esc_js( __( 'Create', 'nozule' ) ); ?>'"></span>
                         <span x-show="saving"><?php esc_html_e( 'Saving...', 'nozule' ); ?></span>
                     </button>
                 </div>

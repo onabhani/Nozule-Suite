@@ -30,6 +30,11 @@ class PricingService {
 	private CacheManager $cache;
 	private EventDispatcher $events;
 
+	/**
+	 * Optional rate restriction repository for NZL-017 enforcement.
+	 */
+	private $restrictionRepo = null;
+
 	public function __construct(
 		RatePlanRepository      $ratePlanRepo,
 		SeasonalRateRepository  $seasonalRepo,
@@ -46,6 +51,15 @@ class PricingService {
 		$this->settings      = $settings;
 		$this->cache         = $cache;
 		$this->events        = $events;
+	}
+
+	/**
+	 * Set the restriction repository for NZL-017 enforcement.
+	 *
+	 * Injected via setter to preserve backward compatibility.
+	 */
+	public function setRestrictionRepository( $repo ): void {
+		$this->restrictionRepo = $repo;
 	}
 
 	/**
@@ -100,6 +114,9 @@ class PricingService {
 				)
 			);
 		}
+
+		// NZL-017: Enforce rate restrictions (CTA, CTD, min/max stay overrides, stop-sell).
+		$this->enforceRestrictions( $roomTypeId, $ratePlan->id, $checkIn, $checkOut, $nights );
 
 		// Pre-load seasonal rates for the entire range to avoid N+1 queries.
 		$seasonalRates = $this->seasonalRepo->getForDateRange(
@@ -460,5 +477,103 @@ class PricingService {
 		}
 
 		return $dates;
+	}
+
+	/**
+	 * Enforce NZL-017 rate restrictions for the given stay parameters.
+	 *
+	 * Checks:
+	 *  - CTA (Closed to Arrival): check-in date cannot have CTA restriction
+	 *  - CTD (Closed to Departure): check-out date cannot have CTD restriction
+	 *  - Min Stay override: per-date min_stay restriction overrides plan level
+	 *  - Max Stay override: per-date max_stay restriction overrides plan level
+	 *  - Stop Sell: any date in the range must not be stop-sold
+	 *
+	 * @throws \RuntimeException If any restriction blocks the booking.
+	 */
+	private function enforceRestrictions(
+		int    $roomTypeId,
+		int    $ratePlanId,
+		string $checkIn,
+		string $checkOut,
+		int    $nights
+	): void {
+		if ( ! $this->restrictionRepo ) {
+			return;
+		}
+
+		$restrictions = $this->restrictionRepo->getActiveForRoomType(
+			$roomTypeId,
+			$checkIn,
+			$checkOut
+		);
+
+		if ( empty( $restrictions ) ) {
+			return;
+		}
+
+		foreach ( $restrictions as $restriction ) {
+			// Skip if restriction targets a different rate plan.
+			if ( ! $restriction->appliesToRatePlan( $ratePlanId ) ) {
+				continue;
+			}
+
+			$type = $restriction->restriction_type;
+
+			switch ( $type ) {
+				case 'cta':
+					if ( $restriction->appliesToDate( $checkIn ) ) {
+						throw new \RuntimeException(
+							__( 'Arrivals are not allowed on this date (Closed to Arrival).', 'nozule' )
+						);
+					}
+					break;
+
+				case 'ctd':
+					if ( $restriction->appliesToDate( $checkOut ) ) {
+						throw new \RuntimeException(
+							__( 'Departures are not allowed on this date (Closed to Departure).', 'nozule' )
+						);
+					}
+					break;
+
+				case 'min_stay':
+					if ( $restriction->appliesToDate( $checkIn ) && $nights < (int) $restriction->value ) {
+						throw new \RuntimeException(
+							sprintf(
+								__( 'A minimum stay of %d nights is required for the selected dates.', 'nozule' ),
+								$restriction->value
+							)
+						);
+					}
+					break;
+
+				case 'max_stay':
+					if ( $restriction->appliesToDate( $checkIn ) && $nights > (int) $restriction->value ) {
+						throw new \RuntimeException(
+							sprintf(
+								__( 'Maximum stay of %d nights is allowed for the selected dates.', 'nozule' ),
+								$restriction->value
+							)
+						);
+					}
+					break;
+
+				case 'stop_sell':
+					// Check every date in the stay against the stop-sell.
+					$dates = $this->getDateRange( $checkIn, $checkOut );
+					foreach ( $dates as $date ) {
+						if ( $restriction->appliesToDate( $date ) ) {
+							throw new \RuntimeException(
+								sprintf(
+									__( 'This room is not available on %s (Stop Sell).', 'nozule' ),
+									$date
+								)
+							);
+						}
+					}
+					break;
+			}
+		}
 	}
 }

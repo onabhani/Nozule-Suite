@@ -13,15 +13,14 @@ msgstr ""
 "MIME-Version: 1.0\n"
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
-"Plural-Forms: nplurals=6; plural=(n==0 ? 0 : n==1 ? 1 : n==2 ? 2 : n%100>=3 && n%100<=10 ? 3 : n%100>=11 && n%100<=99 ? 4 : 5);\n"
+"Plural-Forms: nplurals=6; plural=(n==0 ? 0 : n==1 ? 1 : n==2 ? 2 : n%100>=3 "
+"&& n%100<=10 ? 3 : n%100>=11 && n%100<=99 ? 4 : 5);\n"
 
 # ---- Plugin Meta ----
-
 msgid "Nozule"
 msgstr "نزلي"
 
 # ---- Admin Menu (AdminMenu.php) ----
-
 msgid "Hotel Manager"
 msgstr "مدير الفندق"
 
@@ -56,7 +55,6 @@ msgid "Settings"
 msgstr "الإعدادات"
 
 # ---- Dashboard ----
-
 msgid "Hotel Dashboard"
 msgstr "لوحة تحكم الفندق"
 
@@ -127,7 +125,6 @@ msgid "No guests currently in-house"
 msgstr "لا يوجد ضيوف حالياً في الفندق"
 
 # ---- Bookings ----
-
 msgid "Add New Booking"
 msgstr "إضافة حجز جديد"
 
@@ -189,7 +186,6 @@ msgid "Next"
 msgstr "التالي"
 
 # ---- Calendar ----
-
 msgid "Availability Calendar"
 msgstr "تقويم التوفر"
 
@@ -218,7 +214,6 @@ msgid "Go to Rooms"
 msgstr "الذهاب إلى الغرف"
 
 # ---- Guests ----
-
 msgid "Name, email, phone..."
 msgstr "الاسم، البريد الإلكتروني، الهاتف..."
 
@@ -322,7 +317,6 @@ msgid "No bookings yet."
 msgstr "لا توجد حجوزات بعد."
 
 # ---- Rooms ----
-
 msgid "Add Room Type"
 msgstr "إضافة نوع غرفة"
 
@@ -360,7 +354,6 @@ msgid "No rooms found."
 msgstr "لا توجد غرف."
 
 # ---- Inventory ----
-
 msgid "Room Inventory"
 msgstr "مخزون الغرف"
 
@@ -380,7 +373,6 @@ msgid "Sold Out"
 msgstr "نفذ"
 
 # ---- Reports ----
-
 msgid "Export CSV"
 msgstr "تصدير CSV"
 
@@ -424,7 +416,6 @@ msgid "No data available for the selected period."
 msgstr "لا توجد بيانات للفترة المحددة."
 
 # ---- Channels ----
-
 msgid "Add Channel"
 msgstr "إضافة قناة"
 
@@ -449,14 +440,14 @@ msgstr "جاري المزامنة..."
 msgid "No channels configured yet."
 msgstr "لم يتم إعداد قنوات بعد."
 
-msgid "Connect to OTAs and booking platforms to sync availability and reservations."
+msgid ""
+"Connect to OTAs and booking platforms to sync availability and reservations."
 msgstr "اتصل بمنصات الحجز لمزامنة التوفر والحجوزات."
 
 msgid "Add Your First Channel"
 msgstr "أضف قناتك الأولى"
 
 # ---- Settings ----
-
 msgid "General"
 msgstr "عام"
 
@@ -572,7 +563,6 @@ msgid "Settings saved successfully."
 msgstr "تم حفظ الإعدادات بنجاح."
 
 # ---- Rates & Pricing ----
-
 msgid "Add Rate Plan"
 msgstr "إضافة خطة أسعار"
 
@@ -685,7 +675,6 @@ msgid "e.g. 25 for 25%"
 msgstr "مثال: 25 لنسبة 25%"
 
 # ---- Reception Portal ----
-
 msgid "Reception Portal - Nozule Hotel"
 msgstr "بوابة الاستقبال - نزلي"
 
@@ -693,7 +682,6 @@ msgid "Hotel Reception"
 msgstr "استقبال الفندق"
 
 # ---- Public Booking Flow ----
-
 msgid "Adults"
 msgstr "بالغين"
 
@@ -797,7 +785,6 @@ msgid "Please select a room first using the booking search widget."
 msgstr "يرجى اختيار غرفة أولاً باستخدام أداة البحث عن الحجز."
 
 # ---- Common / Shared ----
-
 msgid "Room not found."
 msgstr "الغرفة غير موجودة."
 
@@ -805,7 +792,6 @@ msgid "Room type created successfully."
 msgstr "تم إنشاء نوع الغرفة بنجاح."
 
 # ---- Rooms Modal (new) ----
-
 msgid "Edit Room Type"
 msgstr "تعديل نوع الغرفة"
 
@@ -831,7 +817,6 @@ msgid "Save"
 msgstr "حفظ"
 
 # ---- Bookings Modal (new) ----
-
 msgid "Guest First Name"
 msgstr "الاسم الأول للضيف"
 
@@ -845,7 +830,6 @@ msgid "Number of Children"
 msgstr "عدد الأطفال"
 
 # ---- Channels Modal (new) ----
-
 msgid "Edit Channel"
 msgstr "تعديل القناة"
 
@@ -889,7 +873,6 @@ msgid "Sync Reservations"
 msgstr "مزامنة الحجوزات"
 
 # ---- Additional UI strings ----
-
 msgid "Select Room Type"
 msgstr "اختر نوع الغرفة"
 
@@ -924,7 +907,6 @@ msgid "e.g. 12345678"
 msgstr "مثال: 12345678"
 
 # ---- Reports (JS i18n) ----
-
 msgid "Revenue Report"
 msgstr "تقرير الإيرادات"
 
@@ -935,7 +917,6 @@ msgid "Report"
 msgstr "تقرير"
 
 # ---- Integrations ----
-
 msgid "Integrations"
 msgstr "التكاملات"
 
@@ -985,7 +966,8 @@ msgid "Signing Secret"
 msgstr "مفتاح التوقيع"
 
 msgid "Used to sign payloads with HMAC-SHA256. Leave empty to skip signing."
-msgstr "يُستخدم لتوقيع البيانات بخوارزمية HMAC-SHA256. اتركه فارغاً لتخطي التوقيع."
+msgstr ""
+"يُستخدم لتوقيع البيانات بخوارزمية HMAC-SHA256. اتركه فارغاً لتخطي التوقيع."
 
 msgid "Sync bookings"
 msgstr "مزامنة الحجوزات"
@@ -1015,7 +997,6 @@ msgid "Testing..."
 msgstr "جاري الاختبار..."
 
 # ---- Settings Dropdowns ----
-
 msgid "-- Select Timezone --"
 msgstr "-- اختر المنطقة الزمنية --"
 
@@ -1097,7 +1078,6 @@ msgstr "ريال برازيلي"
 # ──────────────────────────────────────────────────────────
 # NZL-001: Housekeeping
 # ──────────────────────────────────────────────────────────
-
 msgid "Housekeeping"
 msgstr "التدبير المنزلي"
 
@@ -1188,7 +1168,6 @@ msgstr "تعليمات خاصة أو ملاحظات..."
 # ──────────────────────────────────────────────────────────
 # NZL-003: Billing / Folios / Taxes
 # ──────────────────────────────────────────────────────────
-
 msgid "Billing"
 msgstr "الفوترة"
 
@@ -1330,7 +1309,6 @@ msgstr "الكل"
 # ──────────────────────────────────────────────────────────
 # NZL-005: Group Bookings
 # ──────────────────────────────────────────────────────────
-
 msgid "Group Bookings"
 msgstr "حجوزات المجموعات"
 
@@ -1484,7 +1462,6 @@ msgstr "اسم الضيف..."
 # ──────────────────────────────────────────────────────────
 # NZL-006: Promotions / Promo Codes
 # ──────────────────────────────────────────────────────────
-
 msgid "Promotions"
 msgstr "العروض الترويجية"
 
@@ -1572,8 +1549,10 @@ msgstr "الوصف (عربي)"
 # ──────────────────────────────────────────────────────────
 # NZL-007: Guest Messaging
 # ──────────────────────────────────────────────────────────
-
 msgid "Guest Messaging"
+msgstr "رسائل الضيوف"
+
+msgid "Messaging"
 msgstr "رسائل الضيوف"
 
 msgid "Manage email templates and view sent messages."
@@ -1633,8 +1612,14 @@ msgstr "الموضوع (عربي)"
 msgid "Body (English) *"
 msgstr "النص (إنجليزي) *"
 
-msgid "Variables: {{guest_name}}, {{booking_number}}, {{check_in}}, {{check_out}}, {{room_type}}, {{room_number}}, {{total_amount}}, {{currency}}, {{hotel_name}}, {{hotel_phone}}"
-msgstr "المتغيرات: {{guest_name}}، {{booking_number}}، {{check_in}}، {{check_out}}، {{room_type}}، {{room_number}}، {{total_amount}}، {{currency}}، {{hotel_name}}، {{hotel_phone}}"
+msgid ""
+"Variables: {{guest_name}}, {{booking_number}}, {{check_in}}, {{check_out}}, "
+"{{room_type}}, {{room_number}}, {{total_amount}}, {{currency}}, "
+"{{hotel_name}}, {{hotel_phone}}"
+msgstr ""
+"المتغيرات: {{guest_name}}، {{booking_number}}، {{check_in}}، {{check_out}}، "
+"{{room_type}}، {{room_number}}، {{total_amount}}، {{currency}}، "
+"{{hotel_name}}، {{hotel_phone}}"
 
 msgid "Body (Arabic)"
 msgstr "النص (عربي)"
@@ -1663,7 +1648,6 @@ msgstr "وقت الإرسال"
 # ──────────────────────────────────────────────────────────
 # NZL-008: Currency & Exchange Rates
 # ──────────────────────────────────────────────────────────
-
 msgid "Currency & Exchange Rates"
 msgstr "العملات وأسعار الصرف"
 
@@ -1697,8 +1681,15 @@ msgstr "لا توجد عملات مهيأة."
 msgid "Syrian / Non-Syrian Pricing"
 msgstr "تسعير السوريين / غير السوريين"
 
-msgid "To set different prices for Syrian and non-Syrian guests, go to Rates & Pricing and create separate rate plans with the \"Guest Type\" field set to \"Syrian\" or \"Non-Syrian\". The system will automatically apply the correct rate based on guest nationality."
-msgstr "لتعيين أسعار مختلفة للضيوف السوريين وغير السوريين، انتقل إلى الأسعار والتسعير وأنشئ خطط أسعار منفصلة مع تعيين حقل \"نوع الضيف\" إلى \"سوري\" أو \"غير سوري\". سيطبق النظام تلقائياً السعر المناسب بناءً على جنسية الضيف."
+msgid ""
+"To set different prices for Syrian and non-Syrian guests, go to Rates & "
+"Pricing and create separate rate plans with the \"Guest Type\" field set to "
+"\"Syrian\" or \"Non-Syrian\". The system will automatically apply the "
+"correct rate based on guest nationality."
+msgstr ""
+"لتعيين أسعار مختلفة للضيوف السوريين وغير السوريين، انتقل إلى الأسعار "
+"والتسعير وأنشئ خطط أسعار منفصلة مع تعيين حقل \"نوع الضيف\" إلى \"سوري\" أو "
+"\"غير سوري\". سيطبق النظام تلقائياً السعر المناسب بناءً على جنسية الضيف."
 
 msgid "Update Exchange Rate"
 msgstr "تحديث سعر الصرف"
@@ -1745,14 +1736,12 @@ msgstr "إدارة العملات"
 # ──────────────────────────────────────────────────────────
 # Admin Menu Items (NZL-001 to NZL-008)
 # ──────────────────────────────────────────────────────────
-
 msgid "Night Audit"
 msgstr "التدقيق الليلي"
 
 # ──────────────────────────────────────────────────────────
 # Rate Plans - Guest Type (NZL-008)
 # ──────────────────────────────────────────────────────────
-
 msgid "Guest Type"
 msgstr "نوع الضيف"
 
@@ -1764,3 +1753,699 @@ msgstr "سوري"
 
 msgid "Non-Syrian"
 msgstr "غير سوري"
+
+# ──────────────────────────────────────────────────────────
+# Guest Language Preference
+# ──────────────────────────────────────────────────────────
+msgid "Preferred Language"
+msgstr "اللغة المفضلة"
+
+msgid "Arabic"
+msgstr "العربية"
+
+msgid "English"
+msgstr "الإنجليزية"
+
+# ──────────────────────────────────────────────────────────
+# Dynamic Pricing (NZL-015)
+# ──────────────────────────────────────────────────────────
+msgid "Dynamic Pricing"
+msgstr "التسعير الديناميكي"
+
+msgid "Occupancy Rules"
+msgstr "قواعد الإشغال"
+
+msgid "Day-of-Week Rules"
+msgstr "قواعد أيام الأسبوع"
+
+msgid "Event Overrides"
+msgstr "تجاوزات الأحداث"
+
+msgid "Threshold"
+msgstr "الحد"
+
+msgid "Multiplier"
+msgstr "المُضاعف"
+
+msgid "Add Occupancy Rule"
+msgstr "إضافة قاعدة إشغال"
+
+msgid "Add Day Rule"
+msgstr "إضافة قاعدة يوم"
+
+msgid "Add Event Override"
+msgstr "إضافة تجاوز حدث"
+
+msgid "Event Name"
+msgstr "اسم الحدث"
+
+msgid "Event Name (Arabic)"
+msgstr "اسم الحدث (عربي)"
+
+msgid "Min Occupancy %"
+msgstr "الحد الأدنى للإشغال %"
+
+msgid "Max Occupancy %"
+msgstr "الحد الأقصى للإشغال %"
+
+msgid "Price Modifier %"
+msgstr "معدل السعر %"
+
+msgid "Sunday"
+msgstr "الأحد"
+
+msgid "Monday"
+msgstr "الاثنين"
+
+msgid "Tuesday"
+msgstr "الثلاثاء"
+
+msgid "Wednesday"
+msgstr "الأربعاء"
+
+msgid "Thursday"
+msgstr "الخميس"
+
+msgid "Friday"
+msgstr "الجمعة"
+
+msgid "Saturday"
+msgstr "السبت"
+
+# ──────────────────────────────────────────────────────────
+# Reviews & Reputation (NZL-020)
+# ──────────────────────────────────────────────────────────
+msgid "Reviews & Reputation"
+msgstr "التقييمات والسمعة"
+
+msgid "Track review solicitation emails and manage reputation settings."
+msgstr "تتبع رسائل طلب التقييم وإدارة إعدادات السمعة."
+
+msgid "Total Sent"
+msgstr "إجمالي المرسل"
+
+msgid "Clicked"
+msgstr "تم النقر"
+
+msgid "Click Rate"
+msgstr "نسبة النقر"
+
+msgid "Email address..."
+msgstr "عنوان البريد..."
+
+msgid "No review requests found."
+msgstr "لم يتم العثور على طلبات تقييم."
+
+msgid "Review Solicitation Settings"
+msgstr "إعدادات طلب التقييم"
+
+msgid "Enable automatic review request emails"
+msgstr "تفعيل رسائل طلب التقييم التلقائية"
+
+msgid "Delay After Checkout (hours)"
+msgstr "التأخير بعد المغادرة (ساعات)"
+
+msgid "How many hours after checkout before the review email is sent."
+msgstr "عدد الساعات بعد المغادرة قبل إرسال بريد التقييم."
+
+msgid "Google Maps Review URL"
+msgstr "رابط تقييم خرائط جوجل"
+
+msgid "TripAdvisor URL"
+msgstr "رابط تريب أدفايزر"
+
+msgid "Email Template"
+msgstr "قالب البريد الإلكتروني"
+
+msgid "Subject (English)"
+msgstr "الموضوع (إنجليزي)"
+
+msgid "Body (English)"
+msgstr "النص (إنجليزي)"
+
+msgid ""
+"Variables: {{guest_name}}, {{hotel_name}}, {{booking_number}}, "
+"{{google_review_url}}, {{tripadvisor_url}}"
+msgstr ""
+"المتغيرات: {{guest_name}}, {{hotel_name}}, {{booking_number}}, "
+"{{google_review_url}}, {{tripadvisor_url}}"
+
+# ──────────────────────────────────────────────────────────
+# WhatsApp Messaging (NZL-023)
+# ──────────────────────────────────────────────────────────
+msgid "WhatsApp Messaging"
+msgstr "رسائل واتساب"
+
+msgid ""
+"Manage WhatsApp message templates, view sent messages, and configure API "
+"settings."
+msgstr "إدارة قوالب رسائل واتساب وعرض الرسائل المرسلة وإعداد واجهة API."
+
+msgid "Templates"
+msgstr "القوالب"
+
+msgid "Message Log"
+msgstr "سجل الرسائل"
+
+msgid "All Triggers"
+msgstr "جميع المُحفّزات"
+
+msgid "Pre-Arrival"
+msgstr "قبل الوصول"
+
+msgid "Add Template"
+msgstr "إضافة قالب"
+
+msgid "No WhatsApp templates found."
+msgstr "لم يتم العثور على قوالب واتساب."
+
+msgid "Body Preview"
+msgstr "معاينة النص"
+
+msgid "Template Name"
+msgstr "اسم القالب"
+
+msgid "Slug"
+msgstr "الاختصار"
+
+msgid "None (manual)"
+msgstr "لا شيء (يدوي)"
+
+msgid "Send Test Message"
+msgstr "إرسال رسالة تجريبية"
+
+msgid "Phone Number (international format)"
+msgstr "رقم الهاتف (صيغة دولية)"
+
+msgid "Send Test"
+msgstr "إرسال تجريبي"
+
+msgid "WhatsApp Business API Configuration"
+msgstr "إعدادات واجهة واتساب للأعمال"
+
+msgid "Enter your Meta WhatsApp Business API credentials below."
+msgstr "أدخل بيانات اعتماد واجهة واتساب للأعمال من Meta أدناه."
+
+msgid "WhatsApp Business API Settings"
+msgstr "إعدادات واجهة واتساب للأعمال"
+
+msgid "Phone Number ID"
+msgstr "معرّف رقم الهاتف"
+
+msgid "Business Account ID"
+msgstr "معرّف حساب الأعمال"
+
+msgid "Business ID"
+msgstr "معرّف الأعمال"
+
+msgid "Access Token"
+msgstr "رمز الوصول"
+
+msgid "Enter access token..."
+msgstr "أدخل رمز الوصول..."
+
+msgid "Leave blank to keep the current token."
+msgstr "اتركه فارغاً للاحتفاظ بالرمز الحالي."
+
+msgid "Current:"
+msgstr "الحالي:"
+
+msgid "API Version"
+msgstr "إصدار الواجهة"
+
+msgid "Enable WhatsApp Messaging"
+msgstr "تفعيل رسائل واتساب"
+
+msgid "Phone Number"
+msgstr "رقم الهاتف"
+
+msgid "Sending..."
+msgstr "جاري الإرسال..."
+
+msgid "Send"
+msgstr "إرسال"
+
+msgid "No WhatsApp messages sent yet."
+msgstr "لم يتم إرسال رسائل واتساب بعد."
+
+msgid "Delivered"
+msgstr "تم التوصيل"
+
+msgid "Read"
+msgstr "مقروء"
+
+msgid "Error"
+msgstr "خطأ"
+
+# ──────────────────────────────────────────────────────────
+# Channel Sync (NZL-013)
+# ──────────────────────────────────────────────────────────
+msgid "Channel Sync"
+msgstr "مزامنة القنوات"
+
+msgid ""
+"Manage OTA channel connections and synchronize rates, availability, and "
+"reservations."
+msgstr "إدارة اتصالات قنوات OTA ومزامنة الأسعار والتوافر والحجوزات."
+
+msgid "Connections"
+msgstr "الاتصالات"
+
+msgid "Rate Mapping"
+msgstr "ربط الأسعار"
+
+msgid "Sync Log"
+msgstr "سجل المزامنة"
+
+msgid "Sync History"
+msgstr "سجل المزامنة"
+
+msgid "Not Configured"
+msgstr "غير مُهيّأ"
+
+msgid "Last sync:"
+msgstr "آخر مزامنة:"
+
+msgid "Hotel ID"
+msgstr "معرّف الفندق"
+
+msgid "Password"
+msgstr "كلمة المرور"
+
+msgid "API username"
+msgstr "اسم مستخدم API"
+
+msgid "API password"
+msgstr "كلمة مرور API"
+
+msgid "API Endpoint (optional)"
+msgstr "نقطة نهاية API (اختياري)"
+
+msgid "Custom URL for sandbox"
+msgstr "رابط مخصص لبيئة الاختبار"
+
+msgid "Use Sandbox Environment"
+msgstr "استخدام بيئة الاختبار"
+
+msgid "Save Connection"
+msgstr "حفظ الاتصال"
+
+msgid "Configure your Booking.com credentials above to start syncing."
+msgstr "أدخل بيانات اعتماد Booking.com أعلاه لبدء المزامنة."
+
+msgid "Add Mapping"
+msgstr "إضافة ربط"
+
+msgid "Select a channel to view and manage rate mappings."
+msgstr "اختر قناة لعرض وإدارة ربط الأسعار."
+
+msgid "No rate mappings configured for this channel."
+msgstr "لا يوجد ربط أسعار لهذه القناة."
+
+msgid "Add Your First Mapping"
+msgstr "أضف أول ربط"
+
+msgid "Local Room Type"
+msgstr "نوع الغرفة المحلي"
+
+msgid "Local Rate Plan"
+msgstr "خطة السعر المحلية"
+
+msgid "Channel Room ID"
+msgstr "معرّف غرفة القناة"
+
+msgid "Channel Rate ID"
+msgstr "معرّف سعر القناة"
+
+msgid "Base Rate"
+msgstr "السعر الأساسي"
+
+msgid "Room ID on OTA"
+msgstr "معرّف الغرفة على OTA"
+
+msgid "Rate plan ID on OTA"
+msgstr "معرّف خطة السعر على OTA"
+
+msgid "Add Rate Mapping"
+msgstr "إضافة ربط أسعار"
+
+msgid "Add Channel Mapping"
+msgstr "إضافة ربط قناة"
+
+msgid "Edit Channel Mapping"
+msgstr "تعديل ربط القناة"
+
+msgid "Select Channel"
+msgstr "اختر القناة"
+
+msgid "External Room ID"
+msgstr "معرّف الغرفة الخارجي"
+
+msgid "External Rate ID"
+msgstr "معرّف السعر الخارجي"
+
+msgid "Avail"
+msgstr "توافر"
+
+msgid "Rates"
+msgstr "أسعار"
+
+msgid "Resv"
+msgstr "حجوزات"
+
+msgid "No channel connections configured."
+msgstr "لا يوجد اتصالات قنوات مُهيّأة."
+
+msgid "Direction"
+msgstr "الاتجاه"
+
+msgid "Message"
+msgstr "الرسالة"
+
+msgid "Records"
+msgstr "السجلات"
+
+msgid "Started"
+msgstr "بدأ"
+
+msgid "Completed"
+msgstr "اكتمل"
+
+msgid "Push"
+msgstr "دفع"
+
+msgid "Pull"
+msgstr "سحب"
+
+msgid "Success"
+msgstr "نجاح"
+
+msgid "Partial"
+msgstr "جزئي"
+
+msgid "No sync log entries found."
+msgstr "لم يتم العثور على سجلات مزامنة."
+
+msgid "No sync history found."
+msgstr "لم يتم العثور على سجل مزامنة."
+
+msgid "Prev"
+msgstr "السابق"
+
+msgid "Reset"
+msgstr "إعادة تعيين"
+
+# ──────────────────────────────────────────────────────────
+# NZL-016: Metasearch / Google Hotel Ads
+# ──────────────────────────────────────────────────────────
+msgid "Metasearch"
+msgstr "محركات البحث"
+
+msgid "Metasearch — Google Hotel Ads"
+msgstr "محركات البحث — إعلانات جوجل الفندقية"
+
+msgid ""
+"Configure Google Hotel Price Feed, Free Booking Links, and CPC campaigns."
+msgstr "إعداد تغذية أسعار جوجل الفندقية وروابط الحجز المجانية وحملات CPC."
+
+msgid "Price Feed"
+msgstr "تغذية الأسعار"
+
+msgid "CPC Campaigns"
+msgstr "حملات CPC"
+
+msgid "Hotel Information"
+msgstr "معلومات الفندق"
+
+msgid "Enable Google Hotel Ads Integration"
+msgstr "تفعيل تكامل إعلانات جوجل الفندقية"
+
+msgid "Google Hotel Center ID"
+msgstr "معرّف مركز جوجل الفندقي"
+
+msgid "Partner Key"
+msgstr "مفتاح الشريك"
+
+msgid "Hotel Name (English)"
+msgstr "اسم الفندق (إنجليزي)"
+
+msgid "Hotel Name (Arabic)"
+msgstr "اسم الفندق (عربي)"
+
+msgid "Landing Page URL"
+msgstr "رابط صفحة الحجز"
+
+msgid "Country Code"
+msgstr "رمز الدولة"
+
+msgid "Enable Free Booking Links on Google Maps"
+msgstr "تفعيل روابط الحجز المجانية على خرائط جوجل"
+
+msgid ""
+"Adds JSON-LD structured data to your site for Google to display free booking "
+"links."
+msgstr "يضيف بيانات JSON-LD المنظمة لموقعك ليعرض جوجل روابط الحجز المجانية."
+
+msgid "Google Hotel Price Feed"
+msgstr "تغذية أسعار جوجل الفندقية"
+
+msgid ""
+"Google crawls this URL to get your hotel rates. Share this URL in your "
+"Google Hotel Center account."
+msgstr ""
+"يزحف جوجل إلى هذا الرابط للحصول على أسعار فندقك. شارك هذا الرابط في حساب "
+"مركز جوجل الفندقي."
+
+msgid "Feed URL"
+msgstr "رابط التغذية"
+
+msgid "Copy"
+msgstr "نسخ"
+
+msgid "Test Feed"
+msgstr "اختبار التغذية"
+
+msgid "Preview XML"
+msgstr "معاينة XML"
+
+msgid "Feed Test Results"
+msgstr "نتائج اختبار التغذية"
+
+msgid "Date Range"
+msgstr "نطاق التاريخ"
+
+msgid "Total Results"
+msgstr "إجمالي النتائج"
+
+msgid "XML Preview (first 10 results)"
+msgstr "معاينة XML (أول 10 نتائج)"
+
+msgid "CPC Campaign Settings"
+msgstr "إعدادات حملات CPC"
+
+msgid "Enable CPC Campaigns"
+msgstr "تفعيل حملات CPC"
+
+msgid ""
+"Pay-per-click advertising on Google Hotel Ads. Requires a Google Ads account "
+"linked to Hotel Center."
+msgstr ""
+"إعلانات الدفع لكل نقرة على إعلانات جوجل الفندقية. يتطلب حساب إعلانات جوجل "
+"مرتبط بمركز الفنادق."
+
+msgid "Daily Budget"
+msgstr "الميزانية اليومية"
+
+msgid "In your account currency (USD/SYP)."
+msgstr "بعملة حسابك (دولار/ليرة سورية)."
+
+msgid "Bid Strategy"
+msgstr "استراتيجية المزايدة"
+
+msgid "Manual CPC"
+msgstr "CPC يدوي"
+
+msgid "Automated (Maximize Clicks)"
+msgstr "آلي (تعظيم النقرات)"
+
+# Metasearch Controller strings
+msgid "Request body must be a JSON object."
+msgstr "يجب أن يكون نص الطلب كائن JSON."
+
+msgid "Metasearch settings updated."
+msgstr "تم تحديث إعدادات محركات البحث."
+
+msgid "Google Hotel Ads integration is not enabled."
+msgstr "تكامل إعلانات جوجل الفندقية غير مفعّل."
+
+msgid "Feed generation test passed."
+msgstr "نجح اختبار إنشاء التغذية."
+
+msgid "Feed generation failed: %s"
+msgstr "فشل إنشاء التغذية: %s"
+
+msgid "Feed not available."
+msgstr "التغذية غير متوفرة."
+
+# ──────────────────────────────────────────────────────────
+# NZL-017: Rate Restrictions
+# ──────────────────────────────────────────────────────────
+msgid "Add Restriction"
+msgstr "إضافة قيد"
+
+msgid "Restrictions"
+msgstr "القيود"
+
+msgid "All Types"
+msgstr "جميع الأنواع"
+
+msgid "Closed to Arrival (CTA)"
+msgstr "مغلق للوصول (CTA)"
+
+msgid "Closed to Departure (CTD)"
+msgstr "مغلق للمغادرة (CTD)"
+
+msgid "Stop Sell"
+msgstr "إيقاف البيع"
+
+msgid "Value"
+msgstr "القيمة"
+
+msgid "Days"
+msgstr "الأيام"
+
+msgid "No restrictions found."
+msgstr "لا توجد قيود."
+
+msgid "Edit Restriction"
+msgstr "تعديل القيد"
+
+msgid "Restriction Type"
+msgstr "نوع القيد"
+
+msgid "All Channels"
+msgstr "جميع القنوات"
+
+msgid "Direct Website"
+msgstr "الموقع المباشر"
+
+msgid "Rate Plan (optional)"
+msgstr "خطة السعر (اختياري)"
+
+msgid "All Rate Plans"
+msgstr "جميع خطط الأسعار"
+
+msgid "Days of Week"
+msgstr "أيام الأسبوع"
+
+msgid "Leave unchecked for all days."
+msgstr "اتركها بدون تحديد لتطبق على جميع الأيام."
+
+# Rate Restriction Controller strings
+msgid "Restriction created."
+msgstr "تم إنشاء القيد."
+
+msgid "Restriction updated."
+msgstr "تم تحديث القيد."
+
+msgid "Restriction deleted."
+msgstr "تم حذف القيد."
+
+msgid "Restriction not found."
+msgstr "القيد غير موجود."
+
+msgid "room_type_id and dates are required."
+msgstr "نوع الغرفة والتواريخ مطلوبة."
+
+# ──────────────────────────────────────────────────────────
+# Country Profiles & Compliance
+# ──────────────────────────────────────────────────────────
+msgid "Operating Country"
+msgstr "دولة التشغيل"
+
+msgid "-- Select Country --"
+msgstr "-- اختر الدولة --"
+
+msgid "Syria"
+msgstr "سوريا"
+
+msgid "Saudi Arabia"
+msgstr "المملكة العربية السعودية"
+
+msgid "Sets default currency, timezone, taxes, and feature visibility."
+msgstr "يعيّن العملة والمنطقة الزمنية والضرائب وإمكانية عرض الميزات الافتراضية."
+
+msgid "Apply Country Defaults"
+msgstr "تطبيق إعدادات الدولة"
+
+msgid "Applying..."
+msgstr "جاري التطبيق..."
+
+msgid "Syrian Pound"
+msgstr "ليرة سورية"
+
+msgid "Compliance"
+msgstr "الامتثال"
+
+msgid "ZATCA E-Invoicing"
+msgstr "الفوترة الإلكترونية (زاتكا)"
+
+msgid ""
+"Integration with Saudi Arabia's Zakat, Tax and Customs Authority for "
+"electronic invoicing compliance (Fatoorah)."
+msgstr ""
+"التكامل مع هيئة الزكاة والضريبة والجمارك السعودية للامتثال للفوترة "
+"الإلكترونية (فاتورة)."
+
+msgid "Coming Soon"
+msgstr "قريباً"
+
+msgid "ZATCA Environment"
+msgstr "بيئة زاتكا"
+
+msgid "Sandbox (Testing)"
+msgstr "بيئة الاختبار"
+
+msgid "Production"
+msgstr "الإنتاج"
+
+msgid "Tax Registration Number (TIN)"
+msgstr "رقم التسجيل الضريبي (TIN)"
+
+msgid "Commercial Registration (CR)"
+msgstr "السجل التجاري (CR)"
+
+msgid "CSID (Compliance)"
+msgstr "معرّف الامتثال (CSID)"
+
+msgid "Shomos Tourism Platform"
+msgstr "منصة شموس السياحية"
+
+msgid ""
+"Integration with Saudi Tourism Authority's Shomos platform for hotel "
+"registration and guest reporting."
+msgstr ""
+"التكامل مع منصة شموس التابعة لهيئة السياحة السعودية لتسجيل الفنادق والإبلاغ "
+"عن الضيوف."
+
+msgid "Shomos License Number"
+msgstr "رقم ترخيص شموس"
+
+msgid "Establishment ID"
+msgstr "معرّف المنشأة"
+
+msgid "Auto-report guest check-ins to Shomos"
+msgstr "الإبلاغ التلقائي عن تسجيل وصول الضيوف إلى شموس"
+
+# Country profile controller strings
+msgid "Country code is required."
+msgstr "رمز الدولة مطلوب."
+
+msgid "Unsupported country code."
+msgstr "رمز الدولة غير مدعوم."
+
+msgid ""
+"Country profile \"%s\" applied. Currency, timezone, and %d tax(es) "
+"configured."
+msgstr ""
+"تم تطبيق ملف الدولة \"%s\". تم إعداد العملة والمنطقة الزمنية و%d ضريبة."

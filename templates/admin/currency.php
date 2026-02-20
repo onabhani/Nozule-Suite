@@ -97,13 +97,15 @@ if ( ! defined( 'ABSPATH' ) ) exit;
             </div>
         </template>
 
-        <!-- Syrian/Non-Syrian Pricing Info -->
-        <div class="nzl-card" style="margin-top:1.5rem; background:#eff6ff; border-color:#bfdbfe;">
-            <h4 style="font-size:0.875rem; font-weight:600; color:#1e40af; margin:0 0 0.5rem;"><?php esc_html_e( 'Syrian / Non-Syrian Pricing', 'nozule' ); ?></h4>
-            <p style="font-size:0.875rem; color:#1d4ed8; margin:0;">
-                <?php esc_html_e( 'To set different prices for Syrian and non-Syrian guests, go to Rates & Pricing and create separate rate plans with the "Guest Type" field set to "Syrian" or "Non-Syrian". The system will automatically apply the correct rate based on guest nationality.', 'nozule' ); ?>
-            </p>
-        </div>
+        <!-- Syrian/Non-Syrian Pricing Info (shown for SY or when no country set) -->
+        <template x-if="!window.NozuleAdmin.operatingCountry || window.NozuleAdmin.operatingCountry === 'SY'">
+            <div class="nzl-card" style="margin-top:1.5rem; background:#eff6ff; border-color:#bfdbfe;">
+                <h4 style="font-size:0.875rem; font-weight:600; color:#1e40af; margin:0 0 0.5rem;"><?php esc_html_e( 'Syrian / Non-Syrian Pricing', 'nozule' ); ?></h4>
+                <p style="font-size:0.875rem; color:#1d4ed8; margin:0;">
+                    <?php esc_html_e( 'To set different prices for Syrian and non-Syrian guests, go to Rates & Pricing and create separate rate plans with the "Guest Type" field set to "Syrian" or "Non-Syrian". The system will automatically apply the correct rate based on guest nationality.', 'nozule' ); ?>
+                </p>
+            </div>
+        </template>
     </div>
 
     <!-- ═══ Exchange Rates Tab ═══ -->

@@ -242,6 +242,7 @@ class EmailService {
 			'hotel_name'     => $this->settings->get( 'hotel.name', get_bloginfo( 'name' ) ),
 			'hotel_phone'    => $this->settings->get( 'hotel.phone', '' ),
 			'hotel_email'    => $this->settings->get( 'hotel.email', get_option( 'admin_email' ) ),
+			'locale'         => $guest->language ?? 'ar',
 		];
 	}
 

@@ -47,6 +47,7 @@ document.addEventListener('alpine:init', function () {
                     city: '',
                     country: '',
                     company: '',
+                    language: 'ar',
                     notes: ''
                 };
             },
@@ -104,6 +105,7 @@ document.addEventListener('alpine:init', function () {
                     city: guest.city || '',
                     country: guest.country || '',
                     company: guest.company || '',
+                    language: guest.language || 'ar',
                     notes: guest.notes || ''
                 };
                 this.showGuestModal = true;
