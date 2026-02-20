@@ -1576,6 +1576,9 @@ msgstr "الوصف (عربي)"
 msgid "Guest Messaging"
 msgstr "رسائل الضيوف"
 
+msgid "Messaging"
+msgstr "رسائل الضيوف"
+
 msgid "Manage email templates and view sent messages."
 msgstr "إدارة قوالب البريد الإلكتروني وعرض الرسائل المرسلة."
 
@@ -1764,3 +1767,16 @@ msgstr "سوري"
 
 msgid "Non-Syrian"
 msgstr "غير سوري"
+
+# ──────────────────────────────────────────────────────────
+# Guest Language Preference
+# ──────────────────────────────────────────────────────────
+
+msgid "Preferred Language"
+msgstr "اللغة المفضلة"
+
+msgid "Arabic"
+msgstr "العربية"
+
+msgid "English"
+msgstr "الإنجليزية"

@@ -85,7 +85,8 @@ document.addEventListener('alpine:init', function () {
                         last_name: self.guest.last_name,
                         email: self.guest.email,
                         phone: self.guest.phone,
-                        nationality: self.guest.nationality
+                        nationality: self.guest.nationality,
+                        language: NozuleI18n.getLocale()
                     },
                     special_requests: self.guest.special_requests,
                     arrival_time: self.guest.arrival_time,

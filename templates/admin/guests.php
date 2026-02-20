@@ -147,6 +147,13 @@ if ( ! defined( 'ABSPATH' ) ) {
                             <label><?php esc_html_e( 'Company', 'nozule' ); ?></label>
                             <input type="text" class="nzl-input" x-model="guestForm.company">
                         </div>
+                        <div class="nzl-form-group">
+                            <label><?php esc_html_e( 'Preferred Language', 'nozule' ); ?></label>
+                            <select class="nzl-input" x-model="guestForm.language">
+                                <option value="ar"><?php esc_html_e( 'Arabic', 'nozule' ); ?></option>
+                                <option value="en"><?php esc_html_e( 'English', 'nozule' ); ?></option>
+                            </select>
+                        </div>
                     </div>
 
                     <!-- Identity & Address -->
@@ -230,6 +237,7 @@ if ( ! defined( 'ABSPATH' ) ) {
                                         <template x-if="selectedGuest.company">
                                             <span><strong><?php esc_html_e( 'Company', 'nozule' ); ?>:</strong> <span x-text="selectedGuest.company"></span></span>
                                         </template>
+                                        <span><strong><?php esc_html_e( 'Preferred Language', 'nozule' ); ?>:</strong> <span x-text="selectedGuest.language === 'en' ? '<?php echo esc_js( __( 'English', 'nozule' ) ); ?>' : '<?php echo esc_js( __( 'Arabic', 'nozule' ) ); ?>'"></span></span>
                                     </div>
                                 </div>
                                 <div style="font-size:0.875rem; color:#64748b; display:flex; flex-direction:column; gap:0.35rem;">

@@ -576,7 +576,8 @@ class BookingService {
 			return (int) $data['guest_id'];
 		}
 
-		$email = sanitize_email( $data['guest_email'] ?? '' );
+		$nested = $data['guest'] ?? [];
+		$email  = sanitize_email( $data['guest_email'] ?? $nested['email'] ?? '' );
 
 		// Try to find existing guest by email.
 		$guest = $this->guestService->findByEmail( $email );
@@ -587,11 +588,13 @@ class BookingService {
 
 		// Create new guest profile.
 		$newGuest = $this->guestService->createGuest( [
-			'first_name' => sanitize_text_field( $data['guest_first_name'] ?? '' ),
-			'last_name'  => sanitize_text_field( $data['guest_last_name'] ?? '' ),
-			'email'      => $email,
-			'phone'      => sanitize_text_field( $data['guest_phone'] ?? '' ),
-			'country'    => sanitize_text_field( $data['guest_country'] ?? '' ),
+			'first_name'  => sanitize_text_field( $data['guest_first_name'] ?? $nested['first_name'] ?? '' ),
+			'last_name'   => sanitize_text_field( $data['guest_last_name'] ?? $nested['last_name'] ?? '' ),
+			'email'       => $email ?: sanitize_email( $nested['email'] ?? '' ),
+			'phone'       => sanitize_text_field( $data['guest_phone'] ?? $nested['phone'] ?? '' ),
+			'country'     => sanitize_text_field( $data['guest_country'] ?? $nested['country'] ?? '' ),
+			'nationality' => sanitize_text_field( $data['guest_nationality'] ?? $nested['nationality'] ?? '' ),
+			'language'    => sanitize_text_field( $data['guest_language'] ?? $nested['language'] ?? 'ar' ),
 		] );
 
 		return $newGuest->id;
