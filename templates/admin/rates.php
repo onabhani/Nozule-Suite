@@ -45,6 +45,7 @@ if ( ! defined( 'ABSPATH' ) ) {
                     <tr>
                         <th><?php esc_html_e( 'Name', 'nozule' ); ?></th>
                         <th><?php esc_html_e( 'Code', 'nozule' ); ?></th>
+                        <th><?php esc_html_e( 'Guest Type', 'nozule' ); ?></th>
                         <th><?php esc_html_e( 'Modifier Type', 'nozule' ); ?></th>
                         <th><?php esc_html_e( 'Modifier Value', 'nozule' ); ?></th>
                         <th><?php esc_html_e( 'Min Stay', 'nozule' ); ?></th>
@@ -57,6 +58,9 @@ if ( ! defined( 'ABSPATH' ) ) {
                         <tr>
                             <td x-text="plan.name"></td>
                             <td><code x-text="plan.code" style="font-size:0.85em; background:#f1f5f9; padding:2px 6px; border-radius:3px;"></code></td>
+                            <td>
+                                <span class="nzl-badge" :class="{'nzl-badge-confirmed': plan.guest_type === 'syrian', 'nzl-badge-cancelled': plan.guest_type === 'non_syrian'}" x-text="NozuleI18n.t('guest_type_' + (plan.guest_type || 'all'))"></span>
+                            </td>
                             <td x-text="plan.modifier_type"></td>
                             <td>
                                 <span x-text="plan.modifier_type === 'percentage' ? plan.modifier_value + '%' : plan.modifier_value"></span>
@@ -72,7 +76,7 @@ if ( ! defined( 'ABSPATH' ) ) {
                         </tr>
                     </template>
                     <template x-if="ratePlans.length === 0">
-                        <tr><td colspan="7" style="text-align:center; color:#94a3b8;"><?php esc_html_e( 'No rate plans found.', 'nozule' ); ?></td></tr>
+                        <tr><td colspan="8" style="text-align:center; color:#94a3b8;"><?php esc_html_e( 'No rate plans found.', 'nozule' ); ?></td></tr>
                     </template>
                 </tbody>
             </table>
@@ -159,6 +163,14 @@ if ( ! defined( 'ABSPATH' ) ) {
                         <div class="nzl-form-group">
                             <label><?php esc_html_e( 'Max Stay (nights)', 'nozule' ); ?></label>
                             <input type="number" min="0" class="nzl-input" x-model.number="rpForm.max_stay" placeholder="0 = unlimited">
+                        </div>
+                        <div class="nzl-form-group">
+                            <label><?php esc_html_e( 'Guest Type', 'nozule' ); ?></label>
+                            <select class="nzl-input" x-model="rpForm.guest_type">
+                                <option value="all"><?php esc_html_e( 'All Guests', 'nozule' ); ?></option>
+                                <option value="syrian"><?php esc_html_e( 'Syrian', 'nozule' ); ?></option>
+                                <option value="non_syrian"><?php esc_html_e( 'Non-Syrian', 'nozule' ); ?></option>
+                            </select>
                         </div>
                         <div class="nzl-form-group">
                             <label><?php esc_html_e( 'Status', 'nozule' ); ?></label>
