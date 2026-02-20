@@ -3,6 +3,7 @@
 namespace Nozule\Modules\Settings\Controllers;
 
 use Nozule\Core\CacheManager;
+use Nozule\Core\CountryProfiles;
 use Nozule\Core\SettingsManager;
 
 /**
@@ -54,6 +55,7 @@ class SettingsController {
         'secondary_color' => 'display.secondary_color',
         'date_format'    => 'display.date_format',
         'language'       => 'display.language',
+        'operating_country' => 'general.operating_country',
     ];
 
     public function __construct( SettingsManager $settings, CacheManager $cache ) {
@@ -78,6 +80,13 @@ class SettingsController {
                 'permission_callback' => [ $this, 'checkAdminPermission' ],
                 'args'                => $this->getUpdateArgs(),
             ],
+        ] );
+
+        // Admin: apply country profile (seeds taxes, sets defaults).
+        register_rest_route( self::NAMESPACE, '/admin/settings/apply-country-profile', [
+            'methods'             => \WP_REST_Server::CREATABLE,
+            'callback'            => [ $this, 'applyCountryProfile' ],
+            'permission_callback' => [ $this, 'checkAdminPermission' ],
         ] );
 
         // Public: get public-facing settings (no auth).
@@ -212,6 +221,103 @@ class SettingsController {
         $this->cache->set( $cacheKey, $data, 600 );
 
         return new \WP_REST_Response( $data, 200 );
+    }
+
+    /**
+     * POST /admin/settings/apply-country-profile
+     *
+     * Applies a country profile: sets currency, timezone, and seeds taxes.
+     */
+    public function applyCountryProfile( \WP_REST_Request $request ): \WP_REST_Response {
+        $body    = $request->get_json_params();
+        $country = sanitize_text_field( $body['country'] ?? '' );
+
+        if ( empty( $country ) ) {
+            return new \WP_REST_Response(
+                [ 'message' => __( 'Country code is required.', 'nozule' ) ],
+                400
+            );
+        }
+
+        $profile = CountryProfiles::get( $country );
+        if ( ! $profile ) {
+            return new \WP_REST_Response(
+                [ 'message' => __( 'Unsupported country code.', 'nozule' ) ],
+                400
+            );
+        }
+
+        // Apply currency defaults.
+        $this->settings->set( 'general.operating_country', $country );
+        $this->settings->set( 'currency.default', $profile['currency']['code'] );
+        $this->settings->set( 'currency.symbol', $profile['currency']['symbol'] );
+        $this->settings->set( 'currency.position', $profile['currency']['position'] );
+        $this->settings->set( 'general.timezone', $profile['timezone'] );
+
+        // Seed taxes via direct DB insert (billing module's nzl_taxes table).
+        $taxesSeeded = $this->seedTaxes( $profile['taxes'] ?? [] );
+
+        $this->cache->invalidateTag( 'settings' );
+
+        return new \WP_REST_Response( [
+            'message'      => sprintf(
+                /* translators: %s: country name */
+                __( 'Country profile "%s" applied. Currency, timezone, and %d tax(es) configured.', 'nozule' ),
+                $profile['label'],
+                $taxesSeeded
+            ),
+            'country'      => $country,
+            'taxes_seeded' => $taxesSeeded,
+        ], 200 );
+    }
+
+    /**
+     * Seed default taxes from a country profile.
+     * Skips taxes that already exist (matched by name).
+     *
+     * @param array $taxes Tax definitions from CountryProfiles.
+     * @return int Number of taxes seeded.
+     */
+    private function seedTaxes( array $taxes ): int {
+        global $wpdb;
+
+        $table = $wpdb->prefix . 'nzl_taxes';
+
+        // Check table exists.
+        if ( $wpdb->get_var( "SHOW TABLES LIKE '{$table}'" ) !== $table ) {
+            return 0;
+        }
+
+        $seeded = 0;
+        foreach ( $taxes as $tax ) {
+            // Skip if a tax with this name already exists.
+            $exists = $wpdb->get_var(
+                $wpdb->prepare(
+                    "SELECT COUNT(*) FROM {$table} WHERE name = %s",
+                    $tax['name']
+                )
+            );
+
+            if ( (int) $exists > 0 ) {
+                continue;
+            }
+
+            $wpdb->insert( $table, [
+                'name'       => $tax['name'],
+                'name_ar'    => $tax['name_ar'] ?? '',
+                'rate'       => $tax['rate'],
+                'type'       => $tax['type'] ?? 'percentage',
+                'applies_to' => $tax['applies_to'] ?? 'all',
+                'is_active'  => 1,
+                'sort_order' => $tax['sort_order'] ?? 0,
+            ] );
+
+            if ( $wpdb->insert_id ) {
+                $seeded++;
+            }
+        }
+
+        return $seeded;
     }
 
     /**

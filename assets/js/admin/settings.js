@@ -9,8 +9,10 @@ document.addEventListener('alpine:init', function () {
             activeTab: 'general',
             saving: false,
             saved: false,
+            applyingProfile: false,
             testingConnection: false,
             connectionResult: null,
+            countryProfile: null,
             settings: {
                 general: {
                     hotel_name: '',
@@ -19,7 +21,8 @@ document.addEventListener('alpine:init', function () {
                     hotel_address: '',
                     timezone: '',
                     check_in_time: '14:00',
-                    check_out_time: '12:00'
+                    check_out_time: '12:00',
+                    operating_country: ''
                 },
                 currency: {
                     default: 'USD',
@@ -63,6 +66,11 @@ document.addEventListener('alpine:init', function () {
                 this.loadSettings();
             },
 
+            resolveCountryProfile: function () {
+                var code = this.settings.general.operating_country;
+                this.countryProfile = code ? (this.countryProfiles[code] || null) : null;
+            },
+
             loadSettings: function () {
                 var self = this;
                 self.loading = true;
@@ -83,6 +91,8 @@ document.addEventListener('alpine:init', function () {
                         intg.sync_bookings = intg.sync_bookings === '1' || intg.sync_bookings === true;
                         intg.sync_contacts = intg.sync_contacts === '1' || intg.sync_contacts === true;
                         intg.sync_invoices = intg.sync_invoices === '1' || intg.sync_invoices === true;
+
+                        self.resolveCountryProfile();
                     }
                 }).catch(function (err) {
                     console.error('Settings load error:', err);
@@ -107,7 +117,23 @@ document.addEventListener('alpine:init', function () {
                 });
             },
 
+            countryProfiles: {
+                'SY': {
+                    label: 'Syria', label_ar: 'سوريا',
+                    currency: { code: 'SYP', symbol: 'ل.س', position: 'after' },
+                    timezone: 'Asia/Damascus',
+                    features: { guest_type_pricing: true, zatca: false, shomos: false }
+                },
+                'SA': {
+                    label: 'Saudi Arabia', label_ar: 'المملكة العربية السعودية',
+                    currency: { code: 'SAR', symbol: '﷼', position: 'after' },
+                    timezone: 'Asia/Riyadh',
+                    features: { guest_type_pricing: false, zatca: true, shomos: true }
+                }
+            },
+
             currencySymbols: {
+                'SYP': 'ل.س',
                 'SAR': '﷼', 'AED': 'د.إ', 'QAR': 'ر.ق', 'KWD': 'د.ك',
                 'BHD': 'د.ب', 'OMR': 'ر.ع', 'EGP': 'ج.م', 'JOD': 'د.أ',
                 'USD': '$', 'EUR': '€', 'GBP': '£', 'TRY': '₺',
@@ -120,6 +146,39 @@ document.addEventListener('alpine:init', function () {
                 if (this.currencySymbols[code]) {
                     this.settings.currency.symbol = this.currencySymbols[code];
                 }
+            },
+
+            onCountryChange: function () {
+                this.resolveCountryProfile();
+                var profile = this.countryProfile;
+                if (!profile) return;
+
+                // Auto-fill currency and timezone from country profile.
+                this.settings.currency.default = profile.currency.code;
+                this.settings.currency.symbol = profile.currency.symbol;
+                this.settings.currency.position = profile.currency.position;
+                this.settings.general.timezone = profile.timezone;
+            },
+
+            applyCountryDefaults: function () {
+                var self = this;
+                var code = self.settings.general.operating_country;
+                if (!code) return;
+
+                if (!confirm(NozuleI18n.__('confirm_apply_country_defaults'))) return;
+
+                self.applyingProfile = true;
+
+                // First save settings, then ask server to seed taxes.
+                NozuleAPI.post('/admin/settings', self.settings).then(function () {
+                    return NozuleAPI.post('/admin/settings/apply-country-profile', { country: code });
+                }).then(function (response) {
+                    NozuleUtils.toast(response.data && response.data.message ? response.data.message : NozuleI18n.__('settings_saved'), 'success');
+                }).catch(function (err) {
+                    NozuleUtils.toast(err.message || NozuleI18n.__('failed_save_settings'), 'error');
+                }).finally(function () {
+                    self.applyingProfile = false;
+                });
             },
 
             testConnection: function () {

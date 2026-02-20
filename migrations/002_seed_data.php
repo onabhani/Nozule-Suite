@@ -27,6 +27,7 @@ function nzl_migration_002_seed_data(): void {
         [ 'general', 'hotel_address', '' ],
         [ 'general', 'hotel_stars', '4' ],
         [ 'general', 'timezone', wp_timezone_string() ],
+        [ 'general', 'operating_country', '' ],
 
         // Currency
         [ 'currency', 'default', 'USD' ],

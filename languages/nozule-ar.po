@@ -2356,3 +2356,96 @@ msgstr "القيد غير موجود."
 
 msgid "room_type_id and dates are required."
 msgstr "نوع الغرفة والتواريخ مطلوبة."
+
+# ──────────────────────────────────────────────────────────
+# Country Profiles & Compliance
+# ──────────────────────────────────────────────────────────
+msgid "Operating Country"
+msgstr "دولة التشغيل"
+
+msgid "-- Select Country --"
+msgstr "-- اختر الدولة --"
+
+msgid "Syria"
+msgstr "سوريا"
+
+msgid "Saudi Arabia"
+msgstr "المملكة العربية السعودية"
+
+msgid "Sets default currency, timezone, taxes, and feature visibility."
+msgstr "يعيّن العملة والمنطقة الزمنية والضرائب وإمكانية عرض الميزات الافتراضية."
+
+msgid "Apply Country Defaults"
+msgstr "تطبيق إعدادات الدولة"
+
+msgid "Applying..."
+msgstr "جاري التطبيق..."
+
+msgid "Syrian Pound"
+msgstr "ليرة سورية"
+
+msgid "Compliance"
+msgstr "الامتثال"
+
+msgid "ZATCA E-Invoicing"
+msgstr "الفوترة الإلكترونية (زاتكا)"
+
+msgid ""
+"Integration with Saudi Arabia's Zakat, Tax and Customs Authority for "
+"electronic invoicing compliance (Fatoorah)."
+msgstr ""
+"التكامل مع هيئة الزكاة والضريبة والجمارك السعودية للامتثال للفوترة "
+"الإلكترونية (فاتورة)."
+
+msgid "Coming Soon"
+msgstr "قريباً"
+
+msgid "ZATCA Environment"
+msgstr "بيئة زاتكا"
+
+msgid "Sandbox (Testing)"
+msgstr "بيئة الاختبار"
+
+msgid "Production"
+msgstr "الإنتاج"
+
+msgid "Tax Registration Number (TIN)"
+msgstr "رقم التسجيل الضريبي (TIN)"
+
+msgid "Commercial Registration (CR)"
+msgstr "السجل التجاري (CR)"
+
+msgid "CSID (Compliance)"
+msgstr "معرّف الامتثال (CSID)"
+
+msgid "Shomos Tourism Platform"
+msgstr "منصة شموس السياحية"
+
+msgid ""
+"Integration with Saudi Tourism Authority's Shomos platform for hotel "
+"registration and guest reporting."
+msgstr ""
+"التكامل مع منصة شموس التابعة لهيئة السياحة السعودية لتسجيل الفنادق والإبلاغ "
+"عن الضيوف."
+
+msgid "Shomos License Number"
+msgstr "رقم ترخيص شموس"
+
+msgid "Establishment ID"
+msgstr "معرّف المنشأة"
+
+msgid "Auto-report guest check-ins to Shomos"
+msgstr "الإبلاغ التلقائي عن تسجيل وصول الضيوف إلى شموس"
+
+# Country profile controller strings
+msgid "Country code is required."
+msgstr "رمز الدولة مطلوب."
+
+msgid "Unsupported country code."
+msgstr "رمز الدولة غير مدعوم."
+
+msgid ""
+"Country profile \"%s\" applied. Currency, timezone, and %d tax(es) "
+"configured."
+msgstr ""
+"تم تطبيق ملف الدولة \"%s\". تم إعداد العملة والمنطقة الزمنية و%d ضريبة."

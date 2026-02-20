@@ -295,7 +295,11 @@ var NozuleI18n = (function () {
             'feed_test_failed': 'Feed test failed',
             'feed_preview_failed': 'Failed to load feed preview',
             'copied': 'Copied to clipboard',
-            'failed_load_metasearch': 'Failed to load metasearch settings'
+            'failed_load_metasearch': 'Failed to load metasearch settings',
+
+            // ── Country Profiles ───────────────────────────
+            'confirm_apply_country_defaults': 'Apply country defaults? This will set currency, timezone, and seed taxes for the selected country.',
+            'country_profile_applied': 'Country profile applied successfully'
         },
         ar: {
             'check_in': 'تسجيل الوصول',
@@ -655,7 +659,11 @@ var NozuleI18n = (function () {
             'feed_test_failed': 'فشل اختبار التغذية',
             'feed_preview_failed': 'فشل تحميل معاينة التغذية',
             'copied': 'تم النسخ إلى الحافظة',
-            'failed_load_metasearch': 'فشل تحميل إعدادات محركات البحث'
+            'failed_load_metasearch': 'فشل تحميل إعدادات محركات البحث',
+
+            // ── ملفات تعريف الدول ───────────────────────────
+            'confirm_apply_country_defaults': 'تطبيق إعدادات الدولة الافتراضية؟ سيتم تعيين العملة والمنطقة الزمنية وإنشاء الضرائب للدولة المحددة.',
+            'country_profile_applied': 'تم تطبيق ملف الدولة بنجاح'
         }
     };
 

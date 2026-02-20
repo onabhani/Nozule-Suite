@@ -120,7 +120,7 @@ class Plugin {
             $admin_menu = new \Nozule\Admin\AdminMenu( $this->container );
             $admin_menu->register();
 
-            $admin_assets = new \Nozule\Admin\AdminAssets();
+            $admin_assets = new \Nozule\Admin\AdminAssets( $this->container );
             $admin_assets->register();
         }
 
