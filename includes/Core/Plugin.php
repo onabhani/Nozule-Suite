@@ -94,6 +94,7 @@ class Plugin {
             \Nozule\Modules\Messaging\MessagingModule::class,
             \Nozule\Modules\WhatsApp\WhatsAppModule::class,
             \Nozule\Modules\Reviews\ReviewModule::class,
+            \Nozule\Modules\Metasearch\MetasearchModule::class,
             \Nozule\Modules\Currency\CurrencyModule::class,
             \Nozule\Modules\Documents\DocumentsModule::class,
         ];

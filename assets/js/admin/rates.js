@@ -24,6 +24,14 @@ document.addEventListener('alpine:init', function () {
             editingSeasonalId: null,
             srForm: {},
 
+            // Restrictions (NZL-017)
+            restrictions: [],
+            restrictionsLoaded: false,
+            showRestrictionModal: false,
+            editingRestrictionId: null,
+            rrForm: {},
+            restrictionFilters: { room_type_id: '', restriction_type: '' },
+
             init: function () {
                 this.loadData();
                 this.loadRoomTypes();
@@ -246,6 +254,140 @@ document.addEventListener('alpine:init', function () {
                 }).catch(function (err) {
                     NozuleUtils.toast(err.message || NozuleI18n.t('failed_delete_seasonal_rate'), 'error');
                 });
+            },
+
+            // ---- Tab switching ----
+
+            switchTab: function (tab) {
+                this.activeTab = tab;
+                if (tab === 'restrictions' && !this.restrictionsLoaded) {
+                    this.loadRestrictions();
+                }
+            },
+
+            // ---- Restrictions CRUD (NZL-017) ----
+
+            defaultRrForm: function () {
+                return {
+                    restriction_type: 'min_stay',
+                    room_type_id: this.roomTypes.length > 0 ? this.roomTypes[0].id : '',
+                    rate_plan_id: '',
+                    value: 2,
+                    channel: '',
+                    date_from: '',
+                    date_to: '',
+                    daysArray: [],
+                    is_active: true
+                };
+            },
+
+            loadRestrictions: function () {
+                var self = this;
+                var params = {};
+                if (self.restrictionFilters.room_type_id) params.room_type_id = self.restrictionFilters.room_type_id;
+                if (self.restrictionFilters.restriction_type) params.restriction_type = self.restrictionFilters.restriction_type;
+
+                NozuleAPI.get('/rate-restrictions', params).then(function (response) {
+                    self.restrictions = response.data || [];
+                    self.restrictionsLoaded = true;
+                }).catch(function (err) {
+                    NozuleUtils.toast(err.message || NozuleI18n.t('failed_load_restrictions'), 'error');
+                });
+            },
+
+            openRestrictionModal: function () {
+                this.editingRestrictionId = null;
+                this.rrForm = this.defaultRrForm();
+                this.showRestrictionModal = true;
+            },
+
+            editRestriction: function (r) {
+                this.editingRestrictionId = r.id;
+                this.rrForm = {
+                    restriction_type: r.restriction_type || 'min_stay',
+                    room_type_id: r.room_type_id || '',
+                    rate_plan_id: r.rate_plan_id || '',
+                    value: r.value || '',
+                    channel: r.channel || '',
+                    date_from: r.date_from || '',
+                    date_to: r.date_to || '',
+                    daysArray: r.days_of_week ? r.days_of_week.split(',') : [],
+                    is_active: r.is_active === 1 || r.is_active === true
+                };
+                this.showRestrictionModal = true;
+            },
+
+            saveRestriction: function () {
+                var self = this;
+                var data = {
+                    restriction_type: self.rrForm.restriction_type,
+                    room_type_id: parseInt(self.rrForm.room_type_id, 10),
+                    date_from: self.rrForm.date_from,
+                    date_to: self.rrForm.date_to,
+                    is_active: self.rrForm.is_active ? 1 : 0
+                };
+
+                if (self.rrForm.rate_plan_id) data.rate_plan_id = parseInt(self.rrForm.rate_plan_id, 10);
+                if (self.rrForm.value) data.value = parseInt(self.rrForm.value, 10);
+                if (self.rrForm.channel) data.channel = self.rrForm.channel;
+                if (self.rrForm.daysArray && self.rrForm.daysArray.length > 0) {
+                    data.days_of_week = self.rrForm.daysArray.join(',');
+                }
+
+                if (!data.room_type_id || !data.date_from || !data.date_to) {
+                    NozuleUtils.toast(NozuleI18n.t('fill_required_fields'), 'error');
+                    return;
+                }
+
+                self.saving = true;
+                var promise;
+                if (self.editingRestrictionId) {
+                    promise = NozuleAPI.put('/rate-restrictions/' + self.editingRestrictionId, data);
+                } else {
+                    promise = NozuleAPI.post('/rate-restrictions', data);
+                }
+
+                promise.then(function () {
+                    self.showRestrictionModal = false;
+                    self.loadRestrictions();
+                    NozuleUtils.toast(
+                        NozuleI18n.t(self.editingRestrictionId ? 'restriction_updated' : 'restriction_created'),
+                        'success'
+                    );
+                }).catch(function (err) {
+                    NozuleUtils.toast(err.message || NozuleI18n.t('failed_save_restriction'), 'error');
+                }).finally(function () {
+                    self.saving = false;
+                });
+            },
+
+            deleteRestriction: function (id) {
+                if (!confirm(NozuleI18n.t('confirm_delete_restriction'))) return;
+                var self = this;
+                NozuleAPI.delete('/rate-restrictions/' + id).then(function () {
+                    self.loadRestrictions();
+                    NozuleUtils.toast(NozuleI18n.t('restriction_deleted'), 'success');
+                }).catch(function (err) {
+                    NozuleUtils.toast(err.message || NozuleI18n.t('failed_delete_restriction'), 'error');
+                });
+            },
+
+            restrictionTypeLabel: function (type) {
+                var labels = {
+                    'min_stay': NozuleI18n.t('restriction_min_stay'),
+                    'max_stay': NozuleI18n.t('restriction_max_stay'),
+                    'cta': NozuleI18n.t('restriction_cta'),
+                    'ctd': NozuleI18n.t('restriction_ctd'),
+                    'stop_sell': NozuleI18n.t('restriction_stop_sell')
+                };
+                return labels[type] || type;
+            },
+
+            getRoomTypeName: function (id) {
+                for (var i = 0; i < this.roomTypes.length; i++) {
+                    if (this.roomTypes[i].id == id) return this.roomTypes[i].name;
+                }
+                return '#' + id;
             },
 
             // ---- Helpers ----

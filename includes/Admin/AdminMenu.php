@@ -23,6 +23,7 @@ use Nozule\Admin\Pages\DynamicPricingPage;
 use Nozule\Admin\Pages\ReviewsPage;
 use Nozule\Admin\Pages\WhatsAppPage;
 use Nozule\Admin\Pages\ChannelSyncPage;
+use Nozule\Admin\Pages\MetasearchPage;
 
 /**
  * Registers the WordPress admin menu structure for the Nozule plugin.
@@ -239,6 +240,15 @@ class AdminMenu {
 
         add_submenu_page(
             'nzl-dashboard',
+            __( 'Metasearch', 'nozule' ),
+            __( 'Metasearch', 'nozule' ),
+            'nzl_admin',
+            'nzl-metasearch',
+            [ $this, 'renderMetasearch' ]
+        );
+
+        add_submenu_page(
+            'nzl-dashboard',
             __( 'Settings', 'nozule' ),
             __( 'Settings', 'nozule' ),
             'nzl_admin',
@@ -329,5 +339,9 @@ class AdminMenu {
 
     public function renderChannelSync(): void {
         ( new ChannelSyncPage() )->render();
+    }
+
+    public function renderMetasearch(): void {
+        ( new MetasearchPage() )->render();
     }
 }

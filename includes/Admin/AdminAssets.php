@@ -119,6 +119,7 @@ class AdminAssets {
             'nozule-admin-reviews'          => 'reviews.js',
             'nozule-admin-whatsapp'         => 'whatsapp.js',
             'nozule-admin-channel-sync'     => 'channel-sync.js',
+            'nozule-admin-metasearch'       => 'metasearch.js',
         ];
 
         $component_handles = [];

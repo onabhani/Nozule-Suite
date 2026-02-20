@@ -2154,3 +2154,205 @@ msgstr "السابق"
 
 msgid "Reset"
 msgstr "إعادة تعيين"
+
+# ──────────────────────────────────────────────────────────
+# NZL-016: Metasearch / Google Hotel Ads
+# ──────────────────────────────────────────────────────────
+msgid "Metasearch"
+msgstr "محركات البحث"
+
+msgid "Metasearch — Google Hotel Ads"
+msgstr "محركات البحث — إعلانات جوجل الفندقية"
+
+msgid ""
+"Configure Google Hotel Price Feed, Free Booking Links, and CPC campaigns."
+msgstr "إعداد تغذية أسعار جوجل الفندقية وروابط الحجز المجانية وحملات CPC."
+
+msgid "Price Feed"
+msgstr "تغذية الأسعار"
+
+msgid "CPC Campaigns"
+msgstr "حملات CPC"
+
+msgid "Hotel Information"
+msgstr "معلومات الفندق"
+
+msgid "Enable Google Hotel Ads Integration"
+msgstr "تفعيل تكامل إعلانات جوجل الفندقية"
+
+msgid "Google Hotel Center ID"
+msgstr "معرّف مركز جوجل الفندقي"
+
+msgid "Partner Key"
+msgstr "مفتاح الشريك"
+
+msgid "Hotel Name (English)"
+msgstr "اسم الفندق (إنجليزي)"
+
+msgid "Hotel Name (Arabic)"
+msgstr "اسم الفندق (عربي)"
+
+msgid "Landing Page URL"
+msgstr "رابط صفحة الحجز"
+
+msgid "Country Code"
+msgstr "رمز الدولة"
+
+msgid "Enable Free Booking Links on Google Maps"
+msgstr "تفعيل روابط الحجز المجانية على خرائط جوجل"
+
+msgid ""
+"Adds JSON-LD structured data to your site for Google to display free booking "
+"links."
+msgstr "يضيف بيانات JSON-LD المنظمة لموقعك ليعرض جوجل روابط الحجز المجانية."
+
+msgid "Google Hotel Price Feed"
+msgstr "تغذية أسعار جوجل الفندقية"
+
+msgid ""
+"Google crawls this URL to get your hotel rates. Share this URL in your "
+"Google Hotel Center account."
+msgstr ""
+"يزحف جوجل إلى هذا الرابط للحصول على أسعار فندقك. شارك هذا الرابط في حساب "
+"مركز جوجل الفندقي."
+
+msgid "Feed URL"
+msgstr "رابط التغذية"
+
+msgid "Copy"
+msgstr "نسخ"
+
+msgid "Test Feed"
+msgstr "اختبار التغذية"
+
+msgid "Preview XML"
+msgstr "معاينة XML"
+
+msgid "Feed Test Results"
+msgstr "نتائج اختبار التغذية"
+
+msgid "Date Range"
+msgstr "نطاق التاريخ"
+
+msgid "Total Results"
+msgstr "إجمالي النتائج"
+
+msgid "XML Preview (first 10 results)"
+msgstr "معاينة XML (أول 10 نتائج)"
+
+msgid "CPC Campaign Settings"
+msgstr "إعدادات حملات CPC"
+
+msgid "Enable CPC Campaigns"
+msgstr "تفعيل حملات CPC"
+
+msgid ""
+"Pay-per-click advertising on Google Hotel Ads. Requires a Google Ads account "
+"linked to Hotel Center."
+msgstr ""
+"إعلانات الدفع لكل نقرة على إعلانات جوجل الفندقية. يتطلب حساب إعلانات جوجل "
+"مرتبط بمركز الفنادق."
+
+msgid "Daily Budget"
+msgstr "الميزانية اليومية"
+
+msgid "In your account currency (USD/SYP)."
+msgstr "بعملة حسابك (دولار/ليرة سورية)."
+
+msgid "Bid Strategy"
+msgstr "استراتيجية المزايدة"
+
+msgid "Manual CPC"
+msgstr "CPC يدوي"
+
+msgid "Automated (Maximize Clicks)"
+msgstr "آلي (تعظيم النقرات)"
+
+# Metasearch Controller strings
+msgid "Request body must be a JSON object."
+msgstr "يجب أن يكون نص الطلب كائن JSON."
+
+msgid "Metasearch settings updated."
+msgstr "تم تحديث إعدادات محركات البحث."
+
+msgid "Google Hotel Ads integration is not enabled."
+msgstr "تكامل إعلانات جوجل الفندقية غير مفعّل."
+
+msgid "Feed generation test passed."
+msgstr "نجح اختبار إنشاء التغذية."
+
+msgid "Feed generation failed: %s"
+msgstr "فشل إنشاء التغذية: %s"
+
+msgid "Feed not available."
+msgstr "التغذية غير متوفرة."
+
+# ──────────────────────────────────────────────────────────
+# NZL-017: Rate Restrictions
+# ──────────────────────────────────────────────────────────
+msgid "Add Restriction"
+msgstr "إضافة قيد"
+
+msgid "Restrictions"
+msgstr "القيود"
+
+msgid "All Types"
+msgstr "جميع الأنواع"
+
+msgid "Closed to Arrival (CTA)"
+msgstr "مغلق للوصول (CTA)"
+
+msgid "Closed to Departure (CTD)"
+msgstr "مغلق للمغادرة (CTD)"
+
+msgid "Stop Sell"
+msgstr "إيقاف البيع"
+
+msgid "Value"
+msgstr "القيمة"
+
+msgid "Days"
+msgstr "الأيام"
+
+msgid "No restrictions found."
+msgstr "لا توجد قيود."
+
+msgid "Edit Restriction"
+msgstr "تعديل القيد"
+
+msgid "Restriction Type"
+msgstr "نوع القيد"
+
+msgid "All Channels"
+msgstr "جميع القنوات"
+
+msgid "Direct Website"
+msgstr "الموقع المباشر"
+
+msgid "Rate Plan (optional)"
+msgstr "خطة السعر (اختياري)"
+
+msgid "All Rate Plans"
+msgstr "جميع خطط الأسعار"
+
+msgid "Days of Week"
+msgstr "أيام الأسبوع"
+
+msgid "Leave unchecked for all days."
+msgstr "اتركها بدون تحديد لتطبق على جميع الأيام."
+
+# Rate Restriction Controller strings
+msgid "Restriction created."
+msgstr "تم إنشاء القيد."
+
+msgid "Restriction updated."
+msgstr "تم تحديث القيد."
+
+msgid "Restriction deleted."
+msgstr "تم حذف القيد."
+
+msgid "Restriction not found."
+msgstr "القيد غير موجود."
+
+msgid "room_type_id and dates are required."
+msgstr "نوع الغرفة والتواريخ مطلوبة."

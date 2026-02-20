@@ -265,7 +265,37 @@ var NozuleI18n = (function () {
             'base_rate': 'Base Rate',
             'failed_load': 'Failed to load data',
             'failed_save': 'Failed to save',
-            'failed_delete': 'Failed to delete'
+            'failed_delete': 'Failed to delete',
+
+            // ── Rate Restrictions (NZL-017) ────────────────
+            'restriction_min_stay': 'Min Stay',
+            'restriction_max_stay': 'Max Stay',
+            'restriction_cta': 'Closed to Arrival',
+            'restriction_ctd': 'Closed to Departure',
+            'restriction_stop_sell': 'Stop Sell',
+            'all_days': 'All Days',
+            'all_channels': 'All Channels',
+            'restriction_created': 'Restriction created successfully',
+            'restriction_updated': 'Restriction updated successfully',
+            'restriction_deleted': 'Restriction deleted successfully',
+            'confirm_delete_restriction': 'Are you sure you want to delete this restriction?',
+            'failed_load_restrictions': 'Failed to load restrictions',
+            'failed_save_restriction': 'Failed to save restriction',
+            'failed_delete_restriction': 'Failed to delete restriction',
+            'day_sun': 'Sun',
+            'day_mon': 'Mon',
+            'day_tue': 'Tue',
+            'day_wed': 'Wed',
+            'day_thu': 'Thu',
+            'day_fri': 'Fri',
+            'day_sat': 'Sat',
+
+            // ── Metasearch / Google Hotel Ads (NZL-016) ────
+            'feed_test_passed': 'Feed generation test passed',
+            'feed_test_failed': 'Feed test failed',
+            'feed_preview_failed': 'Failed to load feed preview',
+            'copied': 'Copied to clipboard',
+            'failed_load_metasearch': 'Failed to load metasearch settings'
         },
         ar: {
             'check_in': 'تسجيل الوصول',
@@ -595,7 +625,37 @@ var NozuleI18n = (function () {
             'base_rate': 'السعر الأساسي',
             'failed_load': 'فشل تحميل البيانات',
             'failed_save': 'فشل الحفظ',
-            'failed_delete': 'فشل الحذف'
+            'failed_delete': 'فشل الحذف',
+
+            // ── قيود الأسعار (NZL-017) ─────────────────────
+            'restriction_min_stay': 'الحد الأدنى للإقامة',
+            'restriction_max_stay': 'الحد الأقصى للإقامة',
+            'restriction_cta': 'مغلق للوصول',
+            'restriction_ctd': 'مغلق للمغادرة',
+            'restriction_stop_sell': 'إيقاف البيع',
+            'all_days': 'جميع الأيام',
+            'all_channels': 'جميع القنوات',
+            'restriction_created': 'تم إنشاء القيد بنجاح',
+            'restriction_updated': 'تم تحديث القيد بنجاح',
+            'restriction_deleted': 'تم حذف القيد بنجاح',
+            'confirm_delete_restriction': 'هل أنت متأكد من حذف هذا القيد؟',
+            'failed_load_restrictions': 'فشل تحميل القيود',
+            'failed_save_restriction': 'فشل حفظ القيد',
+            'failed_delete_restriction': 'فشل حذف القيد',
+            'day_sun': 'أحد',
+            'day_mon': 'إثن',
+            'day_tue': 'ثلا',
+            'day_wed': 'أرب',
+            'day_thu': 'خمي',
+            'day_fri': 'جمع',
+            'day_sat': 'سبت',
+
+            // ── محركات البحث الفندقية (NZL-016) ─────────────
+            'feed_test_passed': 'نجح اختبار إنشاء التغذية',
+            'feed_test_failed': 'فشل اختبار التغذية',
+            'feed_preview_failed': 'فشل تحميل معاينة التغذية',
+            'copied': 'تم النسخ إلى الحافظة',
+            'failed_load_metasearch': 'فشل تحميل إعدادات محركات البحث'
         }
     };
 
