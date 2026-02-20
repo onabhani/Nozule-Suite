@@ -268,7 +268,7 @@ class RatePlanController {
 		$sanitized = [];
 
 		// Text fields.
-		$textFields = [ 'name', 'code', 'modifier_type', 'status' ];
+		$textFields = [ 'name', 'code', 'modifier_type', 'status', 'guest_type' ];
 		foreach ( $textFields as $field ) {
 			if ( array_key_exists( $field, $data ) ) {
 				$sanitized[ $field ] = sanitize_text_field( $data[ $field ] );

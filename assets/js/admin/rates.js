@@ -39,6 +39,7 @@ document.addEventListener('alpine:init', function () {
                     modifier_value: 0,
                     min_stay: '',
                     max_stay: '',
+                    guest_type: 'all',
                     status: 'active',
                     description: ''
                 };
@@ -103,6 +104,7 @@ document.addEventListener('alpine:init', function () {
                     modifier_value: plan.modifier_value || 0,
                     min_stay: plan.min_stay || '',
                     max_stay: plan.max_stay || '',
+                    guest_type: plan.guest_type || 'all',
                     priority: plan.priority || 0,
                     status: plan.status || 'active',
                     description: plan.description || ''
@@ -117,6 +119,7 @@ document.addEventListener('alpine:init', function () {
                     code: self.rpForm.code,
                     modifier_type: self.rpForm.modifier_type,
                     modifier_value: parseFloat(self.rpForm.modifier_value) || 0,
+                    guest_type: self.rpForm.guest_type || 'all',
                     status: self.rpForm.status
                 };
 

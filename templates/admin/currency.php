@@ -13,13 +13,11 @@ if ( ! defined( 'ABSPATH' ) ) exit;
     </div>
 
     <!-- Tabs -->
-    <div style="display:flex; border-bottom:2px solid #e2e8f0; margin-bottom:1.5rem;">
-        <button @click="switchTab('currencies')" class="nzl-btn" style="border:none; border-bottom:2px solid transparent; border-radius:0; margin-bottom:-2px; padding:0.5rem 1rem;"
-            :style="activeTab === 'currencies' ? 'border-bottom-color:#3b82f6; color:#3b82f6; font-weight:600;' : 'color:#64748b;'">
+    <div class="nzl-tabs" style="margin-bottom:1rem;">
+        <button class="nzl-tab" :class="{'active': activeTab === 'currencies'}" @click="switchTab('currencies')">
             <?php esc_html_e( 'Currencies', 'nozule' ); ?>
         </button>
-        <button @click="switchTab('rates')" class="nzl-btn" style="border:none; border-bottom:2px solid transparent; border-radius:0; margin-bottom:-2px; padding:0.5rem 1rem;"
-            :style="activeTab === 'rates' ? 'border-bottom-color:#3b82f6; color:#3b82f6; font-weight:600;' : 'color:#64748b;'">
+        <button class="nzl-tab" :class="{'active': activeTab === 'rates'}" @click="switchTab('rates')">
             <?php esc_html_e( 'Exchange Rates', 'nozule' ); ?>
         </button>
     </div>

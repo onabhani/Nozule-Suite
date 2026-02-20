@@ -1748,3 +1748,19 @@ msgstr "إدارة العملات"
 
 msgid "Night Audit"
 msgstr "التدقيق الليلي"
+
+# ──────────────────────────────────────────────────────────
+# Rate Plans - Guest Type (NZL-008)
+# ──────────────────────────────────────────────────────────
+
+msgid "Guest Type"
+msgstr "نوع الضيف"
+
+msgid "All Guests"
+msgstr "جميع الضيوف"
+
+msgid "Syrian"
+msgstr "سوري"
+
+msgid "Non-Syrian"
+msgstr "غير سوري"

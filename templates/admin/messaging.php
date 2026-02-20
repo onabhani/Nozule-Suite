@@ -13,13 +13,11 @@ if ( ! defined( 'ABSPATH' ) ) exit;
     </div>
 
     <!-- Tabs -->
-    <div style="display:flex; border-bottom:2px solid #e2e8f0; margin-bottom:1.5rem;">
-        <button @click="switchTab('templates')" class="nzl-btn" style="border:none; border-bottom:2px solid transparent; border-radius:0; margin-bottom:-2px; padding:0.5rem 1rem;"
-            :style="activeTab === 'templates' ? 'border-bottom-color:#3b82f6; color:#3b82f6; font-weight:600;' : 'color:#64748b;'">
+    <div class="nzl-tabs" style="margin-bottom:1rem;">
+        <button class="nzl-tab" :class="{'active': activeTab === 'templates'}" @click="switchTab('templates')">
             <?php esc_html_e( 'Email Templates', 'nozule' ); ?>
         </button>
-        <button @click="switchTab('log')" class="nzl-btn" style="border:none; border-bottom:2px solid transparent; border-radius:0; margin-bottom:-2px; padding:0.5rem 1rem;"
-            :style="activeTab === 'log' ? 'border-bottom-color:#3b82f6; color:#3b82f6; font-weight:600;' : 'color:#64748b;'">
+        <button class="nzl-tab" :class="{'active': activeTab === 'log'}" @click="switchTab('log')">
             <?php esc_html_e( 'Email Log', 'nozule' ); ?>
         </button>
     </div>

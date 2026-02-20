@@ -85,6 +85,9 @@ class RatePlanValidator extends BaseValidator {
 				'integer',
 				'min' => 0,
 			],
+			'guest_type' => [
+				'in' => [ 'all', 'syrian', 'non_syrian' ],
+			],
 			'status' => [
 				'in' => [ 'active', 'inactive' ],
 			],
@@ -125,6 +128,9 @@ class RatePlanValidator extends BaseValidator {
 			'priority' => [
 				'integer',
 				'min' => 0,
+			],
+			'guest_type' => [
+				'in' => [ 'all', 'syrian', 'non_syrian' ],
 			],
 			'status' => [
 				'in' => [ 'active', 'inactive' ],
