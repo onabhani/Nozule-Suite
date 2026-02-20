@@ -115,6 +115,10 @@ class AdminAssets {
             'nozule-admin-promotions'       => 'promotions.js',
             'nozule-admin-messaging'        => 'messaging.js',
             'nozule-admin-currency'         => 'currency.js',
+            'nozule-admin-dynamic-pricing'  => 'dynamic-pricing.js',
+            'nozule-admin-reviews'          => 'reviews.js',
+            'nozule-admin-whatsapp'         => 'whatsapp.js',
+            'nozule-admin-channel-sync'     => 'channel-sync.js',
         ];
 
         $component_handles = [];

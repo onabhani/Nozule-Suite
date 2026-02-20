@@ -49,6 +49,12 @@ class Activator {
 
         require_once NZL_PLUGIN_DIR . 'migrations/004_create_promotions_messaging_currency_documents.php';
         nzl_migration_004_create_promotions_messaging_currency_documents();
+
+        require_once NZL_PLUGIN_DIR . 'migrations/006_create_reviews_whatsapp.php';
+        nzl_migration_006_create_reviews_whatsapp();
+
+        require_once NZL_PLUGIN_DIR . 'migrations/007_create_channel_sync.php';
+        nzl_migration_007_create_channel_sync();
     }
 
     /**
