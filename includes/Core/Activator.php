@@ -61,6 +61,9 @@ class Activator {
 
         require_once NZL_PLUGIN_DIR . 'migrations/008_create_rate_restrictions.php';
         nzl_migration_008_up();
+
+        require_once NZL_PLUGIN_DIR . 'migrations/009_create_phase4_tables.php';
+        nzl_migration_009_create_phase4_tables();
     }
 
     /**

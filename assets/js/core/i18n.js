@@ -299,7 +299,81 @@ var NozuleI18n = (function () {
 
             // ── Country Profiles ───────────────────────────
             'confirm_apply_country_defaults': 'Apply country defaults? This will set currency, timezone, and seed taxes for the selected country.',
-            'country_profile_applied': 'Country profile applied successfully'
+            'country_profile_applied': 'Country profile applied successfully',
+
+            // ── Demand Forecasting (NZL-033) ────────────────
+            'failed_load_data': 'Failed to load data',
+            'forecasts_generated': 'Forecasts generated successfully',
+            'failed_generate_forecasts': 'Failed to generate forecasts',
+            'all_room_types': 'All Room Types',
+
+            // ── Loyalty Program (NZL-036) ───────────────────
+            'member_created': 'Member enrolled successfully',
+            'member_updated': 'Member updated successfully',
+            'failed_save_member': 'Failed to save member',
+            'confirm_delete_member': 'Are you sure you want to remove this member?',
+            'member_deleted': 'Member removed',
+            'failed_delete_member': 'Failed to remove member',
+            'reward_created': 'Reward created successfully',
+            'reward_updated': 'Reward updated successfully',
+            'failed_save_reward': 'Failed to save reward',
+            'confirm_delete_reward': 'Are you sure you want to delete this reward?',
+            'reward_deleted': 'Reward deleted',
+            'failed_delete_reward': 'Failed to delete reward',
+            'points_awarded': 'Points awarded',
+            'failed_award_points': 'Failed to award points',
+            'reward_redeemed': 'Reward redeemed successfully',
+            'failed_redeem_reward': 'Failed to redeem reward',
+
+            // ── POS Integration (NZL-037) ───────────────────
+            'saved': 'Saved successfully',
+            'deleted': 'Deleted successfully',
+            'select_outlet': 'Please select an outlet',
+            'add_items': 'Please add at least one item',
+            'order_created': 'Order created successfully',
+            'failed_create_order': 'Failed to create order',
+            'confirm_post_to_folio': 'Post this order to the room folio?',
+            'posted_to_folio': 'Order posted to folio',
+            'failed_post_to_folio': 'Failed to post to folio',
+            'confirm_cancel_order': 'Cancel this order? This cannot be undone.',
+            'order_cancelled': 'Order cancelled',
+            'failed_cancel_order': 'Failed to cancel order',
+            'restaurant': 'Restaurant',
+            'minibar': 'Minibar',
+            'spa': 'Spa',
+            'laundry': 'Laundry',
+            'other': 'Other',
+            'posted': 'Posted',
+
+            // ── Rate Shopping (NZL-039) ─────────────────────
+            'failed_load_parity': 'Failed to load parity data',
+            'failed_load_competitors': 'Failed to load competitors',
+            'failed_save_competitor': 'Failed to save competitor',
+            'confirm_delete_competitor': 'Are you sure you want to delete this competitor?',
+            'competitor_deleted': 'Competitor deleted',
+            'failed_delete_competitor': 'Failed to delete competitor',
+            'rate_recorded': 'Rate recorded successfully',
+            'failed_record_rate': 'Failed to record rate',
+            'no_rates_to_submit': 'No rates to submit',
+            'rates_recorded': 'Rates recorded successfully',
+            'failed_record_rates': 'Failed to record rates',
+            'failed_load_results': 'Failed to load results',
+            'failed_load_alerts': 'Failed to load alerts',
+            'alert_resolved': 'Alert resolved',
+            'failed_resolve_alert': 'Failed to resolve alert',
+            'parity': 'Parity',
+            'undercut': 'Undercut',
+            'overpriced': 'Overpriced',
+            'unknown': 'Unknown',
+
+            // ── Branding (NZL-041) ──────────────────────────
+            'failed_load_brands': 'Failed to load brands',
+            'failed_save_brand': 'Failed to save brand',
+            'confirm_delete_brand': 'Are you sure you want to delete this brand?',
+            'brand_deleted': 'Brand deleted',
+            'failed_delete_brand': 'Failed to delete brand',
+            'brand_set_default': 'Brand set as default',
+            'failed_set_default_brand': 'Failed to set default brand'
         },
         ar: {
             'check_in': 'تسجيل الوصول',
@@ -663,7 +737,81 @@ var NozuleI18n = (function () {
 
             // ── ملفات تعريف الدول ───────────────────────────
             'confirm_apply_country_defaults': 'تطبيق إعدادات الدولة الافتراضية؟ سيتم تعيين العملة والمنطقة الزمنية وإنشاء الضرائب للدولة المحددة.',
-            'country_profile_applied': 'تم تطبيق ملف الدولة بنجاح'
+            'country_profile_applied': 'تم تطبيق ملف الدولة بنجاح',
+
+            // ── التنبؤ بالطلب (NZL-033) ─────────────────────
+            'failed_load_data': 'فشل تحميل البيانات',
+            'forecasts_generated': 'تم إنشاء التنبؤات بنجاح',
+            'failed_generate_forecasts': 'فشل إنشاء التنبؤات',
+            'all_room_types': 'جميع أنواع الغرف',
+
+            // ── برنامج الولاء (NZL-036) ─────────────────────
+            'member_created': 'تم تسجيل العضو بنجاح',
+            'member_updated': 'تم تحديث بيانات العضو',
+            'failed_save_member': 'فشل حفظ بيانات العضو',
+            'confirm_delete_member': 'هل أنت متأكد من حذف هذا العضو؟',
+            'member_deleted': 'تم حذف العضو',
+            'failed_delete_member': 'فشل حذف العضو',
+            'reward_created': 'تم إنشاء المكافأة بنجاح',
+            'reward_updated': 'تم تحديث المكافأة',
+            'failed_save_reward': 'فشل حفظ المكافأة',
+            'confirm_delete_reward': 'هل أنت متأكد من حذف هذه المكافأة؟',
+            'reward_deleted': 'تم حذف المكافأة',
+            'failed_delete_reward': 'فشل حذف المكافأة',
+            'points_awarded': 'تم منح النقاط',
+            'failed_award_points': 'فشل منح النقاط',
+            'reward_redeemed': 'تم استبدال المكافأة بنجاح',
+            'failed_redeem_reward': 'فشل استبدال المكافأة',
+
+            // ── نقاط البيع (NZL-037) ────────────────────────
+            'saved': 'تم الحفظ بنجاح',
+            'deleted': 'تم الحذف بنجاح',
+            'select_outlet': 'يرجى اختيار المنفذ',
+            'add_items': 'يرجى إضافة عنصر واحد على الأقل',
+            'order_created': 'تم إنشاء الطلب بنجاح',
+            'failed_create_order': 'فشل إنشاء الطلب',
+            'confirm_post_to_folio': 'ترحيل هذا الطلب إلى فاتورة الغرفة؟',
+            'posted_to_folio': 'تم ترحيل الطلب إلى الفاتورة',
+            'failed_post_to_folio': 'فشل الترحيل إلى الفاتورة',
+            'confirm_cancel_order': 'إلغاء هذا الطلب؟ لا يمكن التراجع.',
+            'order_cancelled': 'تم إلغاء الطلب',
+            'failed_cancel_order': 'فشل إلغاء الطلب',
+            'restaurant': 'مطعم',
+            'minibar': 'ميني بار',
+            'spa': 'سبا',
+            'laundry': 'غسيل',
+            'other': 'أخرى',
+            'posted': 'مرحّل',
+
+            // ── مقارنة الأسعار (NZL-039) ────────────────────
+            'failed_load_parity': 'فشل تحميل بيانات التكافؤ',
+            'failed_load_competitors': 'فشل تحميل المنافسين',
+            'failed_save_competitor': 'فشل حفظ المنافس',
+            'confirm_delete_competitor': 'هل أنت متأكد من حذف هذا المنافس؟',
+            'competitor_deleted': 'تم حذف المنافس',
+            'failed_delete_competitor': 'فشل حذف المنافس',
+            'rate_recorded': 'تم تسجيل السعر بنجاح',
+            'failed_record_rate': 'فشل تسجيل السعر',
+            'no_rates_to_submit': 'لا توجد أسعار للإرسال',
+            'rates_recorded': 'تم تسجيل الأسعار بنجاح',
+            'failed_record_rates': 'فشل تسجيل الأسعار',
+            'failed_load_results': 'فشل تحميل النتائج',
+            'failed_load_alerts': 'فشل تحميل التنبيهات',
+            'alert_resolved': 'تم حل التنبيه',
+            'failed_resolve_alert': 'فشل حل التنبيه',
+            'parity': 'تكافؤ',
+            'undercut': 'أقل سعراً',
+            'overpriced': 'أعلى سعراً',
+            'unknown': 'غير معروف',
+
+            // ── العلامة التجارية (NZL-041) ───────────────────
+            'failed_load_brands': 'فشل تحميل العلامات التجارية',
+            'failed_save_brand': 'فشل حفظ العلامة التجارية',
+            'confirm_delete_brand': 'هل أنت متأكد من حذف هذه العلامة التجارية؟',
+            'brand_deleted': 'تم حذف العلامة التجارية',
+            'failed_delete_brand': 'فشل حذف العلامة التجارية',
+            'brand_set_default': 'تم تعيين العلامة التجارية كافتراضية',
+            'failed_set_default_brand': 'فشل تعيين العلامة التجارية الافتراضية'
         }
     };
 
