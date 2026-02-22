@@ -143,6 +143,23 @@ document.addEventListener('alpine:init', function () {
                 });
             },
 
+            openMediaLibrary: function (field) {
+                var self = this;
+                var frame = wp.media({
+                    title: field === 'logo_url' ? NozuleI18n.t('select_logo') : NozuleI18n.t('select_favicon'),
+                    button: { text: NozuleI18n.t('use_image') },
+                    multiple: false,
+                    library: { type: 'image' }
+                });
+
+                frame.on('select', function () {
+                    var attachment = frame.state().get('selection').first().toJSON();
+                    self.brandForm[field] = attachment.url;
+                });
+
+                frame.open();
+            },
+
             setDefault: function (id) {
                 var self = this;
 

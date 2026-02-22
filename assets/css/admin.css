@@ -24,6 +24,13 @@
     margin-bottom: 1.5rem;
 }
 
+.nzl-admin-wrap h1,
+.nzl-admin-wrap h2,
+.nzl-admin-wrap h3,
+.nzl-admin-wrap h4 {
+    font-family: inherit;
+}
+
 .nzl-admin-header h1 {
     font-size: 1.5rem;
     font-weight: 600;
