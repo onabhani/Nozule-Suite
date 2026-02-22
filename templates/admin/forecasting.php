@@ -59,15 +59,15 @@ if ( ! defined( 'ABSPATH' ) ) {
         <div class="nzl-stats-grid" style="margin-bottom:1rem;">
             <div class="nzl-stat-card">
                 <div class="stat-label"><?php esc_html_e( 'Avg Predicted Occupancy', 'nozule' ); ?></div>
-                <div class="stat-value" x-text="formatPercent(summary.avg_predicted_occupancy)"></div>
+                <div class="stat-value" x-text="formatPercent(summary.avg_occupancy)"></div>
                 <div style="font-size:0.75rem; margin-top:0.25rem;"
-                     :style="summary.avg_predicted_occupancy >= 70 ? 'color:#16a34a' : (summary.avg_predicted_occupancy >= 40 ? 'color:#ca8a04' : 'color:#dc2626')">
-                    <span x-text="summary.avg_predicted_occupancy >= 70 ? '<?php echo esc_js( __( 'High Demand', 'nozule' ) ); ?>' : (summary.avg_predicted_occupancy >= 40 ? '<?php echo esc_js( __( 'Moderate Demand', 'nozule' ) ); ?>' : '<?php echo esc_js( __( 'Low Demand', 'nozule' ) ); ?>')"></span>
+                     :style="summary.avg_occupancy >= 70 ? 'color:#16a34a' : (summary.avg_occupancy >= 40 ? 'color:#ca8a04' : 'color:#dc2626')">
+                    <span x-text="summary.avg_occupancy >= 70 ? '<?php echo esc_js( __( 'High Demand', 'nozule' ) ); ?>' : (summary.avg_occupancy >= 40 ? '<?php echo esc_js( __( 'Moderate Demand', 'nozule' ) ); ?>' : '<?php echo esc_js( __( 'Low Demand', 'nozule' ) ); ?>')"></span>
                 </div>
             </div>
             <div class="nzl-stat-card">
                 <div class="stat-label"><?php esc_html_e( 'Suggested ADR', 'nozule' ); ?></div>
-                <div class="stat-value" x-text="formatPrice(summary.suggested_adr)"></div>
+                <div class="stat-value" x-text="formatPrice(summary.avg_suggested_rate)"></div>
                 <div style="font-size:0.75rem; margin-top:0.25rem; color:#64748b;">
                     <?php esc_html_e( 'Average Daily Rate', 'nozule' ); ?>
                 </div>

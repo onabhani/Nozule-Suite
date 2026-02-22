@@ -16,8 +16,8 @@ document.addEventListener('alpine:init', function () {
             dateFrom: NozuleUtils.dateOffset(1),
             dateTo: NozuleUtils.dateOffset(30),
             summary: {
-                avg_predicted_occupancy: 0,
-                suggested_adr: 0,
+                avg_occupancy: 0,
+                avg_suggested_rate: 0,
                 avg_confidence: 0,
                 forecast_count: 0,
                 date_from: '',
@@ -81,8 +81,8 @@ document.addEventListener('alpine:init', function () {
 
                 NozuleAPI.get('/admin/forecasting/summary', params).then(function (response) {
                     self.summary = response.data || {
-                        avg_predicted_occupancy: 0,
-                        suggested_adr: 0,
+                        avg_occupancy: 0,
+                        avg_suggested_rate: 0,
                         avg_confidence: 0,
                         forecast_count: 0,
                         date_from: '',

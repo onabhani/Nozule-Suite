@@ -71,8 +71,12 @@ class ForecastingModule extends BaseModule {
 
 		// Handle the cron event.
 		add_action( 'nzl_generate_forecasts', function () {
-			$service = $this->container->get( ForecastService::class );
-			$service->generateForecasts();
+			try {
+				$service = $this->container->get( ForecastService::class );
+				$service->generateForecasts();
+			} catch ( \Throwable $e ) {
+				error_log( 'Nozule: Scheduled forecast generation failed — ' . $e->getMessage() );
+			}
 		} );
 	}
 }

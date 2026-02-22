@@ -77,7 +77,7 @@ class ForecastRepository extends BaseRepository {
 		);
 
 		if ( $existing ) {
-			$data['created_at'] = $data['created_at'] ?? current_time( 'mysql' );
+			unset( $data['created_at'] );
 			$this->db->update( $this->table, $data, [ 'id' => (int) $existing->id ] );
 			return $this->find( (int) $existing->id );
 		}

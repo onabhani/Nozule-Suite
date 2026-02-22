@@ -159,7 +159,7 @@ document.addEventListener('alpine:init', function () {
                     }
                 }).catch(function (err) {
                     console.error('Loyalty members load error:', err);
-                    NozuleUtils.toast(err.message || 'Failed to load members', 'error');
+                    NozuleUtils.toast(err.message || NozuleI18n.t('failed_load_members'), 'error');
                 }).finally(function () {
                     self.loading = false;
                 });
@@ -174,7 +174,7 @@ document.addEventListener('alpine:init', function () {
                     self.tiersLoaded = true;
                 }).catch(function (err) {
                     console.error('Loyalty tiers load error:', err);
-                    NozuleUtils.toast(err.message || 'Failed to load tiers', 'error');
+                    NozuleUtils.toast(err.message || NozuleI18n.t('failed_load_tiers'), 'error');
                 }).finally(function () {
                     if (self.activeTab === 'tiers') self.loading = false;
                     if (typeof callback === 'function') callback();
@@ -190,7 +190,7 @@ document.addEventListener('alpine:init', function () {
                     self.rewardsLoaded = true;
                 }).catch(function (err) {
                     console.error('Loyalty rewards load error:', err);
-                    NozuleUtils.toast(err.message || 'Failed to load rewards', 'error');
+                    NozuleUtils.toast(err.message || NozuleI18n.t('failed_load_rewards'), 'error');
                 }).finally(function () {
                     self.loading = false;
                 });
@@ -205,7 +205,7 @@ document.addEventListener('alpine:init', function () {
                     self.statsLoaded = true;
                 }).catch(function (err) {
                     console.error('Loyalty stats load error:', err);
-                    NozuleUtils.toast(err.message || 'Failed to load stats', 'error');
+                    NozuleUtils.toast(err.message || NozuleI18n.t('failed_load_stats'), 'error');
                 }).finally(function () {
                     self.loading = false;
                 });
@@ -224,7 +224,7 @@ document.addEventListener('alpine:init', function () {
                 NozuleAPI.get('/admin/loyalty/members/' + id).then(function (response) {
                     self.selectedMember = response.data;
                 }).catch(function (err) {
-                    NozuleUtils.toast(err.message || 'Failed to load member', 'error');
+                    NozuleUtils.toast(err.message || NozuleI18n.t('failed_load_member'), 'error');
                     self.showMemberModal = false;
                 }).finally(function () {
                     self.loadingMember = false;
@@ -276,9 +276,9 @@ document.addEventListener('alpine:init', function () {
                 }).then(function (response) {
                     self.showEnrollModal = false;
                     self.loadMembers();
-                    NozuleUtils.toast(response.message || 'Guest enrolled successfully', 'success');
+                    NozuleUtils.toast(response.message || NozuleI18n.t('member_created'), 'success');
                 }).catch(function (err) {
-                    NozuleUtils.toast(err.message || 'Failed to enroll guest', 'error');
+                    NozuleUtils.toast(err.message || NozuleI18n.t('failed_save_member'), 'error');
                 }).finally(function () {
                     self.saving = false;
                 });
@@ -302,12 +302,12 @@ document.addEventListener('alpine:init', function () {
                     description: self.adjustForm.description
                 }).then(function (response) {
                     self.showAdjustModal = false;
-                    NozuleUtils.toast(response.message || 'Points adjusted', 'success');
+                    NozuleUtils.toast(response.message || NozuleI18n.t('points_awarded'), 'success');
                     // Refresh member detail
                     self.viewMember(self.selectedMember.id);
                     self.loadMembers();
                 }).catch(function (err) {
-                    NozuleUtils.toast(err.message || 'Failed to adjust points', 'error');
+                    NozuleUtils.toast(err.message || NozuleI18n.t('failed_award_points'), 'error');
                 }).finally(function () {
                     self.saving = false;
                 });
@@ -326,7 +326,7 @@ document.addEventListener('alpine:init', function () {
                         self.rewardsLoaded = true;
                         self.showRedeemModal = true;
                     }).catch(function (err) {
-                        NozuleUtils.toast(err.message || 'Failed to load rewards', 'error');
+                        NozuleUtils.toast(err.message || NozuleI18n.t('failed_load_rewards'), 'error');
                     });
                 } else {
                     self.showRedeemModal = true;
@@ -341,12 +341,12 @@ document.addEventListener('alpine:init', function () {
 
                 NozuleAPI.post('/admin/loyalty/members/' + self.selectedMember.id + '/redeem/' + self.redeemRewardId).then(function (response) {
                     self.showRedeemModal = false;
-                    NozuleUtils.toast(response.message || 'Reward redeemed', 'success');
+                    NozuleUtils.toast(response.message || NozuleI18n.t('reward_redeemed'), 'success');
                     // Refresh member detail
                     self.viewMember(self.selectedMember.id);
                     self.loadMembers();
                 }).catch(function (err) {
-                    NozuleUtils.toast(err.message || 'Failed to redeem reward', 'error');
+                    NozuleUtils.toast(err.message || NozuleI18n.t('failed_redeem_reward'), 'error');
                 }).finally(function () {
                     self.saving = false;
                 });
@@ -380,7 +380,7 @@ document.addEventListener('alpine:init', function () {
                 var self = this;
 
                 if (!self.tierForm.name) {
-                    NozuleUtils.toast('Tier name is required', 'error');
+                    NozuleUtils.toast(NozuleI18n.t('fill_required_fields'), 'error');
                     return;
                 }
 
@@ -404,23 +404,23 @@ document.addEventListener('alpine:init', function () {
                 NozuleAPI.post('/admin/loyalty/tiers', data).then(function (response) {
                     self.showTierModal = false;
                     self.loadTiers();
-                    NozuleUtils.toast(response.message || 'Tier saved', 'success');
+                    NozuleUtils.toast(response.message || NozuleI18n.t('saved'), 'success');
                 }).catch(function (err) {
-                    NozuleUtils.toast(err.message || 'Failed to save tier', 'error');
+                    NozuleUtils.toast(err.message || NozuleI18n.t('failed_save'), 'error');
                 }).finally(function () {
                     self.saving = false;
                 });
             },
 
             deleteTier: function (id) {
-                if (!confirm('Are you sure you want to delete this tier?')) return;
+                if (!confirm(NozuleI18n.t('confirm_delete'))) return;
                 var self = this;
 
                 NozuleAPI.delete('/admin/loyalty/tiers/' + id).then(function (response) {
                     self.loadTiers();
-                    NozuleUtils.toast(response.message || 'Tier deleted', 'success');
+                    NozuleUtils.toast(response.message || NozuleI18n.t('deleted'), 'success');
                 }).catch(function (err) {
-                    NozuleUtils.toast(err.message || 'Failed to delete tier', 'error');
+                    NozuleUtils.toast(err.message || NozuleI18n.t('failed_delete'), 'error');
                 });
             },
 
@@ -452,7 +452,7 @@ document.addEventListener('alpine:init', function () {
                 var self = this;
 
                 if (!self.rewardForm.name || !self.rewardForm.points_cost) {
-                    NozuleUtils.toast('Name and points cost are required', 'error');
+                    NozuleUtils.toast(NozuleI18n.t('fill_required_fields'), 'error');
                     return;
                 }
 
@@ -476,23 +476,23 @@ document.addEventListener('alpine:init', function () {
                 NozuleAPI.post('/admin/loyalty/rewards', data).then(function (response) {
                     self.showRewardModal = false;
                     self.loadRewards();
-                    NozuleUtils.toast(response.message || 'Reward saved', 'success');
+                    NozuleUtils.toast(response.message || NozuleI18n.t('saved'), 'success');
                 }).catch(function (err) {
-                    NozuleUtils.toast(err.message || 'Failed to save reward', 'error');
+                    NozuleUtils.toast(err.message || NozuleI18n.t('failed_save'), 'error');
                 }).finally(function () {
                     self.saving = false;
                 });
             },
 
             deleteReward: function (id) {
-                if (!confirm('Are you sure you want to delete this reward?')) return;
+                if (!confirm(NozuleI18n.t('confirm_delete'))) return;
                 var self = this;
 
                 NozuleAPI.delete('/admin/loyalty/rewards/' + id).then(function (response) {
                     self.loadRewards();
-                    NozuleUtils.toast(response.message || 'Reward deleted', 'success');
+                    NozuleUtils.toast(response.message || NozuleI18n.t('deleted'), 'success');
                 }).catch(function (err) {
-                    NozuleUtils.toast(err.message || 'Failed to delete reward', 'error');
+                    NozuleUtils.toast(err.message || NozuleI18n.t('failed_delete'), 'error');
                 });
             },
 
@@ -527,19 +527,19 @@ document.addEventListener('alpine:init', function () {
 
             txTypeLabel: function (type) {
                 var labels = {
-                    earn: 'Earn',
-                    redeem: 'Redeem',
-                    adjust: 'Adjust'
+                    earn: NozuleI18n.t('tx_earn') || 'Earn',
+                    redeem: NozuleI18n.t('tx_redeem') || 'Redeem',
+                    adjust: NozuleI18n.t('tx_adjust') || 'Adjust'
                 };
                 return labels[type] || type;
             },
 
             rewardTypeLabel: function (type) {
                 var labels = {
-                    discount: 'Discount',
-                    free_night: 'Free Night',
-                    upgrade: 'Room Upgrade',
-                    amenity: 'Amenity'
+                    discount: NozuleI18n.t('reward_discount') || 'Discount',
+                    free_night: NozuleI18n.t('reward_free_night') || 'Free Night',
+                    upgrade: NozuleI18n.t('reward_upgrade') || 'Room Upgrade',
+                    amenity: NozuleI18n.t('reward_amenity') || 'Amenity'
                 };
                 return labels[type] || type;
             }

@@ -80,7 +80,9 @@ class Activator {
         }
 
         self::createTables();
+        self::createRoles();
         self::seedDefaultSettings();
+        self::scheduleEvents();
 
         update_option( 'nzl_db_version', NZL_DB_VERSION );
     }

@@ -31,6 +31,12 @@ class LoyaltyMember extends BaseModel {
 	public static function fromRow( object $row ): static {
 		$data = (array) $row;
 
+		// Remap DB column to model attribute.
+		if ( isset( $data['joined_at'] ) && ! isset( $data['enrolled_at'] ) ) {
+			$data['enrolled_at'] = $data['joined_at'];
+			unset( $data['joined_at'] );
+		}
+
 		foreach ( static::$intFields as $field ) {
 			if ( isset( $data[ $field ] ) ) {
 				$data[ $field ] = (int) $data[ $field ];

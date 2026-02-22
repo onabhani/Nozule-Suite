@@ -80,13 +80,17 @@ function nzl_migration_009_create_phase4_tables(): void {
 		id BIGINT UNSIGNED NOT NULL AUTO_INCREMENT,
 		member_id BIGINT UNSIGNED NOT NULL,
 		booking_id BIGINT UNSIGNED DEFAULT NULL,
+		reward_id BIGINT UNSIGNED DEFAULT NULL,
 		type VARCHAR(20) NOT NULL DEFAULT 'earn',
 		points INT NOT NULL DEFAULT 0,
+		balance_after INT NOT NULL DEFAULT 0,
 		description VARCHAR(255) DEFAULT NULL,
+		created_by BIGINT UNSIGNED DEFAULT NULL,
 		created_at DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
 		PRIMARY KEY (id),
 		KEY idx_member (member_id),
 		KEY idx_booking (booking_id),
+		KEY idx_reward (reward_id),
 		KEY idx_type (type),
 		KEY idx_created (created_at)
 	) $charset;";

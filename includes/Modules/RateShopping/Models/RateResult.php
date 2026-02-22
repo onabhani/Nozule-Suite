@@ -35,6 +35,12 @@ class RateResult extends BaseModel {
 	 * Fill attributes, applying type casts.
 	 */
 	public function fill( array $attributes ): static {
+		// Remap DB column name to model attribute.
+		if ( isset( $attributes['rate_found'] ) && ! isset( $attributes['rate'] ) ) {
+			$attributes['rate'] = $attributes['rate_found'];
+			unset( $attributes['rate_found'] );
+		}
+
 		foreach ( $attributes as $key => $value ) {
 			if ( $value !== null && isset( static::$casts[ $key ] ) ) {
 				$value = match ( static::$casts[ $key ] ) {

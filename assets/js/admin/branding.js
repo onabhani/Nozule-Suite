@@ -95,13 +95,13 @@ document.addEventListener('alpine:init', function () {
                     is_active: self.brandForm.is_active ? true : false
                 };
 
-                // Optional fields
-                if (self.brandForm.name_ar) data.name_ar = self.brandForm.name_ar;
-                if (self.brandForm.logo_url) data.logo_url = self.brandForm.logo_url;
-                if (self.brandForm.favicon_url) data.favicon_url = self.brandForm.favicon_url;
-                if (self.brandForm.custom_css) data.custom_css = self.brandForm.custom_css;
-                if (self.brandForm.email_header_html) data.email_header_html = self.brandForm.email_header_html;
-                if (self.brandForm.email_footer_html) data.email_footer_html = self.brandForm.email_footer_html;
+                // Optional fields — always include so clearing is possible
+                data.name_ar = self.brandForm.name_ar || '';
+                data.logo_url = self.brandForm.logo_url || '';
+                data.favicon_url = self.brandForm.favicon_url || '';
+                data.custom_css = self.brandForm.custom_css || '';
+                data.email_header_html = self.brandForm.email_header_html || '';
+                data.email_footer_html = self.brandForm.email_footer_html || '';
 
                 if (!data.name) {
                     NozuleUtils.toast(NozuleI18n.t('fill_required_fields'), 'error');
