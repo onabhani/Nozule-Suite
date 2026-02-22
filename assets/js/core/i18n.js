@@ -380,6 +380,8 @@ var NozuleI18n = (function () {
 
             // ── Branding (NZL-041) ──────────────────────────
             'failed_load_brands': 'Failed to load brands',
+            'brand_created': 'Brand created successfully',
+            'brand_updated': 'Brand updated successfully',
             'failed_save_brand': 'Failed to save brand',
             'confirm_delete_brand': 'Are you sure you want to delete this brand?',
             'brand_deleted': 'Brand deleted',
@@ -830,6 +832,8 @@ var NozuleI18n = (function () {
 
             // ── العلامة التجارية (NZL-041) ───────────────────
             'failed_load_brands': 'فشل تحميل العلامات التجارية',
+            'brand_created': 'تم إنشاء العلامة التجارية بنجاح',
+            'brand_updated': 'تم تحديث العلامة التجارية بنجاح',
             'failed_save_brand': 'فشل حفظ العلامة التجارية',
             'confirm_delete_brand': 'هل أنت متأكد من حذف هذه العلامة التجارية؟',
             'brand_deleted': 'تم حذف العلامة التجارية',

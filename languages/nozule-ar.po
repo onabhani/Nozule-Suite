@@ -3246,3 +3246,31 @@ msgstr "وقت النقر"
 # ---- WhatsApp (NZL-023) — Missing Translations ----
 msgid "Phone or message..."
 msgstr "الهاتف أو الرسالة..."
+
+# ---- Menu items — Missing Translations ----
+msgid "WhatsApp"
+msgstr "واتساب"
+
+msgid "Reviews"
+msgstr "التقييمات"
+
+# ---- Loyalty: Enroll button ----
+msgid "Enroll"
+msgstr "تسجيل"
+
+# ---- Forecasting: generate result message ----
+msgid "Forecasts generated: %1$d room types, %2$d forecast records."
+msgstr "تم توليد التنبؤات: %1$d أنواع غرف، %2$d سجل تنبؤ."
+
+# ---- Branding: success messages ----
+msgid "Brand created successfully."
+msgstr "تم إنشاء العلامة التجارية بنجاح."
+
+msgid "Brand updated successfully."
+msgstr "تم تحديث العلامة التجارية بنجاح."
+
+msgid "Brand not found."
+msgstr "العلامة التجارية غير موجودة."
+
+msgid "Validation failed."
+msgstr "فشل التحقق."
