@@ -294,13 +294,16 @@ function nzl_migration_001_create_tables(): void {
     $sql = "CREATE TABLE {$prefix}nzl_channel_mappings (
         id BIGINT UNSIGNED NOT NULL AUTO_INCREMENT,
         channel VARCHAR(30) NOT NULL,
+        channel_name VARCHAR(50) DEFAULT NULL,
         room_type_id BIGINT UNSIGNED NOT NULL,
         rate_plan_id BIGINT UNSIGNED DEFAULT NULL,
         external_room_id VARCHAR(255) NOT NULL,
         external_rate_id VARCHAR(255) DEFAULT NULL,
+        status VARCHAR(20) NOT NULL DEFAULT 'active',
         sync_availability TINYINT(1) NOT NULL DEFAULT 1,
         sync_rates TINYINT(1) NOT NULL DEFAULT 1,
         sync_restrictions TINYINT(1) NOT NULL DEFAULT 1,
+        sync_reservations TINYINT(1) NOT NULL DEFAULT 1,
         last_sync_at DATETIME DEFAULT NULL,
         last_sync_status VARCHAR(20) DEFAULT NULL,
         last_sync_message TEXT,
@@ -309,7 +312,8 @@ function nzl_migration_001_create_tables(): void {
         PRIMARY KEY (id),
         UNIQUE KEY channel_room_rate (channel, room_type_id, rate_plan_id),
         KEY room_type_id (room_type_id),
-        KEY channel_idx (channel)
+        KEY channel_idx (channel),
+        KEY status_idx (status)
     ) $charset_collate;";
     dbDelta( $sql );
 

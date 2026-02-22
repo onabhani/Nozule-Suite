@@ -13,7 +13,9 @@ if ( ! defined( 'ABSPATH' ) ) {
 ?>
 <div class="nzl-admin-wrap" x-data="nzlPOS">
     <div class="nzl-admin-header">
-        <h1><?php esc_html_e( 'Point of Sale', 'nozule' ); ?></h1>
+        <div>
+            <h1><?php esc_html_e( 'Point of Sale', 'nozule' ); ?></h1>
+        </div>
         <div style="display:flex; gap:0.5rem;">
             <template x-if="activeTab === 'orders'">
                 <button class="nzl-btn nzl-btn-primary" @click="openNewOrder()">
@@ -50,20 +52,14 @@ if ( ! defined( 'ABSPATH' ) ) {
     </div>
 
     <!-- Tabs -->
-    <div style="display:flex; gap:0; border-bottom:2px solid #e2e8f0; margin-bottom:1rem;">
-        <button class="nzl-btn" style="border-radius:0.5rem 0.5rem 0 0; border-bottom:none;"
-                :class="activeTab === 'orders' ? 'nzl-btn-primary' : ''"
-                @click="switchTab('orders')">
+    <div class="nzl-tabs" style="margin-bottom:1rem;">
+        <button class="nzl-tab" :class="{'active': activeTab === 'orders'}" @click="switchTab('orders')">
             <?php esc_html_e( 'Orders', 'nozule' ); ?>
         </button>
-        <button class="nzl-btn" style="border-radius:0.5rem 0.5rem 0 0; border-bottom:none;"
-                :class="activeTab === 'outlets' ? 'nzl-btn-primary' : ''"
-                @click="switchTab('outlets')">
+        <button class="nzl-tab" :class="{'active': activeTab === 'outlets'}" @click="switchTab('outlets')">
             <?php esc_html_e( 'Outlets', 'nozule' ); ?>
         </button>
-        <button class="nzl-btn" style="border-radius:0.5rem 0.5rem 0 0; border-bottom:none;"
-                :class="activeTab === 'items' ? 'nzl-btn-primary' : ''"
-                @click="switchTab('items')">
+        <button class="nzl-tab" :class="{'active': activeTab === 'items'}" @click="switchTab('items')">
             <?php esc_html_e( 'Items', 'nozule' ); ?>
         </button>
     </div>

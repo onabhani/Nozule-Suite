@@ -137,7 +137,6 @@ class RateShopRepository {
 	 */
 	public function saveResult( array $data ) {
 		$data['captured_at'] = $data['captured_at'] ?? current_time( 'mysql' );
-		$data['created_at']  = $data['created_at'] ?? current_time( 'mysql' );
 
 		$id = $this->db->insert( 'rate_shop_results', $data );
 		if ( $id === false ) {
@@ -204,7 +203,7 @@ class RateShopRepository {
 	public function getRecentResults( int $limit = 50 ): array {
 		$table = $this->db->table( 'rate_shop_results' );
 		$rows  = $this->db->getResults(
-			"SELECT * FROM {$table} ORDER BY created_at DESC LIMIT %d",
+			"SELECT * FROM {$table} ORDER BY captured_at DESC LIMIT %d",
 			$limit
 		);
 
