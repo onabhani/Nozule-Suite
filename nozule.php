@@ -74,8 +74,10 @@ register_deactivation_hook( __FILE__, function () {
 
 // Initialize the plugin
 add_action( 'plugins_loaded', function () {
-    // Run pending migrations on version upgrade (no deactivate/reactivate needed).
-    \Nozule\Core\Activator::maybeUpgrade();
-
     nozule_manager()->boot();
 }, 10 );
+
+// Run pending migrations on version upgrade (after textdomain is available).
+add_action( 'init', function () {
+    \Nozule\Core\Activator::maybeUpgrade();
+}, 0 );
