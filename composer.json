@@ -2,7 +2,7 @@
     "name": "nozule",
     "description": "Nozule - A comprehensive hotel booking management system for WordPress",
     "type": "wordpress-plugin",
-    "version": "1.3.4",
+    "version": "1.3.5",
     "license": "GPL-2.0-or-later",
     "require": {
         "php": ">=8.0"
