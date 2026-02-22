@@ -138,7 +138,7 @@ if ( ! defined( 'ABSPATH' ) ) exit;
                                 <template x-if="brandForm.logo_url">
                                     <div style="position:relative; display:inline-block;">
                                         <img :src="brandForm.logo_url" alt="Logo" style="max-width:120px; max-height:60px; object-fit:contain; border:1px solid #e2e8f0; border-radius:0.375rem; padding:0.25rem; background:#f8fafc;">
-                                        <button type="button" @click="brandForm.logo_url = ''" style="position:absolute; top:-6px; right:-6px; width:20px; height:20px; border-radius:50%; background:#ef4444; color:white; border:none; font-size:0.75rem; cursor:pointer; display:flex; align-items:center; justify-content:center; line-height:1;">&times;</button>
+                                        <button type="button" @click="brandForm.logo_url = ''" aria-label="<?php esc_attr_e( 'Remove logo', 'nozule' ); ?>" title="<?php esc_attr_e( 'Remove logo', 'nozule' ); ?>" style="position:absolute; top:-6px; right:-6px; width:20px; height:20px; border-radius:50%; background:#ef4444; color:white; border:none; font-size:0.75rem; cursor:pointer; display:flex; align-items:center; justify-content:center; line-height:1;">&times;</button>
                                     </div>
                                 </template>
                                 <button type="button" class="nzl-btn nzl-btn-sm" @click="openMediaLibrary('logo_url')">
@@ -152,7 +152,7 @@ if ( ! defined( 'ABSPATH' ) ) exit;
                                 <template x-if="brandForm.favicon_url">
                                     <div style="position:relative; display:inline-block;">
                                         <img :src="brandForm.favicon_url" alt="Favicon" style="width:32px; height:32px; object-fit:contain; border:1px solid #e2e8f0; border-radius:0.25rem; padding:2px; background:#f8fafc;">
-                                        <button type="button" @click="brandForm.favicon_url = ''" style="position:absolute; top:-6px; right:-6px; width:20px; height:20px; border-radius:50%; background:#ef4444; color:white; border:none; font-size:0.75rem; cursor:pointer; display:flex; align-items:center; justify-content:center; line-height:1;">&times;</button>
+                                        <button type="button" @click="brandForm.favicon_url = ''" aria-label="<?php esc_attr_e( 'Remove favicon', 'nozule' ); ?>" title="<?php esc_attr_e( 'Remove favicon', 'nozule' ); ?>" style="position:absolute; top:-6px; right:-6px; width:20px; height:20px; border-radius:50%; background:#ef4444; color:white; border:none; font-size:0.75rem; cursor:pointer; display:flex; align-items:center; justify-content:center; line-height:1;">&times;</button>
                                     </div>
                                 </template>
                                 <button type="button" class="nzl-btn nzl-btn-sm" @click="openMediaLibrary('favicon_url')">
