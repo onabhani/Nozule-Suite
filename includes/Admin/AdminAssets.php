@@ -37,6 +37,9 @@ class AdminAssets {
             return;
         }
 
+        // WordPress media library (needed for branding logo/favicon upload)
+        wp_enqueue_media();
+
         // -----------------------------------------------------------------
         // Styles
         // -----------------------------------------------------------------

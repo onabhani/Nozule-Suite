@@ -387,7 +387,10 @@ var NozuleI18n = (function () {
             'brand_deleted': 'Brand deleted',
             'failed_delete_brand': 'Failed to delete brand',
             'brand_set_default': 'Brand set as default',
-            'failed_set_default_brand': 'Failed to set default brand'
+            'failed_set_default_brand': 'Failed to set default brand',
+            'select_logo': 'Select Logo',
+            'select_favicon': 'Select Favicon',
+            'use_image': 'Use this image'
         },
         ar: {
             'check_in': 'تسجيل الوصول',
@@ -839,7 +842,10 @@ var NozuleI18n = (function () {
             'brand_deleted': 'تم حذف العلامة التجارية',
             'failed_delete_brand': 'فشل حذف العلامة التجارية',
             'brand_set_default': 'تم تعيين العلامة التجارية كافتراضية',
-            'failed_set_default_brand': 'فشل تعيين العلامة التجارية الافتراضية'
+            'failed_set_default_brand': 'فشل تعيين العلامة التجارية الافتراضية',
+            'select_logo': 'اختر الشعار',
+            'select_favicon': 'اختر الأيقونة',
+            'use_image': 'استخدم هذه الصورة'
         }
     };
 

@@ -133,18 +133,32 @@ if ( ! defined( 'ABSPATH' ) ) exit;
                     </div>
                     <div class="nzl-form-grid">
                         <div class="nzl-form-group">
-                            <label><?php esc_html_e( 'Logo URL', 'nozule' ); ?></label>
-                            <input type="url" x-model="brandForm.logo_url" class="nzl-input" dir="ltr" placeholder="https://example.com/logo.png">
-                            <!-- Logo preview -->
-                            <template x-if="brandForm.logo_url">
-                                <div style="margin-top:0.5rem; padding:0.5rem; border:1px solid #e2e8f0; border-radius:0.375rem; background:#f8fafc; display:inline-block;">
-                                    <img :src="brandForm.logo_url" alt="Logo preview" style="max-width:120px; max-height:60px; object-fit:contain;">
-                                </div>
-                            </template>
+                            <label><?php esc_html_e( 'Logo', 'nozule' ); ?></label>
+                            <div style="display:flex; align-items:center; gap:0.75rem;">
+                                <template x-if="brandForm.logo_url">
+                                    <div style="position:relative; display:inline-block;">
+                                        <img :src="brandForm.logo_url" alt="Logo" style="max-width:120px; max-height:60px; object-fit:contain; border:1px solid #e2e8f0; border-radius:0.375rem; padding:0.25rem; background:#f8fafc;">
+                                        <button type="button" @click="brandForm.logo_url = ''" aria-label="<?php esc_attr_e( 'Remove logo', 'nozule' ); ?>" title="<?php esc_attr_e( 'Remove logo', 'nozule' ); ?>" style="position:absolute; top:-6px; right:-6px; width:20px; height:20px; border-radius:50%; background:#ef4444; color:white; border:none; font-size:0.75rem; cursor:pointer; display:flex; align-items:center; justify-content:center; line-height:1;">&times;</button>
+                                    </div>
+                                </template>
+                                <button type="button" class="nzl-btn nzl-btn-sm" @click="openMediaLibrary('logo_url')">
+                                    <?php esc_html_e( 'Upload Logo', 'nozule' ); ?>
+                                </button>
+                            </div>
                         </div>
                         <div class="nzl-form-group">
-                            <label><?php esc_html_e( 'Favicon URL', 'nozule' ); ?></label>
-                            <input type="url" x-model="brandForm.favicon_url" class="nzl-input" dir="ltr" placeholder="https://example.com/favicon.ico">
+                            <label><?php esc_html_e( 'Favicon', 'nozule' ); ?></label>
+                            <div style="display:flex; align-items:center; gap:0.75rem;">
+                                <template x-if="brandForm.favicon_url">
+                                    <div style="position:relative; display:inline-block;">
+                                        <img :src="brandForm.favicon_url" alt="Favicon" style="width:32px; height:32px; object-fit:contain; border:1px solid #e2e8f0; border-radius:0.25rem; padding:2px; background:#f8fafc;">
+                                        <button type="button" @click="brandForm.favicon_url = ''" aria-label="<?php esc_attr_e( 'Remove favicon', 'nozule' ); ?>" title="<?php esc_attr_e( 'Remove favicon', 'nozule' ); ?>" style="position:absolute; top:-6px; right:-6px; width:20px; height:20px; border-radius:50%; background:#ef4444; color:white; border:none; font-size:0.75rem; cursor:pointer; display:flex; align-items:center; justify-content:center; line-height:1;">&times;</button>
+                                    </div>
+                                </template>
+                                <button type="button" class="nzl-btn nzl-btn-sm" @click="openMediaLibrary('favicon_url')">
+                                    <?php esc_html_e( 'Upload Favicon', 'nozule' ); ?>
+                                </button>
+                            </div>
                         </div>
                     </div>
 
