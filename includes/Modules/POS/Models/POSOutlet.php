@@ -73,6 +73,12 @@ class POSOutlet extends BaseModel {
 	public static function fromRow( object $row ): static {
 		$data = (array) $row;
 
+		// Remap legacy is_active boolean to status string.
+		if ( isset( $data['is_active'] ) && ! isset( $data['status'] ) ) {
+			$data['status'] = $data['is_active'] ? self::STATUS_ACTIVE : self::STATUS_INACTIVE;
+		}
+		unset( $data['is_active'] );
+
 		foreach ( static::$intFields as $field ) {
 			if ( isset( $data[ $field ] ) ) {
 				$data[ $field ] = (int) $data[ $field ];

@@ -39,43 +39,41 @@ class WhatsAppController {
 
 		// ── Templates ─────────────────────────────────────────────
 
-		// GET /admin/whatsapp-templates -- list templates.
+		// GET + POST /admin/whatsapp-templates.
 		register_rest_route( self::NAMESPACE, '/admin/whatsapp-templates', [
-			'methods'             => \WP_REST_Server::READABLE,
-			'callback'            => [ $this, 'index' ],
-			'permission_callback' => $admin_perm,
-			'args'                => $this->getListArgs(),
+			[
+				'methods'             => \WP_REST_Server::READABLE,
+				'callback'            => [ $this, 'index' ],
+				'permission_callback' => $admin_perm,
+				'args'                => $this->getListArgs(),
+			],
+			[
+				'methods'             => \WP_REST_Server::CREATABLE,
+				'callback'            => [ $this, 'store' ],
+				'permission_callback' => $admin_perm,
+			],
 		] );
 
-		// POST /admin/whatsapp-templates -- create template.
-		register_rest_route( self::NAMESPACE, '/admin/whatsapp-templates', [
-			'methods'             => \WP_REST_Server::CREATABLE,
-			'callback'            => [ $this, 'store' ],
-			'permission_callback' => $admin_perm,
-		] );
-
-		// GET /admin/whatsapp-templates/(?P<id>\d+) -- get single template.
+		// GET + PUT/PATCH + DELETE /admin/whatsapp-templates/{id}.
 		register_rest_route( self::NAMESPACE, '/admin/whatsapp-templates/(?P<id>\d+)', [
-			'methods'             => \WP_REST_Server::READABLE,
-			'callback'            => [ $this, 'show' ],
-			'permission_callback' => $admin_perm,
+			[
+				'methods'             => \WP_REST_Server::READABLE,
+				'callback'            => [ $this, 'show' ],
+				'permission_callback' => $admin_perm,
+			],
+			[
+				'methods'             => \WP_REST_Server::EDITABLE,
+				'callback'            => [ $this, 'update' ],
+				'permission_callback' => $admin_perm,
+			],
+			[
+				'methods'             => \WP_REST_Server::DELETABLE,
+				'callback'            => [ $this, 'destroy' ],
+				'permission_callback' => $admin_perm,
+			],
 		] );
 
-		// PUT /admin/whatsapp-templates/(?P<id>\d+) -- update template.
-		register_rest_route( self::NAMESPACE, '/admin/whatsapp-templates/(?P<id>\d+)', [
-			'methods'             => 'PUT, PATCH',
-			'callback'            => [ $this, 'update' ],
-			'permission_callback' => $admin_perm,
-		] );
-
-		// DELETE /admin/whatsapp-templates/(?P<id>\d+) -- delete template.
-		register_rest_route( self::NAMESPACE, '/admin/whatsapp-templates/(?P<id>\d+)', [
-			'methods'             => \WP_REST_Server::DELETABLE,
-			'callback'            => [ $this, 'destroy' ],
-			'permission_callback' => $admin_perm,
-		] );
-
-		// POST /admin/whatsapp-templates/(?P<id>\d+)/test -- send test message.
+		// POST /admin/whatsapp-templates/{id}/test -- send test message.
 		register_rest_route( self::NAMESPACE, '/admin/whatsapp-templates/(?P<id>\d+)/test', [
 			'methods'             => \WP_REST_Server::CREATABLE,
 			'callback'            => [ $this, 'sendTest' ],
@@ -94,18 +92,18 @@ class WhatsAppController {
 
 		// ── Settings ──────────────────────────────────────────────
 
-		// GET /admin/whatsapp-settings -- get settings.
+		// GET + POST /admin/whatsapp-settings.
 		register_rest_route( self::NAMESPACE, '/admin/whatsapp-settings', [
-			'methods'             => \WP_REST_Server::READABLE,
-			'callback'            => [ $this, 'getSettings' ],
-			'permission_callback' => $admin_perm,
-		] );
-
-		// POST /admin/whatsapp-settings -- update settings.
-		register_rest_route( self::NAMESPACE, '/admin/whatsapp-settings', [
-			'methods'             => \WP_REST_Server::CREATABLE,
-			'callback'            => [ $this, 'updateSettings' ],
-			'permission_callback' => $admin_perm,
+			[
+				'methods'             => \WP_REST_Server::READABLE,
+				'callback'            => [ $this, 'getSettings' ],
+				'permission_callback' => $admin_perm,
+			],
+			[
+				'methods'             => \WP_REST_Server::CREATABLE,
+				'callback'            => [ $this, 'updateSettings' ],
+				'permission_callback' => $admin_perm,
+			],
 		] );
 	}
 

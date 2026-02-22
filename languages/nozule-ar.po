@@ -2892,3 +2892,357 @@ msgstr "الألوان"
 
 msgid "Advanced"
 msgstr "متقدم"
+
+# ---- Phase 4: Forecasting (NZL-033) — Missing Translations ----
+msgid "Generating..."
+msgstr "جاري التوليد..."
+
+msgid "High Demand"
+msgstr "طلب مرتفع"
+
+msgid "Moderate Demand"
+msgstr "طلب متوسط"
+
+msgid "Low Demand"
+msgstr "طلب منخفض"
+
+msgid "Average Daily Rate"
+msgstr "متوسط سعر الغرفة اليومي"
+
+msgid "Forecast Records"
+msgstr "سجلات التنبؤ"
+
+msgid ""
+"No forecasts available yet. Click \"Generate Forecast\" to create "
+"predictions based on your booking history."
+msgstr ""
+"لا تتوفر تنبؤات بعد. انقر على \"توليد التنبؤ\" لإنشاء توقعات بناءً على سجل "
+"حجوزاتك."
+
+msgid "Forecast Details"
+msgstr "تفاصيل التنبؤ"
+
+msgid "Rate Change"
+msgstr "تغيير السعر"
+
+msgid "No forecast data available for the selected filters."
+msgstr "لا تتوفر بيانات تنبؤ للفلاتر المحددة."
+
+msgid "Forecast Factors"
+msgstr "عوامل التنبؤ"
+
+msgid "These factors contributed to the forecast for this date:"
+msgstr "هذه العوامل ساهمت في التنبؤ لهذا التاريخ:"
+
+msgid "Factor"
+msgstr "العامل"
+
+# ---- Phase 4: Rate Shopping (NZL-039) — Missing Translations ----
+msgid "Monitor competitor pricing on OTAs and track rate parity."
+msgstr "مراقبة أسعار المنافسين على منصات الحجز وتتبع تكافؤ الأسعار."
+
+msgid "Avg Rate Diff"
+msgstr "متوسط فرق الأسعار"
+
+msgid "Last Shop Date"
+msgstr "تاريخ آخر مقارنة"
+
+msgid "Check Date"
+msgstr "تاريخ الإقامة"
+
+msgid "Competitor"
+msgstr "المنافس"
+
+msgid "No parity data found for the selected date range."
+msgstr "لم يتم العثور على بيانات تكافؤ للنطاق المحدد."
+
+msgid "No competitors configured yet."
+msgstr "لم يتم إعداد منافسين بعد."
+
+msgid "Single Entry"
+msgstr "إدخال فردي"
+
+msgid "Bulk Entry"
+msgstr "إدخال جماعي"
+
+msgid "Record a Rate"
+msgstr "تسجيل سعر"
+
+msgid "Competitor *"
+msgstr "المنافس *"
+
+msgid "Select competitor..."
+msgstr "اختر المنافس..."
+
+msgid "Check Date *"
+msgstr "تاريخ الإقامة *"
+
+msgid "Rate *"
+msgstr "السعر *"
+
+msgid "Record Rate"
+msgstr "تسجيل السعر"
+
+msgid "Bulk Rate Entry"
+msgstr "إدخال أسعار جماعي"
+
+msgid "Submit All Rates"
+msgstr "إرسال جميع الأسعار"
+
+msgid "Recent Entries"
+msgstr "آخر الإدخالات"
+
+msgid "Captured"
+msgstr "تاريخ الالتقاط"
+
+msgid "No rate entries recorded yet."
+msgstr "لم يتم تسجيل أسعار بعد."
+
+msgid "Source (OTA) *"
+msgstr "المصدر (OTA) *"
+
+msgid "Select..."
+msgstr "اختر..."
+
+# ---- Phase 4: Branding (NZL-041) — Missing Translations ----
+msgid ""
+"Manage white-label brands and customize the look and feel of your property."
+msgstr "إدارة العلامات التجارية وتخصيص مظهر منشأتك."
+
+msgid "No brands configured yet."
+msgstr "لم يتم إعداد علامات تجارية بعد."
+
+msgid "Create your first brand to start customizing the look and feel."
+msgstr "أنشئ علامتك التجارية الأولى لبدء تخصيص المظهر."
+
+msgid "Primary"
+msgstr "أساسي"
+
+msgid "Secondary"
+msgstr "ثانوي"
+
+msgid "Accent"
+msgstr "تمييز"
+
+msgid "Text"
+msgstr "النص"
+
+msgid "New Brand"
+msgstr "علامة تجارية جديدة"
+
+msgid "Brand Name *"
+msgstr "اسم العلامة التجارية *"
+
+msgid "My Hotel Brand"
+msgstr "علامة فندقي التجارية"
+
+msgid "Sample content showing how text appears with the selected colors."
+msgstr "محتوى تجريبي يوضح كيف يظهر النص بالألوان المحددة."
+
+msgid ""
+"Additional CSS rules injected on public pages when this brand is active."
+msgstr ""
+"قواعد CSS إضافية يتم تطبيقها على الصفحات العامة عند تفعيل هذه العلامة "
+"التجارية."
+
+msgid "/* Custom CSS overrides */"
+msgstr "/* تجاوزات CSS مخصصة */"
+
+# ---- Phase 4: Loyalty Program (NZL-036) — Missing Translations ----
+msgid "Manage tiers, members, points, and rewards."
+msgstr "إدارة المستويات والأعضاء والنقاط والمكافآت."
+
+msgid "Guest name or email..."
+msgstr "اسم الضيف أو البريد الإلكتروني..."
+
+msgid "Tier"
+msgstr "المستوى"
+
+msgid "All Tiers"
+msgstr "جميع المستويات"
+
+msgid "No loyalty members found."
+msgstr "لم يتم العثور على أعضاء في برنامج الولاء."
+
+msgid "No tiers configured. Add your first tier to get started."
+msgstr "لم يتم إعداد مستويات. أضف أول مستوى للبدء."
+
+msgid "No rewards configured yet."
+msgstr "لم يتم إعداد مكافآت بعد."
+
+msgid "Active This Month"
+msgstr "النشطون هذا الشهر"
+
+msgid "Enroll Guest in Loyalty Program"
+msgstr "تسجيل ضيف في برنامج الولاء"
+
+msgid "Search Guest"
+msgstr "بحث عن ضيف"
+
+msgid "Type guest name or email..."
+msgstr "اكتب اسم الضيف أو بريده الإلكتروني..."
+
+msgid "Enrolling..."
+msgstr "جاري التسجيل..."
+
+msgid "Enrolled"
+msgstr "تاريخ التسجيل"
+
+msgid "Lifetime"
+msgstr "الإجمالي"
+
+msgid "Redeem Reward"
+msgstr "استبدال مكافأة"
+
+msgid "Balance After"
+msgstr "الرصيد بعد"
+
+msgid "No transactions yet."
+msgstr "لا توجد معاملات بعد."
+
+msgid "Current balance:"
+msgstr "الرصيد الحالي:"
+
+msgid "points"
+msgstr "نقاط"
+
+msgid "Points (use negative to deduct)"
+msgstr "النقاط (استخدم قيمة سالبة للخصم)"
+
+msgid "Reason"
+msgstr "السبب"
+
+msgid "Reason for adjustment..."
+msgstr "سبب التعديل..."
+
+msgid "Adjust"
+msgstr "تعديل"
+
+msgid "Available points:"
+msgstr "النقاط المتاحة:"
+
+msgid "Insufficient"
+msgstr "غير كافية"
+
+msgid "No rewards available."
+msgstr "لا تتوفر مكافآت."
+
+msgid "Redeem"
+msgstr "استبدال"
+
+msgid "Redeeming..."
+msgstr "جاري الاستبدال..."
+
+msgid "Name (English)"
+msgstr "الاسم (إنجليزي)"
+
+msgid "Color"
+msgstr "اللون"
+
+msgid "Benefits (English)"
+msgstr "المزايا (إنجليزي)"
+
+msgid "Benefits (Arabic)"
+msgstr "المزايا (عربي)"
+
+msgid "Early check-in, late checkout..."
+msgstr "تسجيل وصول مبكر، تسجيل مغادرة متأخر..."
+
+msgid "Free Night"
+msgstr "ليلة مجانية"
+
+msgid "Room Upgrade"
+msgstr "ترقية الغرفة"
+
+msgid "Amenity"
+msgstr "خدمة إضافية"
+
+msgid "e.g. 10% or Free breakfast"
+msgstr "مثال: 10% أو إفطار مجاني"
+
+# ---- Phase 4: POS (NZL-037) — Missing Translations ----
+msgid "Today's Orders"
+msgstr "طلبات اليوم"
+
+msgid "Active Outlets"
+msgstr "المنافذ النشطة"
+
+msgid "All Outlets"
+msgstr "جميع المنافذ"
+
+msgid "Posted"
+msgstr "مرحّل"
+
+msgid "Order #"
+msgstr "طلب #"
+
+msgid "No outlets found. Add your first outlet to get started."
+msgstr "لم يتم العثور على منافذ. أضف أول منفذ للبدء."
+
+msgid "Outlet name"
+msgstr "اسم المنفذ"
+
+msgid "Arabic name"
+msgstr "الاسم بالعربية"
+
+msgid "Item name"
+msgstr "اسم الصنف"
+
+msgid "-- Select Outlet --"
+msgstr "-- اختر المنفذ --"
+
+msgid "e.g. Beverages, Main Course..."
+msgstr "مثال: مشروبات، طبق رئيسي..."
+
+msgid "Booking ID"
+msgstr "رقم الحجز"
+
+msgid "Auto or manual"
+msgstr "تلقائي أو يدوي"
+
+msgid "Guest ID"
+msgstr "رقم الضيف"
+
+msgid "Optional"
+msgstr "اختياري"
+
+msgid "Booking found:"
+msgstr "تم العثور على الحجز:"
+
+msgid "Menu Items"
+msgstr "أصناف القائمة"
+
+msgid "No active items for this outlet."
+msgstr "لا توجد أصناف نشطة لهذا المنفذ."
+
+msgid "Order Items"
+msgstr "عناصر الطلب"
+
+msgid "Total:"
+msgstr "المجموع:"
+
+msgid "Special instructions..."
+msgstr "تعليمات خاصة..."
+
+msgid "Create Order"
+msgstr "إنشاء الطلب"
+
+msgid "Creating..."
+msgstr "جاري الإنشاء..."
+
+msgid "Order"
+msgstr "طلب"
+
+# ---- Reviews (NZL-020) — Missing Translations ----
+msgid "ID"
+msgstr "المعرف"
+
+msgid "Platform"
+msgstr "المنصة"
+
+msgid "Clicked At"
+msgstr "وقت النقر"
+
+# ---- WhatsApp (NZL-023) — Missing Translations ----
+msgid "Phone or message..."
+msgstr "الهاتف أو الرسالة..."

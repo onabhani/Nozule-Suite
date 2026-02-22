@@ -193,7 +193,7 @@ class LoyaltyRepository {
 			 INNER JOIN {$this->guestsTable()} g ON g.id = m.guest_id
 			 LEFT JOIN {$this->tiersTable()} t ON t.id = m.tier_id
 			 {$where_clause}
-			 ORDER BY m.enrolled_at DESC
+			 ORDER BY m.joined_at DESC
 			 LIMIT %d OFFSET %d",
 			...$params
 		);
@@ -283,7 +283,7 @@ class LoyaltyRepository {
 			return $row ? LoyaltyMember::fromRow( $row ) : false;
 		}
 
-		$data['enrolled_at'] = $data['enrolled_at'] ?? $now;
+		$data['joined_at'] = $data['joined_at'] ?? $now;
 		$data['updated_at']  = $now;
 
 		$id = $this->db->insert( 'loyalty_members', $data );
