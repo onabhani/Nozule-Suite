@@ -97,6 +97,11 @@ class Plugin {
             \Nozule\Modules\Metasearch\MetasearchModule::class,
             \Nozule\Modules\Currency\CurrencyModule::class,
             \Nozule\Modules\Documents\DocumentsModule::class,
+            \Nozule\Modules\Forecasting\ForecastingModule::class,
+            \Nozule\Modules\Loyalty\LoyaltyModule::class,
+            \Nozule\Modules\POS\POSModule::class,
+            \Nozule\Modules\RateShopping\RateShoppingModule::class,
+            \Nozule\Modules\Branding\BrandingModule::class,
         ];
 
         foreach ( $modules as $module_class ) {

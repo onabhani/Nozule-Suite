@@ -3,7 +3,7 @@
  * Plugin Name:       Nozule
  * Plugin URI:        https://github.com/onabhani/Rawaq-Suite
  * Description:       A comprehensive hotel booking management system for WordPress. Manage rooms, bookings, guests, pricing, channels, and reports.
- * Version:           1.1.0
+ * Version:           1.3.1
  * Author:            hdqah.com
  * Author URI:        https://hdqah.com
  * License:           GPL-2.0-or-later
@@ -21,12 +21,12 @@ if ( ! defined( 'ABSPATH' ) ) {
 }
 
 // Plugin constants
-define( 'NZL_VERSION', '1.1.0' );
+define( 'NZL_VERSION', '1.3.1' );
 define( 'NZL_PLUGIN_FILE', __FILE__ );
 define( 'NZL_PLUGIN_DIR', plugin_dir_path( __FILE__ ) );
 define( 'NZL_PLUGIN_URL', plugin_dir_url( __FILE__ ) );
 define( 'NZL_PLUGIN_BASENAME', plugin_basename( __FILE__ ) );
-define( 'NZL_DB_VERSION', '1.0.0' );
+define( 'NZL_DB_VERSION', '1.3.1' );
 
 // Autoloader
 if ( file_exists( NZL_PLUGIN_DIR . 'vendor/autoload.php' ) ) {
@@ -74,5 +74,8 @@ register_deactivation_hook( __FILE__, function () {
 
 // Initialize the plugin
 add_action( 'plugins_loaded', function () {
+    // Run pending migrations on version upgrade (no deactivate/reactivate needed).
+    \Nozule\Core\Activator::maybeUpgrade();
+
     nozule_manager()->boot();
 }, 10 );

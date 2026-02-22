@@ -24,6 +24,11 @@ use Nozule\Admin\Pages\ReviewsPage;
 use Nozule\Admin\Pages\WhatsAppPage;
 use Nozule\Admin\Pages\ChannelSyncPage;
 use Nozule\Admin\Pages\MetasearchPage;
+use Nozule\Admin\Pages\ForecastingPage;
+use Nozule\Admin\Pages\LoyaltyPage;
+use Nozule\Admin\Pages\POSPage;
+use Nozule\Admin\Pages\RateShoppingPage;
+use Nozule\Admin\Pages\BrandingPage;
 
 /**
  * Registers the WordPress admin menu structure for the Nozule plugin.
@@ -249,6 +254,51 @@ class AdminMenu {
 
         add_submenu_page(
             'nzl-dashboard',
+            __( 'Forecasting', 'nozule' ),
+            __( 'Forecasting', 'nozule' ),
+            'nzl_admin',
+            'nzl-forecasting',
+            [ $this, 'renderForecasting' ]
+        );
+
+        add_submenu_page(
+            'nzl-dashboard',
+            __( 'Loyalty', 'nozule' ),
+            __( 'Loyalty', 'nozule' ),
+            'nzl_admin',
+            'nzl-loyalty',
+            [ $this, 'renderLoyalty' ]
+        );
+
+        add_submenu_page(
+            'nzl-dashboard',
+            __( 'POS', 'nozule' ),
+            __( 'POS', 'nozule' ),
+            'nzl_staff',
+            'nzl-pos',
+            [ $this, 'renderPOS' ]
+        );
+
+        add_submenu_page(
+            'nzl-dashboard',
+            __( 'Rate Shopping', 'nozule' ),
+            __( 'Rate Shopping', 'nozule' ),
+            'nzl_admin',
+            'nzl-rate-shopping',
+            [ $this, 'renderRateShopping' ]
+        );
+
+        add_submenu_page(
+            'nzl-dashboard',
+            __( 'Branding', 'nozule' ),
+            __( 'Branding', 'nozule' ),
+            'nzl_admin',
+            'nzl-branding',
+            [ $this, 'renderBranding' ]
+        );
+
+        add_submenu_page(
+            'nzl-dashboard',
             __( 'Settings', 'nozule' ),
             __( 'Settings', 'nozule' ),
             'nzl_admin',
@@ -343,5 +393,25 @@ class AdminMenu {
 
     public function renderMetasearch(): void {
         ( new MetasearchPage() )->render();
+    }
+
+    public function renderForecasting(): void {
+        ( new ForecastingPage() )->render();
+    }
+
+    public function renderLoyalty(): void {
+        ( new LoyaltyPage() )->render();
+    }
+
+    public function renderPOS(): void {
+        ( new POSPage() )->render();
+    }
+
+    public function renderRateShopping(): void {
+        ( new RateShoppingPage() )->render();
+    }
+
+    public function renderBranding(): void {
+        ( new BrandingPage() )->render();
     }
 }

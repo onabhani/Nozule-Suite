@@ -1832,6 +1832,70 @@ msgstr "الجمعة"
 msgid "Saturday"
 msgstr "السبت"
 
+msgid "Day-of-Week"
+msgstr "أيام الأسبوع"
+
+msgid "Day of Week"
+msgstr "يوم الأسبوع"
+
+msgid "Threshold (%)"
+msgstr "الحد (%)"
+
+msgid "Add Day-of-Week Rule"
+msgstr "إضافة قاعدة يوم الأسبوع"
+
+msgid "Edit Occupancy Rule"
+msgstr "تعديل قاعدة الإشغال"
+
+msgid "Edit Day-of-Week Rule"
+msgstr "تعديل قاعدة يوم الأسبوع"
+
+msgid "Edit Event Override"
+msgstr "تعديل تجاوز الحدث"
+
+msgid "No occupancy rules found."
+msgstr "لا توجد قواعد إشغال."
+
+msgid "No day-of-week rules found."
+msgstr "لا توجد قواعد أيام الأسبوع."
+
+msgid "No event overrides found."
+msgstr "لا توجد تجاوزات أحداث."
+
+msgid ""
+"Automatically adjust rates based on hotel occupancy levels. When occupancy "
+"exceeds the threshold, the modifier is applied."
+msgstr ""
+"ضبط الأسعار تلقائياً بناءً على مستويات إشغال الفندق. عندما يتجاوز الإشغال الحد "
+"المحدد، يتم تطبيق المعدّل."
+
+msgid ""
+"Set different rate modifiers for specific days of the week. For example, "
+"increase rates on Fridays and Saturdays."
+msgstr ""
+"تعيين معدّلات أسعار مختلفة لأيام محددة من الأسبوع. على سبيل المثال، زيادة "
+"الأسعار في أيام الجمعة والسبت."
+
+msgid ""
+"Create rate overrides for named events and holidays with specific date "
+"ranges."
+msgstr "إنشاء تجاوزات أسعار للأحداث والعطلات المسمّاة ضمن نطاقات تواريخ محددة."
+
+msgid "e.g. 70"
+msgstr "مثال: 70"
+
+msgid "e.g. 10 for +10%"
+msgstr "مثال: 10 لـ +10%"
+
+msgid "e.g. 15 for +15%"
+msgstr "مثال: 15 لـ +15%"
+
+msgid "e.g. 50 for +50%"
+msgstr "مثال: 50 لـ +50%"
+
+msgid "e.g. Eid Holiday"
+msgstr "مثال: عطلة العيد"
+
 # ──────────────────────────────────────────────────────────
 # Reviews & Reputation (NZL-020)
 # ──────────────────────────────────────────────────────────
@@ -2449,3 +2513,382 @@ msgid ""
 "configured."
 msgstr ""
 "تم تطبيق ملف الدولة \"%s\". تم إعداد العملة والمنطقة الزمنية و%d ضريبة."
+
+# ──────────────────────────────────────────────────────────
+# NZL-033: Demand Forecasting
+# ──────────────────────────────────────────────────────────
+msgid "Demand Forecasting"
+msgstr "التنبؤ بالطلب"
+
+msgid "Forecasting"
+msgstr "التنبؤ"
+
+msgid "Generate Forecast"
+msgstr "توليد التنبؤ"
+
+msgid "Predicted Occupancy"
+msgstr "الإشغال المتوقع"
+
+msgid "Suggested Rate"
+msgstr "السعر المقترح"
+
+msgid "Current Rate"
+msgstr "السعر الحالي"
+
+msgid "Confidence"
+msgstr "الثقة"
+
+msgid "Factors"
+msgstr "العوامل"
+
+msgid "Avg Predicted Occupancy"
+msgstr "متوسط الإشغال المتوقع"
+
+msgid "Suggested ADR"
+msgstr "متوسط سعر الغرفة المقترح"
+
+msgid "Confidence Level"
+msgstr "مستوى الثقة"
+
+msgid ""
+"No forecast data available. Click Generate Forecast to create predictions."
+msgstr "لا توجد بيانات تنبؤ. انقر على توليد التنبؤ لإنشاء التوقعات."
+
+msgid "Forecast generated successfully."
+msgstr "تم توليد التنبؤ بنجاح."
+
+msgid "Medium"
+msgstr "متوسط"
+
+# ──────────────────────────────────────────────────────────
+# NZL-036: Loyalty Program
+# ──────────────────────────────────────────────────────────
+msgid "Loyalty Program"
+msgstr "برنامج الولاء"
+
+msgid "Loyalty"
+msgstr "الولاء"
+
+msgid "Members"
+msgstr "الأعضاء"
+
+msgid "Tiers"
+msgstr "المستويات"
+
+msgid "Rewards"
+msgstr "المكافآت"
+
+msgid "Points Balance"
+msgstr "رصيد النقاط"
+
+msgid "Lifetime Points"
+msgstr "النقاط الإجمالية"
+
+msgid "Joined"
+msgstr "تاريخ الانضمام"
+
+msgid "Enroll Guest"
+msgstr "تسجيل ضيف"
+
+msgid "Total Members"
+msgstr "إجمالي الأعضاء"
+
+msgid "Points Issued"
+msgstr "النقاط الصادرة"
+
+msgid "Rewards Redeemed"
+msgstr "المكافآت المستردة"
+
+msgid "Tier Name"
+msgstr "اسم المستوى"
+
+msgid "Tier Name (Arabic)"
+msgstr "اسم المستوى (عربي)"
+
+msgid "Min Points"
+msgstr "الحد الأدنى للنقاط"
+
+msgid "Discount %"
+msgstr "نسبة الخصم %"
+
+msgid "Benefits"
+msgstr "المزايا"
+
+msgid "Add Tier"
+msgstr "إضافة مستوى"
+
+msgid "Edit Tier"
+msgstr "تعديل المستوى"
+
+msgid "Reward Name"
+msgstr "اسم المكافأة"
+
+msgid "Reward Name (Arabic)"
+msgstr "اسم المكافأة (عربي)"
+
+msgid "Points Cost"
+msgstr "تكلفة النقاط"
+
+msgid "Reward Type"
+msgstr "نوع المكافأة"
+
+msgid "Reward Value"
+msgstr "قيمة المكافأة"
+
+msgid "Add Reward"
+msgstr "إضافة مكافأة"
+
+msgid "Edit Reward"
+msgstr "تعديل المكافأة"
+
+msgid "Adjust Points"
+msgstr "تعديل النقاط"
+
+msgid "Member Details"
+msgstr "تفاصيل العضو"
+
+msgid "Transaction History"
+msgstr "سجل المعاملات"
+
+msgid "No members found."
+msgstr "لم يتم العثور على أعضاء."
+
+msgid "No tiers configured."
+msgstr "لم يتم إعداد المستويات."
+
+msgid "No rewards configured."
+msgstr "لم يتم إعداد المكافآت."
+
+msgid "Bronze"
+msgstr "برونزي"
+
+msgid "Silver"
+msgstr "فضي"
+
+msgid "Gold"
+msgstr "ذهبي"
+
+msgid "Platinum"
+msgstr "بلاتيني"
+
+# ──────────────────────────────────────────────────────────
+# NZL-037: POS Integration
+# ──────────────────────────────────────────────────────────
+msgid "Point of Sale"
+msgstr "نقطة البيع"
+
+msgid "POS"
+msgstr "نقطة البيع"
+
+msgid "Orders"
+msgstr "الطلبات"
+
+msgid "Outlets"
+msgstr "المنافذ"
+
+msgid "Items"
+msgstr "الأصناف"
+
+msgid "New Order"
+msgstr "طلب جديد"
+
+msgid "Outlet"
+msgstr "المنفذ"
+
+msgid "Outlet Name"
+msgstr "اسم المنفذ"
+
+msgid "Outlet Name (Arabic)"
+msgstr "اسم المنفذ (عربي)"
+
+msgid "Outlet Type"
+msgstr "نوع المنفذ"
+
+msgid "Restaurant"
+msgstr "مطعم"
+
+msgid "Spa"
+msgstr "سبا"
+
+msgid "Item Name"
+msgstr "اسم الصنف"
+
+msgid "Item Name (Arabic)"
+msgstr "اسم الصنف (عربي)"
+
+msgid "Quantity"
+msgstr "الكمية"
+
+msgid "Post to Folio"
+msgstr "ترحيل للفاتورة"
+
+msgid "Add Outlet"
+msgstr "إضافة منفذ"
+
+msgid "Edit Outlet"
+msgstr "تعديل المنفذ"
+
+msgid "Edit Item"
+msgstr "تعديل الصنف"
+
+msgid "Order Details"
+msgstr "تفاصيل الطلب"
+
+msgid "No orders found."
+msgstr "لم يتم العثور على طلبات."
+
+msgid "No outlets configured."
+msgstr "لم يتم إعداد المنافذ."
+
+msgid "No items found."
+msgstr "لم يتم العثور على أصناف."
+
+msgid "Order created successfully."
+msgstr "تم إنشاء الطلب بنجاح."
+
+msgid "Posted to folio."
+msgstr "تم الترحيل للفاتورة."
+
+# ──────────────────────────────────────────────────────────
+# NZL-039: Competitive Rate Shopping
+# ──────────────────────────────────────────────────────────
+msgid "Rate Shopping"
+msgstr "مقارنة الأسعار"
+
+msgid "Competitive Rate Shopping"
+msgstr "مقارنة الأسعار التنافسية"
+
+msgid "Competitors"
+msgstr "المنافسون"
+
+msgid "Record Rates"
+msgstr "تسجيل الأسعار"
+
+msgid "Alerts"
+msgstr "التنبيهات"
+
+msgid "Parity Report"
+msgstr "تقرير التكافؤ"
+
+msgid "Competitor Name"
+msgstr "اسم المنافس"
+
+msgid "Competitor Name (Arabic)"
+msgstr "اسم المنافس (عربي)"
+
+msgid "Room Type Match"
+msgstr "نوع الغرفة المطابق"
+
+msgid "Our Rate"
+msgstr "سعرنا"
+
+msgid "Their Rate"
+msgstr "سعرهم"
+
+msgid "Difference"
+msgstr "الفرق"
+
+msgid "Parity"
+msgstr "تكافؤ"
+
+msgid "Undercut"
+msgstr "أقل منّا"
+
+msgid "Overpriced"
+msgstr "أعلى منّا"
+
+msgid "Parity Violations"
+msgstr "انتهاكات التكافؤ"
+
+msgid "Average Rate Diff"
+msgstr "متوسط فرق الأسعار"
+
+msgid "Total Competitors"
+msgstr "إجمالي المنافسين"
+
+msgid "Add Competitor"
+msgstr "إضافة منافس"
+
+msgid "Edit Competitor"
+msgstr "تعديل المنافس"
+
+msgid "Resolve"
+msgstr "حل"
+
+msgid "Unresolved"
+msgstr "غير محلول"
+
+msgid "Resolved"
+msgstr "محلول"
+
+msgid "No competitors configured."
+msgstr "لم يتم إعداد المنافسين."
+
+msgid "No alerts found."
+msgstr "لم يتم العثور على تنبيهات."
+
+msgid "Rate recorded successfully."
+msgstr "تم تسجيل السعر بنجاح."
+
+# ──────────────────────────────────────────────────────────
+# NZL-041: White-Label / Multi-Brand
+# ──────────────────────────────────────────────────────────
+msgid "Branding"
+msgstr "العلامة التجارية"
+
+msgid "Add Brand"
+msgstr "إضافة علامة تجارية"
+
+msgid "Edit Brand"
+msgstr "تعديل العلامة التجارية"
+
+msgid "Brand Name"
+msgstr "اسم العلامة التجارية"
+
+msgid "Brand Name (Arabic)"
+msgstr "اسم العلامة التجارية (عربي)"
+
+msgid "Logo URL"
+msgstr "رابط الشعار"
+
+msgid "Favicon URL"
+msgstr "رابط الأيقونة"
+
+msgid "Primary Color"
+msgstr "اللون الأساسي"
+
+msgid "Secondary Color"
+msgstr "اللون الثانوي"
+
+msgid "Accent Color"
+msgstr "لون التمييز"
+
+msgid "Text Color"
+msgstr "لون النص"
+
+msgid "Custom CSS"
+msgstr "CSS مخصص"
+
+msgid "Email Header HTML"
+msgstr "ترويسة البريد HTML"
+
+msgid "Email Footer HTML"
+msgstr "تذييل البريد HTML"
+
+msgid "Preview"
+msgstr "معاينة"
+
+msgid "No brands configured."
+msgstr "لم يتم إعداد علامات تجارية."
+
+msgid "Brand saved successfully."
+msgstr "تم حفظ العلامة التجارية بنجاح."
+
+msgid "Brand set as default."
+msgstr "تم تعيين العلامة التجارية كافتراضية."
+
+msgid "Colors"
+msgstr "الألوان"
+
+msgid "Advanced"
+msgstr "متقدم"
