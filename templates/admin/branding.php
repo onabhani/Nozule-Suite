@@ -42,14 +42,14 @@ if ( ! defined( 'ABSPATH' ) ) exit;
 
                         <!-- Default badge -->
                         <template x-if="brand.is_default">
-                            <span class="nzl-badge nzl-badge-confirmed" style="position:absolute; top:14px; right:12px;">
+                            <span class="nzl-badge nzl-badge-confirmed" style="position:absolute; top:14px; inset-inline-end:12px;">
                                 <?php esc_html_e( 'Default', 'nozule' ); ?>
                             </span>
                         </template>
 
                         <!-- Inactive badge -->
                         <template x-if="!brand.is_active">
-                            <span class="nzl-badge nzl-badge-pending" style="position:absolute; top:14px; right:12px;">
+                            <span class="nzl-badge nzl-badge-pending" style="position:absolute; top:14px; inset-inline-end:12px;">
                                 <?php esc_html_e( 'Inactive', 'nozule' ); ?>
                             </span>
                         </template>

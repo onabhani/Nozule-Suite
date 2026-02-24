@@ -2851,8 +2851,26 @@ msgstr "اسم العلامة التجارية (عربي)"
 msgid "Logo URL"
 msgstr "رابط الشعار"
 
+msgid "Logo"
+msgstr "الشعار"
+
 msgid "Favicon URL"
 msgstr "رابط الأيقونة"
+
+msgid "Favicon"
+msgstr "الأيقونة"
+
+msgid "Upload Logo"
+msgstr "رفع الشعار"
+
+msgid "Upload Favicon"
+msgstr "رفع الأيقونة"
+
+msgid "Remove logo"
+msgstr "إزالة الشعار"
+
+msgid "Remove favicon"
+msgstr "إزالة الأيقونة"
 
 msgid "Primary Color"
 msgstr "اللون الأساسي"
