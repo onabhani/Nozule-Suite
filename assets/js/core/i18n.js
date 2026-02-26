@@ -390,7 +390,18 @@ var NozuleI18n = (function () {
             'failed_set_default_brand': 'Failed to set default brand',
             'select_logo': 'Select Logo',
             'select_favicon': 'Select Favicon',
-            'use_image': 'Use this image'
+            'use_image': 'Use this image',
+
+            // ── Employees (NZL-042) ──────────────────────────
+            'failed_load_employees': 'Failed to load employees',
+            'employee_created': 'Employee created successfully',
+            'employee_updated': 'Employee updated successfully',
+            'failed_save_employee': 'Failed to save employee',
+            'confirm_deactivate_employee': 'Are you sure you want to deactivate this employee?',
+            'employee_deactivated': 'Employee deactivated',
+            'failed_deactivate_employee': 'Failed to deactivate employee',
+            'role_manager': 'Hotel Manager',
+            'role_reception': 'Hotel Reception'
         },
         ar: {
             'check_in': 'تسجيل الوصول',
@@ -845,7 +856,18 @@ var NozuleI18n = (function () {
             'failed_set_default_brand': 'فشل تعيين العلامة التجارية الافتراضية',
             'select_logo': 'اختر الشعار',
             'select_favicon': 'اختر الأيقونة',
-            'use_image': 'استخدم هذه الصورة'
+            'use_image': 'استخدم هذه الصورة',
+
+            // ── الموظفين (NZL-042) ───────────────────────────
+            'failed_load_employees': 'فشل تحميل الموظفين',
+            'employee_created': 'تم إنشاء الموظف بنجاح',
+            'employee_updated': 'تم تحديث الموظف بنجاح',
+            'failed_save_employee': 'فشل حفظ الموظف',
+            'confirm_deactivate_employee': 'هل أنت متأكد من تعطيل هذا الموظف؟',
+            'employee_deactivated': 'تم تعطيل الموظف',
+            'failed_deactivate_employee': 'فشل تعطيل الموظف',
+            'role_manager': 'مدير الفندق',
+            'role_reception': 'استقبال الفندق'
         }
     };
 

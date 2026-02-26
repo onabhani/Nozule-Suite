@@ -137,6 +137,7 @@ class AdminAssets {
             'nozule-admin-pos'              => 'pos.js',
             'nozule-admin-rate-shopping'    => 'rate-shopping.js',
             'nozule-admin-branding'         => 'branding.js',
+            'nozule-admin-employees'        => 'employees.js',
         ];
 
         $component_handles = [];
@@ -203,6 +204,7 @@ class AdminAssets {
                 'view_calendar'    => current_user_can( 'nzl_view_calendar' ),
                 'manage_channels'  => current_user_can( 'nzl_manage_channels' ),
                 'manage_settings'  => current_user_can( 'nzl_manage_settings' ),
+                'manage_employees' => current_user_can( 'nzl_manage_employees' ),
             ],
         ] );
     }

@@ -29,6 +29,7 @@ use Nozule\Admin\Pages\LoyaltyPage;
 use Nozule\Admin\Pages\POSPage;
 use Nozule\Admin\Pages\RateShoppingPage;
 use Nozule\Admin\Pages\BrandingPage;
+use Nozule\Admin\Pages\EmployeesPage;
 
 /**
  * Registers the WordPress admin menu structure for the Nozule plugin.
@@ -299,6 +300,15 @@ class AdminMenu {
 
         add_submenu_page(
             'nzl-dashboard',
+            __( 'Employees', 'nozule' ),
+            __( 'Employees', 'nozule' ),
+            'nzl_admin',
+            'nzl-employees',
+            [ $this, 'renderEmployees' ]
+        );
+
+        add_submenu_page(
+            'nzl-dashboard',
             __( 'Settings', 'nozule' ),
             __( 'Settings', 'nozule' ),
             'nzl_admin',
@@ -413,5 +423,9 @@ class AdminMenu {
 
     public function renderBranding(): void {
         ( new BrandingPage() )->render();
+    }
+
+    public function renderEmployees(): void {
+        ( new EmployeesPage() )->render();
     }
 }

@@ -1,0 +1,189 @@
+/**
+ * Nozule - Admin Employees (NZL-042)
+ *
+ * Staff management: list, create, edit, deactivate, assign capabilities.
+ */
+document.addEventListener('alpine:init', function () {
+
+    Alpine.data('nzlEmployees', function () {
+        return {
+            loading: true,
+            saving: false,
+            employees: [],
+            allCapabilities: [],
+
+            showModal: false,
+            editingId: null,
+            form: {},
+
+            isArabic: (window.NozuleAdmin && NozuleAdmin.locale || '').indexOf('ar') === 0,
+
+            init: function () {
+                this.form = this.defaultForm();
+                this.loadCapabilities();
+                this.loadEmployees();
+            },
+
+            defaultForm: function () {
+                return {
+                    display_name: '',
+                    email: '',
+                    username: '',
+                    password: '',
+                    role: 'nzl_reception',
+                    capabilities: []
+                };
+            },
+
+            // ---- Role preset capabilities ----
+
+            managerCaps: function () {
+                return [
+                    'nzl_admin', 'nzl_staff', 'nzl_manage_rooms', 'nzl_manage_rates',
+                    'nzl_manage_inventory', 'nzl_manage_bookings', 'nzl_manage_guests',
+                    'nzl_view_reports', 'nzl_view_calendar', 'nzl_manage_channels',
+                    'nzl_manage_settings', 'nzl_manage_employees'
+                ];
+            },
+
+            receptionCaps: function () {
+                return [
+                    'nzl_staff', 'nzl_manage_bookings', 'nzl_manage_guests', 'nzl_view_calendar'
+                ];
+            },
+
+            applyRolePreset: function () {
+                if (this.form.role === 'nzl_manager') {
+                    this.form.capabilities = this.managerCaps().slice();
+                } else {
+                    this.form.capabilities = this.receptionCaps().slice();
+                }
+            },
+
+            // ---- Data loading ----
+
+            loadEmployees: function () {
+                var self = this;
+                self.loading = true;
+
+                NozuleAPI.get('/admin/employees').then(function (response) {
+                    self.employees = response.data || [];
+                }).catch(function (err) {
+                    NozuleUtils.toast(err.message || NozuleI18n.t('failed_load_employees'), 'error');
+                }).finally(function () {
+                    self.loading = false;
+                });
+            },
+
+            loadCapabilities: function () {
+                var self = this;
+
+                NozuleAPI.get('/admin/employees/capabilities').then(function (response) {
+                    self.allCapabilities = response.data || [];
+                }).catch(function () {
+                    // Fallback — capabilities will be empty.
+                });
+            },
+
+            // ---- Modal ----
+
+            openModal: function (emp) {
+                if (emp) {
+                    this.editingId = emp.id;
+                    this.form = {
+                        display_name: emp.display_name || '',
+                        email: emp.email || '',
+                        username: emp.username || '',
+                        password: '',
+                        role: emp.role || 'nzl_reception',
+                        capabilities: emp.capabilities ? emp.capabilities.slice() : []
+                    };
+                } else {
+                    this.editingId = null;
+                    this.form = this.defaultForm();
+                    this.applyRolePreset();
+                }
+                this.showModal = true;
+            },
+
+            // ---- CRUD ----
+
+            save: function () {
+                var self = this;
+                var data = {
+                    display_name: self.form.display_name,
+                    email: self.form.email,
+                    role: self.form.role,
+                    capabilities: self.form.capabilities
+                };
+
+                if (self.form.password) {
+                    data.password = self.form.password;
+                }
+
+                if (!self.editingId) {
+                    data.username = self.form.username;
+                    data.password = self.form.password;
+
+                    if (!data.username || !data.email || !data.password) {
+                        NozuleUtils.toast(NozuleI18n.t('fill_required_fields'), 'error');
+                        return;
+                    }
+                } else {
+                    if (!data.display_name || !data.email) {
+                        NozuleUtils.toast(NozuleI18n.t('fill_required_fields'), 'error');
+                        return;
+                    }
+                }
+
+                self.saving = true;
+
+                var promise;
+                if (self.editingId) {
+                    promise = NozuleAPI.put('/admin/employees/' + self.editingId, data);
+                } else {
+                    promise = NozuleAPI.post('/admin/employees', data);
+                }
+
+                promise.then(function () {
+                    self.showModal = false;
+                    self.loadEmployees();
+                    NozuleUtils.toast(
+                        NozuleI18n.t(self.editingId ? 'employee_updated' : 'employee_created'),
+                        'success'
+                    );
+                }).catch(function (err) {
+                    NozuleUtils.toast(err.message || NozuleI18n.t('failed_save_employee'), 'error');
+                }).finally(function () {
+                    self.saving = false;
+                });
+            },
+
+            deactivateEmployee: function (id) {
+                if (!confirm(NozuleI18n.t('confirm_deactivate_employee'))) return;
+                var self = this;
+
+                NozuleAPI.delete('/admin/employees/' + id).then(function () {
+                    self.loadEmployees();
+                    NozuleUtils.toast(NozuleI18n.t('employee_deactivated'), 'success');
+                }).catch(function (err) {
+                    NozuleUtils.toast(err.message || NozuleI18n.t('failed_deactivate_employee'), 'error');
+                });
+            },
+
+            // ---- Helpers ----
+
+            roleLabel: function (role) {
+                if (role === 'nzl_manager') return NozuleI18n.t('role_manager');
+                if (role === 'nzl_reception') return NozuleI18n.t('role_reception');
+                return role;
+            },
+
+            formatDate: function (dateStr) {
+                if (!dateStr) return '—';
+                var d = new Date(dateStr);
+                return d.toLocaleDateString();
+            }
+        };
+    });
+});

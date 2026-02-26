@@ -89,11 +89,20 @@ class Activator {
 
     /**
      * Create custom user roles.
+     *
+     * Role display names are stored as plain English in the DB.
+     * Translation happens at display-time via the `editable_roles` filter
+     * registered in StaffIsolation.
      */
     private static function createRoles(): void {
-        // Hotel Manager role
-        add_role( 'nzl_manager', __( 'Hotel Manager', 'nozule' ), [
+        // Remove first to ensure clean display names (fixes locale mismatch).
+        remove_role( 'nzl_manager' );
+        remove_role( 'nzl_reception' );
+
+        // Hotel Manager role — hardcoded English (no __()).
+        add_role( 'nzl_manager', 'Hotel Manager', [
             'read'                 => true,
+            'upload_files'         => true,
             'nzl_admin'            => true,
             'nzl_staff'            => true,
             'nzl_manage_rooms'     => true,
@@ -105,18 +114,20 @@ class Activator {
             'nzl_view_calendar'    => true,
             'nzl_manage_channels'  => true,
             'nzl_manage_settings'  => true,
+            'nzl_manage_employees' => true,
         ] );
 
-        // Reception role
-        add_role( 'nzl_reception', __( 'Hotel Reception', 'nozule' ), [
+        // Reception role — hardcoded English (no __()).
+        add_role( 'nzl_reception', 'Hotel Reception', [
             'read'                => true,
+            'upload_files'        => true,
             'nzl_staff'           => true,
             'nzl_manage_bookings' => true,
             'nzl_manage_guests'   => true,
             'nzl_view_calendar'   => true,
         ] );
 
-        // Grant all capabilities to administrators
+        // Grant all capabilities to administrators.
         $admin_role = get_role( 'administrator' );
         if ( $admin_role ) {
             $caps = [
@@ -131,6 +142,7 @@ class Activator {
                 'nzl_view_calendar',
                 'nzl_manage_channels',
                 'nzl_manage_settings',
+                'nzl_manage_employees',
             ];
             foreach ( $caps as $cap ) {
                 $admin_role->add_cap( $cap );

@@ -102,6 +102,7 @@ class Plugin {
             \Nozule\Modules\POS\POSModule::class,
             \Nozule\Modules\RateShopping\RateShoppingModule::class,
             \Nozule\Modules\Branding\BrandingModule::class,
+            \Nozule\Modules\Employees\EmployeesModule::class,
         ];
 
         foreach ( $modules as $module_class ) {
@@ -127,6 +128,9 @@ class Plugin {
 
             $admin_assets = new \Nozule\Admin\AdminAssets( $this->container );
             $admin_assets->register();
+
+            $staff_isolation = new \Nozule\Admin\StaffIsolation();
+            $staff_isolation->register();
         }
 
         // Public assets
