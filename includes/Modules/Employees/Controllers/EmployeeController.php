@@ -77,12 +77,28 @@ class EmployeeController {
 
     /**
      * List all users with nzl_* roles.
+     *
+     * Uses an explicit meta_query on the capabilities key to ensure
+     * custom roles are found regardless of WordPress role registration state.
      */
     public function list( WP_REST_Request $request ): WP_REST_Response {
+        global $wpdb;
+
+        $cap_key = $wpdb->prefix . 'capabilities';
+
+        $role_clauses = [];
+        foreach ( self::HOTEL_ROLES as $role ) {
+            $role_clauses[] = [
+                'key'     => $cap_key,
+                'value'   => '"' . $role . '"',
+                'compare' => 'LIKE',
+            ];
+        }
+
         $args = [
-            'role__in' => self::HOTEL_ROLES,
-            'orderby'  => 'display_name',
-            'order'    => 'ASC',
+            'meta_query' => array_merge( [ 'relation' => 'OR' ], $role_clauses ),
+            'orderby'    => 'display_name',
+            'order'      => 'ASC',
         ];
 
         $search = sanitize_text_field( $request->get_param( 'search' ) ?? '' );
@@ -317,12 +333,35 @@ class EmployeeController {
             }
         }
 
+        // Determine the hotel role. WordPress $user->roles may be empty if
+        // the custom role is not registered via add_role() yet, so fall back
+        // to checking the raw capabilities meta for an nzl_* role key.
+        $role = '';
+        foreach ( $user->roles as $r ) {
+            if ( in_array( $r, self::HOTEL_ROLES, true ) ) {
+                $role = $r;
+                break;
+            }
+        }
+        if ( ! $role ) {
+            // Fallback: inspect the raw caps array stored in user meta.
+            $raw_caps = get_user_meta( $user->ID, $GLOBALS['wpdb']->prefix . 'capabilities', true );
+            if ( is_array( $raw_caps ) ) {
+                foreach ( self::HOTEL_ROLES as $hr ) {
+                    if ( ! empty( $raw_caps[ $hr ] ) ) {
+                        $role = $hr;
+                        break;
+                    }
+                }
+            }
+        }
+
         return [
             'id'           => $user->ID,
             'username'     => $user->user_login,
             'email'        => $user->user_email,
             'display_name' => $user->display_name,
-            'role'         => $user->roles[0] ?? '',
+            'role'         => $role,
             'capabilities' => $nzl_caps,
             'registered'   => $user->user_registered,
         ];
