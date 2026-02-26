@@ -2851,8 +2851,26 @@ msgstr "اسم العلامة التجارية (عربي)"
 msgid "Logo URL"
 msgstr "رابط الشعار"
 
+msgid "Logo"
+msgstr "الشعار"
+
 msgid "Favicon URL"
 msgstr "رابط الأيقونة"
+
+msgid "Favicon"
+msgstr "الأيقونة"
+
+msgid "Upload Logo"
+msgstr "رفع الشعار"
+
+msgid "Upload Favicon"
+msgstr "رفع الأيقونة"
+
+msgid "Remove logo"
+msgstr "إزالة الشعار"
+
+msgid "Remove favicon"
+msgstr "إزالة الأيقونة"
 
 msgid "Primary Color"
 msgstr "اللون الأساسي"
@@ -3274,3 +3292,76 @@ msgstr "العلامة التجارية غير موجودة."
 
 msgid "Validation failed."
 msgstr "فشل التحقق."
+
+# ---- Employees (NZL-042) ----
+msgid "Employees"
+msgstr "الموظفين"
+
+msgid "Manage hotel staff accounts, roles, and permissions."
+msgstr "إدارة حسابات موظفي الفندق والأدوار والصلاحيات."
+
+msgid "Add Employee"
+msgstr "إضافة موظف"
+
+msgid "No employees yet."
+msgstr "لا يوجد موظفين بعد."
+
+msgid "Add your first staff member to get started."
+msgstr "أضف أول موظف للبدء."
+
+msgid "Edit Employee"
+msgstr "تعديل الموظف"
+
+msgid "New Employee"
+msgstr "موظف جديد"
+
+msgid "Account"
+msgstr "الحساب"
+
+msgid "Display Name *"
+msgstr "الاسم المعروض *"
+
+msgid "Email *"
+msgstr "البريد الإلكتروني *"
+
+msgid "Username *"
+msgstr "اسم المستخدم *"
+
+msgid "Password *"
+msgstr "كلمة المرور *"
+
+msgid "New Password (leave empty to keep current)"
+msgstr "كلمة مرور جديدة (اتركها فارغة للإبقاء على الحالية)"
+
+msgid "Permissions"
+msgstr "الصلاحيات"
+
+msgid "Deactivate"
+msgstr "تعطيل"
+
+msgid "Username, email, and password are required."
+msgstr "اسم المستخدم والبريد الإلكتروني وكلمة المرور مطلوبة."
+
+msgid "Invalid role."
+msgstr "دور غير صالح."
+
+msgid "Username already exists."
+msgstr "اسم المستخدم موجود مسبقاً."
+
+msgid "Email already exists."
+msgstr "البريد الإلكتروني موجود مسبقاً."
+
+msgid "Employee created successfully."
+msgstr "تم إنشاء الموظف بنجاح."
+
+msgid "Employee updated successfully."
+msgstr "تم تحديث الموظف بنجاح."
+
+msgid "Employee not found."
+msgstr "الموظف غير موجود."
+
+msgid "You cannot deactivate yourself."
+msgstr "لا يمكنك تعطيل حسابك الخاص."
+
+msgid "Employee deactivated."
+msgstr "تم تعطيل الموظف."
