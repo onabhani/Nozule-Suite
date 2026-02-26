@@ -302,7 +302,7 @@ class AdminMenu {
             'nzl-dashboard',
             __( 'Employees', 'nozule' ),
             __( 'Employees', 'nozule' ),
-            'nzl_admin',
+            'nzl_manage_employees',
             'nzl-employees',
             [ $this, 'renderEmployees' ]
         );

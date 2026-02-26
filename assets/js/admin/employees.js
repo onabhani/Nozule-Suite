@@ -125,7 +125,7 @@ document.addEventListener('alpine:init', function () {
                     data.username = self.form.username;
                     data.password = self.form.password;
 
-                    if (!data.username || !data.email || !data.password) {
+                    if (!data.display_name || !data.username || !data.email || !data.password) {
                         NozuleUtils.toast(NozuleI18n.t('fill_required_fields'), 'error');
                         return;
                     }

@@ -218,7 +218,13 @@ class EmployeeController {
 
         // Update role if changed.
         $role = sanitize_text_field( $request->get_param( 'role' ) ?? '' );
-        if ( $role && in_array( $role, self::HOTEL_ROLES, true ) ) {
+        if ( $role ) {
+            if ( ! in_array( $role, self::HOTEL_ROLES, true ) ) {
+                return new WP_REST_Response( [
+                    'success' => false,
+                    'message' => __( 'Invalid role.', 'nozule' ),
+                ], 400 );
+            }
             $user->set_role( $role );
         }
 
