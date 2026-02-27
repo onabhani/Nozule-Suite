@@ -23,7 +23,15 @@ if ( ! defined( 'ABSPATH' ) ) exit;
     <!-- Employee Table -->
     <template x-if="!loading">
         <div class="nzl-card" style="overflow-x:auto;">
-            <template x-if="employees.length === 0">
+            <template x-if="employees.length === 0 && loadError">
+                <div style="text-align:center; padding:3rem; color:#ef4444;">
+                    <p style="font-size:1.25rem; margin-bottom:0.5rem;"><?php esc_html_e( 'Failed to load employees.', 'nozule' ); ?></p>
+                    <p style="margin-bottom:1rem; font-size:0.875rem;" x-text="loadError"></p>
+                    <button class="nzl-btn nzl-btn-primary" @click="loadEmployees()"><?php esc_html_e( 'Retry', 'nozule' ); ?></button>
+                </div>
+            </template>
+
+            <template x-if="employees.length === 0 && !loadError">
                 <div style="text-align:center; padding:3rem; color:#94a3b8;">
                     <p style="font-size:1.25rem; margin-bottom:0.5rem;"><?php esc_html_e( 'No employees yet.', 'nozule' ); ?></p>
                     <p><?php esc_html_e( 'Add your first staff member to get started.', 'nozule' ); ?></p>

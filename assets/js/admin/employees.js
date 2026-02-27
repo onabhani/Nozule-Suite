@@ -11,6 +11,7 @@ document.addEventListener('alpine:init', function () {
             saving: false,
             employees: [],
             allCapabilities: [],
+            loadError: '',
 
             showModal: false,
             editingId: null,
@@ -65,11 +66,15 @@ document.addEventListener('alpine:init', function () {
             loadEmployees: function () {
                 var self = this;
                 self.loading = true;
+                self.loadError = '';
 
                 NozuleAPI.get('/admin/employees').then(function (response) {
                     self.employees = response.data || [];
                 }).catch(function (err) {
-                    NozuleUtils.toast(err.message || NozuleI18n.t('failed_load_employees'), 'error');
+                    var msg = err.message || NozuleI18n.t('failed_load_employees');
+                    self.loadError = msg;
+                    console.error('[Nozule] Failed to load employees:', msg, err);
+                    NozuleUtils.toast(msg, 'error');
                 }).finally(function () {
                     self.loading = false;
                 });
