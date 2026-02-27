@@ -256,9 +256,9 @@ class EmployeeController {
             ], 400 );
         }
 
-        // Update role if changed (skip if editing self — already blocked above).
+        // Update role if changed (skip if editing self without manage_options).
         $role = sanitize_text_field( $request->get_param( 'role' ) ?? '' );
-        if ( $role && ! $is_self ) {
+        if ( $role && ! ( $is_self && ! current_user_can( 'manage_options' ) ) ) {
             if ( ! in_array( $role, self::HOTEL_ROLES, true ) ) {
                 return new WP_REST_Response( [
                     'success' => false,
@@ -268,8 +268,8 @@ class EmployeeController {
             $user->set_role( $role );
         }
 
-        // Apply custom capabilities (skip if editing self — already blocked above).
-        if ( ! $is_self ) {
+        // Apply custom capabilities (skip if editing self without manage_options).
+        if ( ! ( $is_self && ! current_user_can( 'manage_options' ) ) ) {
             $this->applyCapabilities( $id, $request->get_param( 'capabilities' ) );
         }
 

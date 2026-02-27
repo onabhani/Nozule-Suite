@@ -7,7 +7,7 @@ use Nozule\Modules\Metasearch\Services\GoogleHotelAdsService;
 /**
  * REST API controller for the Metasearch / Google Hotel Ads module.
  *
- * Admin routes (require manage_options):
+ * Admin routes (require 'manage_options' or 'nzl_admin'):
  *   GET  /admin/metasearch/settings      - Retrieve all GHA settings
  *   POST /admin/metasearch/settings      - Update GHA settings
  *   GET  /admin/metasearch/feed-preview  - Truncated XML feed (first 10 results)

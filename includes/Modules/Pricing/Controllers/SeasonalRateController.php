@@ -10,7 +10,7 @@ use Nozule\Modules\Pricing\Validators\SeasonalRateValidator;
 /**
  * REST API controller for seasonal rate admin CRUD operations.
  *
- * All endpoints require the 'manage_options' capability.
+ * All endpoints require either the 'manage_options' or 'nzl_manage_rates' capability.
  * Registered under the nozule/v1/seasonal-rates namespace.
  */
 class SeasonalRateController {

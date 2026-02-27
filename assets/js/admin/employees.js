@@ -73,7 +73,7 @@ document.addEventListener('alpine:init', function () {
             // ---- Self-edit check ----
 
             isSelf: function () {
-                return this.editingId && this.editingId === this.currentUserId;
+                return this.editingId && Number(this.editingId) === Number(this.currentUserId);
             },
 
             // ---- Data loading ----
@@ -135,8 +135,8 @@ document.addEventListener('alpine:init', function () {
                     email: self.form.email
                 };
 
-                // Only send role/capabilities when NOT editing self.
-                if (!self.isSelf()) {
+                // Send role/capabilities when not editing self or when creating.
+                if (!self.isSelf() || !self.editingId) {
                     data.role = self.form.role;
                     data.capabilities = self.form.capabilities;
                 }
@@ -148,8 +148,6 @@ document.addEventListener('alpine:init', function () {
                 if (!self.editingId) {
                     data.username = self.form.username;
                     data.password = self.form.password;
-                    data.role = self.form.role;
-                    data.capabilities = self.form.capabilities;
 
                     if (!data.display_name || !data.username || !data.email || !data.password) {
                         NozuleUtils.toast(NozuleI18n.t('fill_required_fields'), 'error');
