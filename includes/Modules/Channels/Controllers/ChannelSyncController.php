@@ -11,7 +11,8 @@ use Nozule\Modules\Channels\Services\ChannelSyncService;
 /**
  * REST API controller for channel sync operations.
  *
- * All endpoints require the manage_options capability.
+ * All endpoints require either the 'manage_options' capability or the
+ * 'nzl_manage_channels' capability (see checkPermission()).
  *
  * Routes registered under the nozule/v1 namespace:
  *   GET    /admin/channels/connections              - List all connections
@@ -132,10 +133,10 @@ class ChannelSyncController {
 	}
 
 	/**
-	 * Permission check: current user must have manage_options.
+	 * Permission check: current user must have manage_options or nzl_manage_channels.
 	 */
 	public function checkPermission(): bool {
-		return current_user_can( self::PERMISSION );
+		return current_user_can( self::PERMISSION ) || current_user_can( 'nzl_manage_channels' );
 	}
 
 	// ------------------------------------------------------------------

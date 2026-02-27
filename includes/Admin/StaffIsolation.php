@@ -49,8 +49,11 @@ class StaffIsolation {
      */
     public function translateRoles( array $roles ): array {
         $translations = [
-            'nzl_manager'   => __( 'Hotel Manager', 'nozule' ),
-            'nzl_reception' => __( 'Hotel Reception', 'nozule' ),
+            'nzl_manager'     => __( 'Hotel Manager', 'nozule' ),
+            'nzl_reception'   => __( 'Hotel Reception', 'nozule' ),
+            'nzl_housekeeper' => __( 'Housekeeper', 'nozule' ),
+            'nzl_finance'     => __( 'Finance', 'nozule' ),
+            'nzl_concierge'   => __( 'Concierge', 'nozule' ),
         ];
 
         foreach ( $translations as $slug => $name ) {
@@ -183,7 +186,7 @@ class StaffIsolation {
             return false;
         }
 
-        $nzl_roles = [ 'nzl_manager', 'nzl_reception' ];
+        $nzl_roles = [ 'nzl_manager', 'nzl_reception', 'nzl_housekeeper', 'nzl_finance', 'nzl_concierge' ];
         return ! empty( array_intersect( $nzl_roles, $user->roles ) );
     }
 }

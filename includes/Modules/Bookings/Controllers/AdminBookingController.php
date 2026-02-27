@@ -150,10 +150,10 @@ class AdminBookingController {
 	}
 
 	/**
-	 * Permission check: current user has manage_options.
+	 * Permission check: current user has manage_options or nzl_manage_bookings.
 	 */
 	public function checkAdminPermission(): bool {
-		return current_user_can( 'manage_options' );
+		return current_user_can( 'manage_options' ) || current_user_can( 'nzl_manage_bookings' );
 	}
 
 	// ── Endpoints ───────────────────────────────────────────────────

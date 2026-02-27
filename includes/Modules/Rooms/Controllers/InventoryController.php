@@ -262,16 +262,16 @@ class InventoryController {
 	}
 
 	/**
-	 * Permission callback: require manage_options capability.
+	 * Permission callback: require manage_options or nzl_manage_inventory capability.
 	 */
-	public function checkAdminPermission( WP_REST_Request $request ): bool {
-		return current_user_can( 'manage_options' );
+	public function checkAdminPermission( WP_REST_Request $_request ): bool {
+		return current_user_can( 'manage_options' ) || current_user_can( 'nzl_manage_inventory' );
 	}
 
 	/**
 	 * Permission callback: require manage_options or nzl_staff capability.
 	 */
-	public function checkStaffPermission( WP_REST_Request $request ): bool {
+	public function checkStaffPermission( WP_REST_Request $_request ): bool {
 		return current_user_can( 'manage_options' ) || current_user_can( 'nzl_staff' );
 	}
 }

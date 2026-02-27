@@ -34,10 +34,20 @@ class EmployeeController {
         'nzl_manage_channels',
         'nzl_manage_settings',
         'nzl_manage_employees',
+        'nzl_manage_housekeeping',
+        'nzl_manage_billing',
+        'nzl_manage_pos',
+        'nzl_manage_messaging',
     ];
 
     /** Available hotel roles. */
-    private const HOTEL_ROLES = [ 'nzl_manager', 'nzl_reception' ];
+    private const HOTEL_ROLES = [
+        'nzl_manager',
+        'nzl_reception',
+        'nzl_housekeeper',
+        'nzl_finance',
+        'nzl_concierge',
+    ];
 
     public function registerRoutes(): void {
         register_rest_route( self::NAMESPACE, '/admin/employees', [
@@ -199,6 +209,20 @@ class EmployeeController {
             ], 404 );
         }
 
+        // Prevent users from editing their own role or capabilities
+        // (only WordPress administrators may do so).
+        $is_self = ( $id === get_current_user_id() );
+        if ( $is_self && ! current_user_can( 'manage_options' ) ) {
+            $requested_caps = $request->get_param( 'capabilities' );
+            $requested_role = $request->get_param( 'role' );
+            if ( $requested_caps !== null || ( $requested_role !== null && $requested_role !== '' ) ) {
+                return new WP_REST_Response( [
+                    'success' => false,
+                    'message' => __( 'You cannot change your own role or permissions.', 'nozule' ),
+                ], 403 );
+            }
+        }
+
         $update_data = [ 'ID' => $id ];
 
         $display_name = $request->get_param( 'display_name' );
@@ -232,9 +256,9 @@ class EmployeeController {
             ], 400 );
         }
 
-        // Update role if changed.
+        // Update role if changed (skip if editing self without manage_options).
         $role = sanitize_text_field( $request->get_param( 'role' ) ?? '' );
-        if ( $role ) {
+        if ( $role && ! ( $is_self && ! current_user_can( 'manage_options' ) ) ) {
             if ( ! in_array( $role, self::HOTEL_ROLES, true ) ) {
                 return new WP_REST_Response( [
                     'success' => false,
@@ -244,8 +268,10 @@ class EmployeeController {
             $user->set_role( $role );
         }
 
-        // Apply custom capabilities.
-        $this->applyCapabilities( $id, $request->get_param( 'capabilities' ) );
+        // Apply custom capabilities (skip if editing self without manage_options).
+        if ( ! ( $is_self && ! current_user_can( 'manage_options' ) ) ) {
+            $this->applyCapabilities( $id, $request->get_param( 'capabilities' ) );
+        }
 
         $user = get_userdata( $id );
 
@@ -295,18 +321,22 @@ class EmployeeController {
      */
     public function getCapabilities( WP_REST_Request $request ): WP_REST_Response {
         $caps = [
-            [ 'key' => 'nzl_admin',            'label' => 'Admin Access',        'label_ar' => 'صلاحية المدير' ],
-            [ 'key' => 'nzl_staff',            'label' => 'Staff Access',        'label_ar' => 'صلاحية الموظف' ],
-            [ 'key' => 'nzl_manage_rooms',     'label' => 'Manage Rooms',        'label_ar' => 'إدارة الغرف' ],
-            [ 'key' => 'nzl_manage_rates',     'label' => 'Manage Rates',        'label_ar' => 'إدارة الأسعار' ],
-            [ 'key' => 'nzl_manage_inventory', 'label' => 'Manage Inventory',    'label_ar' => 'إدارة المخزون' ],
-            [ 'key' => 'nzl_manage_bookings',  'label' => 'Manage Bookings',     'label_ar' => 'إدارة الحجوزات' ],
-            [ 'key' => 'nzl_manage_guests',    'label' => 'Manage Guests',       'label_ar' => 'إدارة الضيوف' ],
-            [ 'key' => 'nzl_view_reports',     'label' => 'View Reports',        'label_ar' => 'عرض التقارير' ],
-            [ 'key' => 'nzl_view_calendar',    'label' => 'View Calendar',       'label_ar' => 'عرض التقويم' ],
-            [ 'key' => 'nzl_manage_channels',  'label' => 'Manage Channels',     'label_ar' => 'إدارة القنوات' ],
-            [ 'key' => 'nzl_manage_settings',  'label' => 'Manage Settings',     'label_ar' => 'إدارة الإعدادات' ],
-            [ 'key' => 'nzl_manage_employees', 'label' => 'Manage Employees',    'label_ar' => 'إدارة الموظفين' ],
+            [ 'key' => 'nzl_admin',               'label' => 'Admin Access',          'label_ar' => 'صلاحية المدير' ],
+            [ 'key' => 'nzl_staff',               'label' => 'Staff Access',          'label_ar' => 'صلاحية الموظف' ],
+            [ 'key' => 'nzl_manage_rooms',        'label' => 'Manage Rooms',          'label_ar' => 'إدارة الغرف' ],
+            [ 'key' => 'nzl_manage_rates',        'label' => 'Manage Rates',          'label_ar' => 'إدارة الأسعار' ],
+            [ 'key' => 'nzl_manage_inventory',    'label' => 'Manage Inventory',      'label_ar' => 'إدارة المخزون' ],
+            [ 'key' => 'nzl_manage_bookings',     'label' => 'Manage Bookings',       'label_ar' => 'إدارة الحجوزات' ],
+            [ 'key' => 'nzl_manage_guests',       'label' => 'Manage Guests',         'label_ar' => 'إدارة الضيوف' ],
+            [ 'key' => 'nzl_view_reports',        'label' => 'View Reports',          'label_ar' => 'عرض التقارير' ],
+            [ 'key' => 'nzl_view_calendar',       'label' => 'View Calendar',         'label_ar' => 'عرض التقويم' ],
+            [ 'key' => 'nzl_manage_channels',     'label' => 'Manage Channels',       'label_ar' => 'إدارة القنوات' ],
+            [ 'key' => 'nzl_manage_settings',     'label' => 'Manage Settings',       'label_ar' => 'إدارة الإعدادات' ],
+            [ 'key' => 'nzl_manage_employees',    'label' => 'Manage Employees',      'label_ar' => 'إدارة الموظفين' ],
+            [ 'key' => 'nzl_manage_housekeeping', 'label' => 'Manage Housekeeping',   'label_ar' => 'إدارة التدبير المنزلي' ],
+            [ 'key' => 'nzl_manage_billing',      'label' => 'Manage Billing',        'label_ar' => 'إدارة الفواتير' ],
+            [ 'key' => 'nzl_manage_pos',          'label' => 'Manage POS',            'label_ar' => 'إدارة نقاط البيع' ],
+            [ 'key' => 'nzl_manage_messaging',    'label' => 'Manage Messaging',      'label_ar' => 'إدارة الرسائل' ],
         ];
 
         return new WP_REST_Response( [

@@ -115,10 +115,10 @@ class GuestDocumentController {
 	}
 
 	/**
-	 * Permission callback: user must be admin.
+	 * Permission callback: user must be admin or have nzl_admin.
 	 */
 	public function checkAdminPermission( \WP_REST_Request $request ): bool {
-		return current_user_can( 'manage_options' );
+		return current_user_can( 'manage_options' ) || current_user_can( 'nzl_admin' );
 	}
 
 	/**

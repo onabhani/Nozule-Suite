@@ -11,7 +11,7 @@ use Nozule\Modules\Pricing\Repositories\DynamicPricingRepository;
 /**
  * REST API controller for dynamic pricing admin CRUD operations.
  *
- * All endpoints require the 'manage_options' capability.
+ * All endpoints require either the 'manage_options' or 'nzl_manage_rates' capability.
  * Registered under the nozule/v1/admin/dynamic-pricing namespace.
  */
 class DynamicPricingController {
@@ -119,7 +119,7 @@ class DynamicPricingController {
 	 * Check that the current user has admin permissions.
 	 */
 	public function checkAdminPermission(): bool {
-		return current_user_can( 'manage_options' );
+		return current_user_can( 'manage_options' ) || current_user_can( 'nzl_manage_rates' );
 	}
 
 	// =================================================================
