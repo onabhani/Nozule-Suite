@@ -105,7 +105,7 @@ document.addEventListener('alpine:init', function () {
 
             loadStaff: function () {
                 var self = this;
-                NozuleAPI.get('/admin/staff').then(function (response) {
+                NozuleAPI.get('/admin/housekeeping/staff').then(function (response) {
                     self.staffMembers = response.data.items || response.data || [];
                 }).catch(function (err) {
                     console.error('Housekeeping staff load error:', err);
