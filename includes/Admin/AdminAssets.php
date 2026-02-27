@@ -138,6 +138,7 @@ class AdminAssets {
             'nozule-admin-rate-shopping'    => 'rate-shopping.js',
             'nozule-admin-branding'         => 'branding.js',
             'nozule-admin-employees'        => 'employees.js',
+            'nozule-admin-property'         => 'property.js',
         ];
 
         $component_handles = [];

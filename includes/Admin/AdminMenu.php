@@ -30,6 +30,7 @@ use Nozule\Admin\Pages\POSPage;
 use Nozule\Admin\Pages\RateShoppingPage;
 use Nozule\Admin\Pages\BrandingPage;
 use Nozule\Admin\Pages\EmployeesPage;
+use Nozule\Admin\Pages\PropertyPage;
 
 /**
  * Registers the WordPress admin menu structure for the Nozule plugin.
@@ -80,6 +81,15 @@ class AdminMenu {
             'nzl_staff',
             'nzl-dashboard',
             [ $this, 'renderDashboard' ]
+        );
+
+        add_submenu_page(
+            'nzl-dashboard',
+            __( 'Property', 'nozule' ),
+            __( 'Property', 'nozule' ),
+            'nzl_admin',
+            'nzl-property',
+            [ $this, 'renderProperty' ]
         );
 
         add_submenu_page(
@@ -427,5 +437,9 @@ class AdminMenu {
 
     public function renderEmployees(): void {
         ( new EmployeesPage() )->render();
+    }
+
+    public function renderProperty(): void {
+        ( new PropertyPage() )->render();
     }
 }

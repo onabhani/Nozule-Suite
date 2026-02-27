@@ -103,6 +103,7 @@ class Plugin {
             \Nozule\Modules\RateShopping\RateShoppingModule::class,
             \Nozule\Modules\Branding\BrandingModule::class,
             \Nozule\Modules\Employees\EmployeesModule::class,
+            \Nozule\Modules\Property\PropertyModule::class,
         ];
 
         foreach ( $modules as $module_class ) {
