@@ -75,10 +75,10 @@ class MetasearchController {
 	// ------------------------------------------------------------------
 
 	/**
-	 * Admin permission check: user must have manage_options.
+	 * Admin permission check: user must have manage_options or nzl_admin.
 	 */
 	public function checkAdminPermission(): bool {
-		return current_user_can( 'manage_options' );
+		return current_user_can( 'manage_options' ) || current_user_can( 'nzl_admin' );
 	}
 
 	// ------------------------------------------------------------------

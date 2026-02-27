@@ -18,6 +18,7 @@ document.addEventListener('alpine:init', function () {
             form: {},
 
             isArabic: (window.NozuleAdmin && NozuleAdmin.locale || '').indexOf('ar') === 0,
+            currentUserId: window.NozuleAdmin ? NozuleAdmin.userId : 0,
 
             init: function () {
                 this.form = this.defaultForm();
@@ -38,27 +39,41 @@ document.addEventListener('alpine:init', function () {
 
             // ---- Role preset capabilities ----
 
-            managerCaps: function () {
-                return [
+            rolePresets: {
+                nzl_manager: [
                     'nzl_admin', 'nzl_staff', 'nzl_manage_rooms', 'nzl_manage_rates',
                     'nzl_manage_inventory', 'nzl_manage_bookings', 'nzl_manage_guests',
                     'nzl_view_reports', 'nzl_view_calendar', 'nzl_manage_channels',
-                    'nzl_manage_settings', 'nzl_manage_employees'
-                ];
-            },
-
-            receptionCaps: function () {
-                return [
-                    'nzl_staff', 'nzl_manage_bookings', 'nzl_manage_guests', 'nzl_view_calendar'
-                ];
+                    'nzl_manage_settings', 'nzl_manage_employees',
+                    'nzl_manage_housekeeping', 'nzl_manage_billing',
+                    'nzl_manage_pos', 'nzl_manage_messaging'
+                ],
+                nzl_reception: [
+                    'nzl_staff', 'nzl_manage_bookings', 'nzl_manage_guests',
+                    'nzl_view_calendar', 'nzl_manage_billing'
+                ],
+                nzl_housekeeper: [
+                    'nzl_staff', 'nzl_manage_housekeeping', 'nzl_view_calendar'
+                ],
+                nzl_finance: [
+                    'nzl_staff', 'nzl_manage_billing', 'nzl_view_reports',
+                    'nzl_manage_rates', 'nzl_manage_pos'
+                ],
+                nzl_concierge: [
+                    'nzl_staff', 'nzl_manage_guests', 'nzl_manage_bookings',
+                    'nzl_view_calendar', 'nzl_manage_messaging'
+                ]
             },
 
             applyRolePreset: function () {
-                if (this.form.role === 'nzl_manager') {
-                    this.form.capabilities = this.managerCaps().slice();
-                } else {
-                    this.form.capabilities = this.receptionCaps().slice();
-                }
+                var preset = this.rolePresets[this.form.role];
+                this.form.capabilities = preset ? preset.slice() : ['nzl_staff'];
+            },
+
+            // ---- Self-edit check ----
+
+            isSelf: function () {
+                return this.editingId && this.editingId === this.currentUserId;
             },
 
             // ---- Data loading ----
@@ -117,10 +132,14 @@ document.addEventListener('alpine:init', function () {
                 var self = this;
                 var data = {
                     display_name: self.form.display_name,
-                    email: self.form.email,
-                    role: self.form.role,
-                    capabilities: self.form.capabilities
+                    email: self.form.email
                 };
+
+                // Only send role/capabilities when NOT editing self.
+                if (!self.isSelf()) {
+                    data.role = self.form.role;
+                    data.capabilities = self.form.capabilities;
+                }
 
                 if (self.form.password) {
                     data.password = self.form.password;
@@ -129,6 +148,8 @@ document.addEventListener('alpine:init', function () {
                 if (!self.editingId) {
                     data.username = self.form.username;
                     data.password = self.form.password;
+                    data.role = self.form.role;
+                    data.capabilities = self.form.capabilities;
 
                     if (!data.display_name || !data.username || !data.email || !data.password) {
                         NozuleUtils.toast(NozuleI18n.t('fill_required_fields'), 'error');
@@ -179,9 +200,14 @@ document.addEventListener('alpine:init', function () {
             // ---- Helpers ----
 
             roleLabel: function (role) {
-                if (role === 'nzl_manager') return NozuleI18n.t('role_manager');
-                if (role === 'nzl_reception') return NozuleI18n.t('role_reception');
-                return role;
+                var labels = {
+                    'nzl_manager': NozuleI18n.t('role_manager'),
+                    'nzl_reception': NozuleI18n.t('role_reception'),
+                    'nzl_housekeeper': NozuleI18n.t('role_housekeeper') || 'Housekeeper',
+                    'nzl_finance': NozuleI18n.t('role_finance') || 'Finance',
+                    'nzl_concierge': NozuleI18n.t('role_concierge') || 'Concierge'
+                };
+                return labels[role] || role;
             },
 
             formatDate: function (dateStr) {

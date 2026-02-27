@@ -51,6 +51,9 @@ class AdminMenu {
 
     /**
      * Build the top-level menu and all sub-menus.
+     *
+     * Each sub-menu uses a granular capability so that ungranted
+     * modules are automatically hidden from the sidebar.
      */
     public function addMenuPages(): void {
 
@@ -68,7 +71,7 @@ class AdminMenu {
         );
 
         // ------------------------------------------------------------------
-        // Sub-menus (staff-level)
+        // Sub-menus — each gated by its specific capability
         // ------------------------------------------------------------------
         add_submenu_page(
             'nzl-dashboard',
@@ -83,7 +86,7 @@ class AdminMenu {
             'nzl-dashboard',
             __( 'Bookings', 'nozule' ),
             __( 'Bookings', 'nozule' ),
-            'nzl_staff',
+            'nzl_manage_bookings',
             'nzl-bookings',
             [ $this, 'renderBookings' ]
         );
@@ -92,7 +95,7 @@ class AdminMenu {
             'nzl-dashboard',
             __( 'Calendar', 'nozule' ),
             __( 'Calendar', 'nozule' ),
-            'nzl_staff',
+            'nzl_view_calendar',
             'nzl-calendar',
             [ $this, 'renderCalendar' ]
         );
@@ -101,7 +104,7 @@ class AdminMenu {
             'nzl-dashboard',
             __( 'Guests', 'nozule' ),
             __( 'Guests', 'nozule' ),
-            'nzl_staff',
+            'nzl_manage_guests',
             'nzl-guests',
             [ $this, 'renderGuests' ]
         );
@@ -110,7 +113,7 @@ class AdminMenu {
             'nzl-dashboard',
             __( 'Housekeeping', 'nozule' ),
             __( 'Housekeeping', 'nozule' ),
-            'nzl_staff',
+            'nzl_manage_housekeeping',
             'nzl-housekeeping',
             [ $this, 'renderHousekeeping' ]
         );
@@ -119,7 +122,7 @@ class AdminMenu {
             'nzl-dashboard',
             __( 'Billing', 'nozule' ),
             __( 'Billing', 'nozule' ),
-            'nzl_staff',
+            'nzl_manage_billing',
             'nzl-billing',
             [ $this, 'renderBilling' ]
         );
@@ -128,7 +131,7 @@ class AdminMenu {
             'nzl-dashboard',
             __( 'Group Bookings', 'nozule' ),
             __( 'Group Bookings', 'nozule' ),
-            'nzl_staff',
+            'nzl_manage_bookings',
             'nzl-groups',
             [ $this, 'renderGroups' ]
         );
@@ -137,7 +140,7 @@ class AdminMenu {
             'nzl-dashboard',
             __( 'Promotions', 'nozule' ),
             __( 'Promotions', 'nozule' ),
-            'nzl_staff',
+            'nzl_admin',
             'nzl-promotions',
             [ $this, 'renderPromotions' ]
         );
@@ -146,19 +149,16 @@ class AdminMenu {
             'nzl-dashboard',
             __( 'Messaging', 'nozule' ),
             __( 'Messaging', 'nozule' ),
-            'nzl_staff',
+            'nzl_manage_messaging',
             'nzl-messaging',
             [ $this, 'renderMessaging' ]
         );
 
-        // ------------------------------------------------------------------
-        // Sub-menus (admin-level)
-        // ------------------------------------------------------------------
         add_submenu_page(
             'nzl-dashboard',
             __( 'Rooms', 'nozule' ),
             __( 'Rooms', 'nozule' ),
-            'nzl_admin',
+            'nzl_manage_rooms',
             'nzl-rooms',
             [ $this, 'renderRooms' ]
         );
@@ -167,7 +167,7 @@ class AdminMenu {
             'nzl-dashboard',
             __( 'Rates & Pricing', 'nozule' ),
             __( 'Rates & Pricing', 'nozule' ),
-            'nzl_admin',
+            'nzl_manage_rates',
             'nzl-rates',
             [ $this, 'renderRates' ]
         );
@@ -176,7 +176,7 @@ class AdminMenu {
             'nzl-dashboard',
             __( 'Inventory', 'nozule' ),
             __( 'Inventory', 'nozule' ),
-            'nzl_admin',
+            'nzl_manage_inventory',
             'nzl-inventory',
             [ $this, 'renderInventory' ]
         );
@@ -185,7 +185,7 @@ class AdminMenu {
             'nzl-dashboard',
             __( 'Reports', 'nozule' ),
             __( 'Reports', 'nozule' ),
-            'nzl_admin',
+            'nzl_view_reports',
             'nzl-reports',
             [ $this, 'renderReports' ]
         );
@@ -194,7 +194,7 @@ class AdminMenu {
             'nzl-dashboard',
             __( 'Channel Manager', 'nozule' ),
             __( 'Channel Manager', 'nozule' ),
-            'nzl_admin',
+            'nzl_manage_channels',
             'nzl-channels',
             [ $this, 'renderChannels' ]
         );
@@ -203,7 +203,7 @@ class AdminMenu {
             'nzl-dashboard',
             __( 'Dynamic Pricing', 'nozule' ),
             __( 'Dynamic Pricing', 'nozule' ),
-            'nzl_admin',
+            'nzl_manage_rates',
             'nzl-dynamic-pricing',
             [ $this, 'renderDynamicPricing' ]
         );
@@ -221,7 +221,7 @@ class AdminMenu {
             'nzl-dashboard',
             __( 'Channel Sync', 'nozule' ),
             __( 'Channel Sync', 'nozule' ),
-            'nzl_admin',
+            'nzl_manage_channels',
             'nzl-channel-sync',
             [ $this, 'renderChannelSync' ]
         );
@@ -275,7 +275,7 @@ class AdminMenu {
             'nzl-dashboard',
             __( 'POS', 'nozule' ),
             __( 'POS', 'nozule' ),
-            'nzl_staff',
+            'nzl_manage_pos',
             'nzl-pos',
             [ $this, 'renderPOS' ]
         );
@@ -311,7 +311,7 @@ class AdminMenu {
             'nzl-dashboard',
             __( 'Settings', 'nozule' ),
             __( 'Settings', 'nozule' ),
-            'nzl_admin',
+            'nzl_manage_settings',
             'nzl-settings',
             [ $this, 'renderSettings' ]
         );

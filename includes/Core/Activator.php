@@ -98,33 +98,69 @@ class Activator {
         // Remove first to ensure clean display names (fixes locale mismatch).
         remove_role( 'nzl_manager' );
         remove_role( 'nzl_reception' );
+        remove_role( 'nzl_housekeeper' );
+        remove_role( 'nzl_finance' );
+        remove_role( 'nzl_concierge' );
 
-        // Hotel Manager role — hardcoded English (no __()).
+        // Hotel Manager role — full admin access.
         add_role( 'nzl_manager', 'Hotel Manager', [
-            'read'                 => true,
-            'upload_files'         => true,
-            'nzl_admin'            => true,
-            'nzl_staff'            => true,
-            'nzl_manage_rooms'     => true,
-            'nzl_manage_rates'     => true,
-            'nzl_manage_inventory' => true,
-            'nzl_manage_bookings'  => true,
-            'nzl_manage_guests'    => true,
-            'nzl_view_reports'     => true,
-            'nzl_view_calendar'    => true,
-            'nzl_manage_channels'  => true,
-            'nzl_manage_settings'  => true,
-            'nzl_manage_employees' => true,
+            'read'                    => true,
+            'upload_files'            => true,
+            'nzl_admin'               => true,
+            'nzl_staff'               => true,
+            'nzl_manage_rooms'        => true,
+            'nzl_manage_rates'        => true,
+            'nzl_manage_inventory'    => true,
+            'nzl_manage_bookings'     => true,
+            'nzl_manage_guests'       => true,
+            'nzl_view_reports'        => true,
+            'nzl_view_calendar'       => true,
+            'nzl_manage_channels'     => true,
+            'nzl_manage_settings'     => true,
+            'nzl_manage_employees'    => true,
+            'nzl_manage_housekeeping' => true,
+            'nzl_manage_billing'      => true,
+            'nzl_manage_pos'          => true,
+            'nzl_manage_messaging'    => true,
         ] );
 
-        // Reception role — hardcoded English (no __()).
+        // Reception / Front Desk — bookings, guests, calendar, billing.
         add_role( 'nzl_reception', 'Hotel Reception', [
-            'read'                => true,
-            'upload_files'        => true,
-            'nzl_staff'           => true,
-            'nzl_manage_bookings' => true,
-            'nzl_manage_guests'   => true,
-            'nzl_view_calendar'   => true,
+            'read'                 => true,
+            'upload_files'         => true,
+            'nzl_staff'            => true,
+            'nzl_manage_bookings'  => true,
+            'nzl_manage_guests'    => true,
+            'nzl_view_calendar'    => true,
+            'nzl_manage_billing'   => true,
+        ] );
+
+        // Housekeeper — housekeeping tasks and room status.
+        add_role( 'nzl_housekeeper', 'Housekeeper', [
+            'read'                    => true,
+            'nzl_staff'               => true,
+            'nzl_manage_housekeeping' => true,
+            'nzl_view_calendar'       => true,
+        ] );
+
+        // Finance / Accountant — billing, reports, rates, POS.
+        add_role( 'nzl_finance', 'Finance', [
+            'read'                 => true,
+            'nzl_staff'            => true,
+            'nzl_manage_billing'   => true,
+            'nzl_view_reports'     => true,
+            'nzl_manage_rates'     => true,
+            'nzl_manage_pos'       => true,
+        ] );
+
+        // Concierge / Customer Service — guests, messaging, reviews.
+        add_role( 'nzl_concierge', 'Concierge', [
+            'read'                  => true,
+            'nzl_staff'             => true,
+            'nzl_manage_guests'     => true,
+            'nzl_manage_bookings'   => true,
+            'nzl_view_calendar'     => true,
+            'nzl_manage_messaging'  => true,
         ] );
 
         // Grant all capabilities to administrators.
@@ -143,6 +179,10 @@ class Activator {
                 'nzl_manage_channels',
                 'nzl_manage_settings',
                 'nzl_manage_employees',
+                'nzl_manage_housekeeping',
+                'nzl_manage_billing',
+                'nzl_manage_pos',
+                'nzl_manage_messaging',
             ];
             foreach ( $caps as $cap ) {
                 $admin_role->add_cap( $cap );

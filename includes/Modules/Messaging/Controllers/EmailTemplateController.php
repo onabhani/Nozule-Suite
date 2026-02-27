@@ -107,10 +107,10 @@ class EmailTemplateController {
 	}
 
 	/**
-	 * Permission check: current user has manage_options capability.
+	 * Permission check: current user has manage_options or nzl_admin capability.
 	 */
 	public function checkAdminPermission(): bool {
-		return current_user_can( 'manage_options' );
+		return current_user_can( 'manage_options' ) || current_user_can( 'nzl_admin' );
 	}
 
 	// ── Template Endpoints ──────────────────────────────────────────

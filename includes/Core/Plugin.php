@@ -143,6 +143,10 @@ class Plugin {
         $pwa = new PWA();
         $pwa->register();
 
+        // Login page branding.
+        $login_branding = new \Nozule\Admin\LoginBranding( $this->container );
+        $login_branding->register();
+
         // Cron events
         add_action( 'nzl_daily_maintenance', [ $this, 'runDailyMaintenance' ] );
         add_action( 'nzl_send_reminders', [ $this, 'sendReminders' ] );

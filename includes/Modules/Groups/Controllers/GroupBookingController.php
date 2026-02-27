@@ -109,17 +109,17 @@ class GroupBookingController {
 	// ── Permission Checks ───────────────────────────────────────────
 
 	/**
-	 * Permission check: current user has manage_options (admin).
+	 * Permission check: current user has manage_options or nzl_admin.
 	 */
 	public function checkAdminPermission(): bool {
-		return current_user_can( 'manage_options' );
+		return current_user_can( 'manage_options' ) || current_user_can( 'nzl_admin' );
 	}
 
 	/**
-	 * Permission check: current user can at least edit_posts (staff).
+	 * Permission check: current user is hotel staff.
 	 */
 	public function checkStaffPermission(): bool {
-		return current_user_can( 'edit_posts' );
+		return current_user_can( 'manage_options' ) || current_user_can( 'nzl_staff' );
 	}
 
 	// ── Endpoints ───────────────────────────────────────────────────

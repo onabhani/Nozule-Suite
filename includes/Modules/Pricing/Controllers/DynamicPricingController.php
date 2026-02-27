@@ -119,7 +119,7 @@ class DynamicPricingController {
 	 * Check that the current user has admin permissions.
 	 */
 	public function checkAdminPermission(): bool {
-		return current_user_can( 'manage_options' );
+		return current_user_can( 'manage_options' ) || current_user_can( 'nzl_manage_rates' );
 	}
 
 	// =================================================================

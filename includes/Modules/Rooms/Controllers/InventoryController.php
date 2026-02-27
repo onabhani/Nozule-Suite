@@ -262,10 +262,10 @@ class InventoryController {
 	}
 
 	/**
-	 * Permission callback: require manage_options capability.
+	 * Permission callback: require manage_options or nzl_manage_inventory capability.
 	 */
 	public function checkAdminPermission( WP_REST_Request $request ): bool {
-		return current_user_can( 'manage_options' );
+		return current_user_can( 'manage_options' ) || current_user_can( 'nzl_manage_inventory' );
 	}
 
 	/**

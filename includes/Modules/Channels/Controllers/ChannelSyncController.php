@@ -132,10 +132,10 @@ class ChannelSyncController {
 	}
 
 	/**
-	 * Permission check: current user must have manage_options.
+	 * Permission check: current user must have manage_options or nzl_manage_channels.
 	 */
 	public function checkPermission(): bool {
-		return current_user_can( self::PERMISSION );
+		return current_user_can( self::PERMISSION ) || current_user_can( 'nzl_manage_channels' );
 	}
 
 	// ------------------------------------------------------------------
