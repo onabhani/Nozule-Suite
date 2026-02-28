@@ -8,6 +8,7 @@ use Nozule\Core\Container;
 use Nozule\Core\Database;
 use Nozule\Core\EventDispatcher;
 use Nozule\Core\Logger;
+use Nozule\Core\SettingsManager;
 use Nozule\Modules\Property\Controllers\PropertyController;
 use Nozule\Modules\Property\Repositories\PropertyRepository;
 use Nozule\Modules\Property\Services\PropertyService;
@@ -55,7 +56,8 @@ class PropertyModule extends BaseModule {
 				$this->container->get( PropertyValidator::class ),
 				$this->container->get( CacheManager::class ),
 				$this->container->get( EventDispatcher::class ),
-				$this->container->get( Logger::class )
+				$this->container->get( Logger::class ),
+				$this->container->get( SettingsManager::class )
 			)
 		);
 

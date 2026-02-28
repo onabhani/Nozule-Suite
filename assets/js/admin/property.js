@@ -2,7 +2,7 @@
  * Nozule - Admin Property Management
  *
  * Manage hotel property details: address, description, photos, facilities,
- * star rating, and policies.
+ * star rating, and policies. Supports multi-property mode (NZL-019).
  */
 document.addEventListener('alpine:init', function () {
 
@@ -13,12 +13,37 @@ document.addEventListener('alpine:init', function () {
             editing: false,
             property: null,
 
+            // Multi-property state (NZL-019)
+            multiProperty: false,
+            properties: [],
+            view: 'list', // 'list' or 'detail'
+
             // Edit form state
             form: {},
             newFacility: '',
 
             init: function () {
-                this.loadProperty();
+                this.checkMultiProperty();
+            },
+
+            // ---- Multi-property detection ----
+
+            checkMultiProperty: function () {
+                var self = this;
+                NozuleAPI.get('/admin/settings?group=features').then(function (response) {
+                    var data = response.data || response;
+                    if (data.features && (data.features.multi_property === '1' || data.features.multi_property === true)) {
+                        self.multiProperty = true;
+                    }
+                }).catch(function () {
+                    // Default to single-property mode on error.
+                }).finally(function () {
+                    if (self.multiProperty) {
+                        self.loadProperties();
+                    } else {
+                        self.loadProperty();
+                    }
+                });
             },
 
             // ---- Default form ----
@@ -99,6 +124,33 @@ document.addEventListener('alpine:init', function () {
                 });
             },
 
+            loadProperties: function () {
+                var self = this;
+                self.loading = true;
+
+                NozuleAPI.get('/admin/property').then(function (response) {
+                    self.properties = response.data || [];
+                }).catch(function (err) {
+                    console.error('Properties load error:', err);
+                    NozuleUtils.toast(err.message || NozuleI18n.t('failed_load_property'), 'error');
+                }).finally(function () {
+                    self.loading = false;
+                });
+            },
+
+            // ---- Multi-property navigation ----
+
+            viewProperty: function (p) {
+                this.property = p;
+                this.view = 'detail';
+            },
+
+            backToList: function () {
+                this.property = null;
+                this.view = 'list';
+                this.loadProperties();
+            },
+
             // ---- Edit mode ----
 
             createNew: function () {
@@ -165,6 +217,9 @@ document.addEventListener('alpine:init', function () {
 
             cancelEditing: function () {
                 this.editing = false;
+                if (this.multiProperty && !this.form.id) {
+                    this.view = 'list';
+                }
             },
 
             // ---- Save ----
@@ -237,11 +292,34 @@ document.addEventListener('alpine:init', function () {
                         NozuleI18n.t(self.form.id ? 'property_updated' : 'property_created'),
                         'success'
                     );
-                    self.loadProperty();
+                    if (self.multiProperty) {
+                        self.view = 'detail';
+                        self.loadProperties();
+                    } else {
+                        self.loadProperty();
+                    }
                 }).catch(function (err) {
                     NozuleUtils.toast(err.message || NozuleI18n.t('failed_save_property'), 'error');
                 }).finally(function () {
                     self.saving = false;
+                });
+            },
+
+            // ---- Delete (multi-property only) ----
+
+            deleteProperty: function (id) {
+                var self = this;
+                if (!confirm(NozuleI18n.t('confirm_delete_property') || 'Are you sure you want to delete this property? This action cannot be undone.')) {
+                    return;
+                }
+
+                NozuleAPI.delete('/admin/property/' + id).then(function () {
+                    NozuleUtils.toast(NozuleI18n.t('property_deleted') || 'Property deleted.', 'success');
+                    self.property = null;
+                    self.view = 'list';
+                    self.loadProperties();
+                }).catch(function (err) {
+                    NozuleUtils.toast(err.message || NozuleI18n.t('failed_delete_property'), 'error');
                 });
             },
 

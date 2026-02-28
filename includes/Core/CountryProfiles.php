@@ -65,6 +65,7 @@ class CountryProfiles {
             'timezone' => 'Asia/Damascus',
             'features' => [
                 'guest_type_pricing' => true,   // Syrian / Non-Syrian rate differentiation
+                'multi_property'     => false,  // NZL-019 — off by default, toggled by sysadmin
                 'zatca'              => false,
                 'shomos'             => false,
             ],
@@ -105,6 +106,7 @@ class CountryProfiles {
             'timezone' => 'Asia/Riyadh',
             'features' => [
                 'guest_type_pricing' => false,  // Unified pricing
+                'multi_property'     => false,  // NZL-019 — off by default, toggled by sysadmin
                 'zatca'              => true,   // Coming soon — ZATCA e-invoicing
                 'shomos'             => true,   // Coming soon — Shomos tourism platform
             ],

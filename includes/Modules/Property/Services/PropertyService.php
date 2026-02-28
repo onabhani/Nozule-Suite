@@ -5,6 +5,7 @@ namespace Nozule\Modules\Property\Services;
 use Nozule\Core\CacheManager;
 use Nozule\Core\EventDispatcher;
 use Nozule\Core\Logger;
+use Nozule\Core\SettingsManager;
 use Nozule\Modules\Property\Models\Property;
 use Nozule\Modules\Property\Repositories\PropertyRepository;
 use Nozule\Modules\Property\Validators\PropertyValidator;
@@ -19,34 +20,49 @@ class PropertyService {
 	private CacheManager $cache;
 	private EventDispatcher $events;
 	private Logger $logger;
+	private SettingsManager $settings;
 
 	public function __construct(
 		PropertyRepository $repository,
 		PropertyValidator $validator,
 		CacheManager $cache,
 		EventDispatcher $events,
-		Logger $logger
+		Logger $logger,
+		SettingsManager $settings
 	) {
 		$this->repository = $repository;
 		$this->validator  = $validator;
 		$this->cache      = $cache;
 		$this->events     = $events;
 		$this->logger     = $logger;
+		$this->settings   = $settings;
 	}
 
 	/**
-	 * Get the current property (single-property mode).
+	 * Check whether multi-property mode (NZL-019) is enabled.
 	 */
-	public function getCurrent(): ?Property {
-		$cached = $this->cache->get( 'property_current' );
+	public function isMultiPropertyEnabled(): bool {
+		$flag = $this->settings->get( 'features.multi_property', '0' );
+		return $flag === '1' || $flag === true;
+	}
+
+	/**
+	 * Get the current property.
+	 *
+	 * In multi-property mode accepts an optional property_id to resolve
+	 * a specific property; otherwise returns the first active property.
+	 */
+	public function getCurrent( ?string $propertyId = null ): ?Property {
+		$cacheKey = $propertyId ? 'property_' . $propertyId : 'property_current';
+		$cached   = $this->cache->get( $cacheKey );
 		if ( $cached !== false ) {
 			return $cached;
 		}
 
-		$property = $this->repository->getCurrent();
+		$property = $this->repository->getCurrent( $propertyId );
 
 		if ( $property ) {
-			$this->cache->set( 'property_current', $property, 300 );
+			$this->cache->set( $cacheKey, $property, 300 );
 		}
 
 		return $property;

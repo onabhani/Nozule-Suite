@@ -45,6 +45,11 @@ if ( ! defined( 'ABSPATH' ) ) {
                         x-show="countryProfile && countryProfile.features && (countryProfile.features.zatca || countryProfile.features.shomos)">
                     <?php esc_html_e( 'Compliance', 'nozule' ); ?>
                 </button>
+                <?php if ( current_user_can( 'manage_options' ) ) : ?>
+                <button class="nzl-tab" :class="{'active': activeTab === 'features'}" @click="activeTab = 'features'">
+                    <?php esc_html_e( 'Features', 'nozule' ); ?>
+                </button>
+                <?php endif; ?>
             </div>
 
             <!-- General -->
@@ -478,6 +483,54 @@ if ( ! defined( 'ABSPATH' ) ) {
                     </div>
                 </div>
             </template>
+
+            <!-- Features (System Administrator Only) -->
+            <?php if ( current_user_can( 'manage_options' ) ) : ?>
+            <template x-if="activeTab === 'features'">
+                <div>
+                    <!-- Multi-Property (NZL-019) -->
+                    <div class="nzl-card" style="margin-bottom:1rem;">
+                        <div style="display:flex; justify-content:space-between; align-items:flex-start; gap:1rem;">
+                            <div style="flex:1;">
+                                <h2 style="font-size:1.125rem; font-weight:600; margin-bottom:0.25rem;"><?php esc_html_e( 'Multi-Property Mode', 'nozule' ); ?></h2>
+                                <p style="font-size:0.875rem; color:#64748b; margin:0 0 1rem;">
+                                    <?php esc_html_e( 'Enable management of multiple hotel properties from a single installation. When enabled, users can create and switch between properties, and all data (bookings, rooms, guests) is scoped per property.', 'nozule' ); ?>
+                                </p>
+                                <div style="display:flex; align-items:center; gap:0.75rem;">
+                                    <label style="display:inline-flex; align-items:center; gap:0.5rem; cursor:pointer;">
+                                        <div style="position:relative; width:44px; height:24px;">
+                                            <input type="checkbox" x-model="settings.features.multi_property"
+                                                   style="position:absolute; opacity:0; width:100%; height:100%; cursor:pointer; z-index:1; margin:0;">
+                                            <div style="width:44px; height:24px; border-radius:12px; transition:background 0.2s;"
+                                                 :style="settings.features.multi_property ? 'background:#3b82f6' : 'background:#cbd5e1'">
+                                                <div style="width:20px; height:20px; border-radius:50%; background:white; position:absolute; top:2px; transition:left 0.2s; box-shadow:0 1px 3px rgba(0,0,0,0.2);"
+                                                     :style="settings.features.multi_property ? 'left:22px' : 'left:2px'"></div>
+                                            </div>
+                                        </div>
+                                        <span style="font-weight:500;" x-text="settings.features.multi_property ? '<?php echo esc_js( __( 'Enabled', 'nozule' ) ); ?>' : '<?php echo esc_js( __( 'Disabled', 'nozule' ) ); ?>'"></span>
+                                    </label>
+                                </div>
+                            </div>
+                            <span style="font-size:0.7rem; font-weight:600; padding:0.25rem 0.75rem; border-radius:9999px; white-space:nowrap;"
+                                  :style="settings.features.multi_property ? 'background:#dbeafe; color:#1d4ed8;' : 'background:#f1f5f9; color:#64748b;'">NZL-019</span>
+                        </div>
+
+                        <!-- Info box when enabled -->
+                        <template x-if="settings.features.multi_property">
+                            <div style="margin-top:1rem; padding:0.75rem 1rem; background:#eff6ff; border:1px solid #bfdbfe; border-radius:0.5rem; font-size:0.875rem; color:#1e40af;">
+                                <strong><?php esc_html_e( 'Multi-Property is active.', 'nozule' ); ?></strong>
+                                <?php esc_html_e( 'You can now create and manage multiple properties from the Property page. A property switcher will appear in the admin sidebar for quick navigation.', 'nozule' ); ?>
+                            </div>
+                        </template>
+                    </div>
+
+                    <!-- System Admin Notice -->
+                    <div style="padding:0.75rem 1rem; background:#fefce8; border:1px solid #fde68a; border-radius:0.5rem; font-size:0.8rem; color:#92400e;">
+                        <?php esc_html_e( 'Feature toggles are only visible to system administrators (WordPress administrators). Hotel managers and staff cannot access this tab.', 'nozule' ); ?>
+                    </div>
+                </div>
+            </template>
+            <?php endif; ?>
 
             <!-- Save -->
             <div style="margin-top:1.5rem; display:flex; align-items:center; gap:1rem;">

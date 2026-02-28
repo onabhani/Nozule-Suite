@@ -125,11 +125,14 @@
   - Commission tracking
   - Operator portal / login
 
-- [ ] **NZL-019** — Multi-Property Support
-  - Central dashboard for all properties
-  - Property ID in all tables
-  - Cross-property guest profiles
-  - Consolidated reporting
+- [x] **NZL-019** — Multi-Property Support (Phase 1 — v1.8.0)
+  - [x] Feature toggle in Settings (system administrator only)
+  - [x] Multi-property list/detail/create UI on Property page
+  - [x] property_id column migration for all core tables
+  - [x] Dynamic admin menu label (Property / Properties)
+  - [ ] Central dashboard for all properties (Phase 2)
+  - [ ] Cross-property guest profiles (Phase 2)
+  - [ ] Consolidated reporting (Phase 2)
 
 - [ ] **NZL-020** — Review Solicitation
   - Post-checkout automated review requests

@@ -172,6 +172,7 @@ class AdminAssets {
 
         $settingsMgr = $this->container->get( SettingsManager::class );
         $operatingCountry = $settingsMgr ? $settingsMgr->get( 'general.operating_country', '' ) : '';
+        $multiProperty    = $settingsMgr ? $settingsMgr->get( 'features.multi_property', '0' ) : '0';
 
         wp_localize_script( 'nozule-api', 'NozuleAdmin', [
             'nonce'        => wp_create_nonce( 'wp_rest' ),
@@ -182,6 +183,7 @@ class AdminAssets {
             'locale'       => get_locale(),
             'isRtl'        => is_rtl(),
             'operatingCountry' => $operatingCountry,
+            'multiProperty'    => $multiProperty === '1' || $multiProperty === true,
             'userId'       => $current_user->ID,
             'user'         => [
                 'id'           => $current_user->ID,

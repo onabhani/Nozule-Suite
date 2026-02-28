@@ -3,6 +3,7 @@
 namespace Nozule\Admin;
 
 use Nozule\Core\Container;
+use Nozule\Core\SettingsManager;
 use Nozule\Admin\Pages\DashboardPage;
 use Nozule\Admin\Pages\BookingsPage;
 use Nozule\Admin\Pages\CalendarPage;
@@ -83,10 +84,14 @@ class AdminMenu {
             [ $this, 'renderDashboard' ]
         );
 
+        $settingsMgr    = $this->container->get( SettingsManager::class );
+        $multiProperty  = $settingsMgr && ( $settingsMgr->get( 'features.multi_property', '0' ) === '1' || $settingsMgr->get( 'features.multi_property', '0' ) === true );
+        $propertyLabel  = $multiProperty ? __( 'Properties', 'nozule' ) : __( 'Property', 'nozule' );
+
         add_submenu_page(
             'nzl-dashboard',
-            __( 'Property', 'nozule' ),
-            __( 'Property', 'nozule' ),
+            $propertyLabel,
+            $propertyLabel,
             'nzl_admin',
             'nzl-property',
             [ $this, 'renderProperty' ]

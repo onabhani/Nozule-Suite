@@ -59,6 +59,9 @@ document.addEventListener('alpine:init', function () {
                     sync_bookings: true,
                     sync_contacts: true,
                     sync_invoices: true
+                },
+                features: {
+                    multi_property: false
                 }
             },
 
@@ -84,6 +87,7 @@ document.addEventListener('alpine:init', function () {
                         if (data.notifications) self.settings.notifications = Object.assign(self.settings.notifications, data.notifications);
                         if (data.policies) self.settings.policies = Object.assign(self.settings.policies, data.policies);
                         if (data.integrations) self.settings.integrations = Object.assign(self.settings.integrations, data.integrations);
+                        if (data.features) self.settings.features = Object.assign(self.settings.features, data.features);
 
                         // Ensure booleans are actual booleans after loading.
                         var intg = self.settings.integrations;
@@ -91,6 +95,9 @@ document.addEventListener('alpine:init', function () {
                         intg.sync_bookings = intg.sync_bookings === '1' || intg.sync_bookings === true;
                         intg.sync_contacts = intg.sync_contacts === '1' || intg.sync_contacts === true;
                         intg.sync_invoices = intg.sync_invoices === '1' || intg.sync_invoices === true;
+
+                        var feat = self.settings.features;
+                        feat.multi_property = feat.multi_property === '1' || feat.multi_property === true;
 
                         self.resolveCountryProfile();
                     }

@@ -2,27 +2,47 @@
 /**
  * Admin template: Property Management
  *
- * Single-property PMS feature — manage hotel details, address, photos,
- * facilities, star rating, and policies.
+ * Manages hotel property details — address, description, photos, facilities,
+ * star rating, and policies. Supports multi-property mode (NZL-019) when
+ * enabled by a system administrator.
  */
 if ( ! defined( 'ABSPATH' ) ) exit;
 ?>
 <div class="nzl-admin-wrap" x-data="nzlProperty">
     <div class="nzl-admin-header">
         <div>
-            <h1><?php esc_html_e( 'Property', 'nozule' ); ?></h1>
-            <p style="font-size:0.875rem; color:#64748b; margin:0.25rem 0 0;"><?php esc_html_e( 'Manage your hotel property details, photos, facilities, and policies.', 'nozule' ); ?></p>
+            <h1 x-text="multiProperty ? '<?php echo esc_js( __( 'Properties', 'nozule' ) ); ?>' : '<?php echo esc_js( __( 'Property', 'nozule' ) ); ?>'"></h1>
+            <p style="font-size:0.875rem; color:#64748b; margin:0.25rem 0 0;" x-text="multiProperty ? '<?php echo esc_js( __( 'Manage all hotel properties in your portfolio.', 'nozule' ) ); ?>' : '<?php echo esc_js( __( 'Manage your hotel property details, photos, facilities, and policies.', 'nozule' ) ); ?>'"></p>
         </div>
         <div style="display:flex; gap:0.5rem;">
-            <template x-if="!property && !loading">
+            <!-- Single-property: Setup -->
+            <template x-if="!multiProperty && !property && !loading && !editing">
                 <button class="nzl-btn nzl-btn-primary" @click="createNew()">
                     + <?php esc_html_e( 'Setup Property', 'nozule' ); ?>
                 </button>
             </template>
-            <template x-if="property && !editing">
+            <!-- Single-property: Edit -->
+            <template x-if="!multiProperty && property && !editing">
                 <button class="nzl-btn nzl-btn-primary" @click="startEditing()">
                     <?php esc_html_e( 'Edit Property', 'nozule' ); ?>
                 </button>
+            </template>
+            <!-- Multi-property: Add New -->
+            <template x-if="multiProperty && !editing && view === 'list'">
+                <button class="nzl-btn nzl-btn-primary" @click="createNew()">
+                    + <?php esc_html_e( 'Add Property', 'nozule' ); ?>
+                </button>
+            </template>
+            <!-- Multi-property: Back to list when viewing single -->
+            <template x-if="multiProperty && !editing && view === 'detail'">
+                <div style="display:flex; gap:0.5rem;">
+                    <button class="nzl-btn" @click="backToList()">
+                        &larr; <?php esc_html_e( 'All Properties', 'nozule' ); ?>
+                    </button>
+                    <button class="nzl-btn nzl-btn-primary" @click="startEditing()">
+                        <?php esc_html_e( 'Edit Property', 'nozule' ); ?>
+                    </button>
+                </div>
             </template>
         </div>
     </div>
@@ -32,8 +52,89 @@ if ( ! defined( 'ABSPATH' ) ) exit;
         <div class="nzl-admin-loading"><div class="nzl-spinner nzl-spinner-lg"></div></div>
     </template>
 
-    <!-- No Property Yet -->
-    <template x-if="!loading && !property && !editing">
+    <!-- ======================== MULTI-PROPERTY LIST ======================== -->
+    <template x-if="!loading && multiProperty && view === 'list' && !editing">
+        <div>
+            <!-- Summary bar -->
+            <div style="display:flex; gap:1rem; margin-bottom:1.25rem; flex-wrap:wrap;">
+                <div class="nzl-card" style="flex:1; min-width:160px; text-align:center; padding:1rem;">
+                    <div style="font-size:2rem; font-weight:700; color:#1e40af;" x-text="properties.length"></div>
+                    <div style="font-size:0.8rem; color:#64748b;"><?php esc_html_e( 'Total Properties', 'nozule' ); ?></div>
+                </div>
+                <div class="nzl-card" style="flex:1; min-width:160px; text-align:center; padding:1rem;">
+                    <div style="font-size:2rem; font-weight:700; color:#16a34a;" x-text="properties.filter(function(p){ return p.status === 'active'; }).length"></div>
+                    <div style="font-size:0.8rem; color:#64748b;"><?php esc_html_e( 'Active', 'nozule' ); ?></div>
+                </div>
+                <div class="nzl-card" style="flex:1; min-width:160px; text-align:center; padding:1rem;">
+                    <div style="font-size:2rem; font-weight:700; color:#94a3b8;" x-text="properties.filter(function(p){ return p.status === 'inactive'; }).length"></div>
+                    <div style="font-size:0.8rem; color:#64748b;"><?php esc_html_e( 'Inactive', 'nozule' ); ?></div>
+                </div>
+            </div>
+
+            <!-- No properties -->
+            <template x-if="properties.length === 0">
+                <div class="nzl-card" style="text-align:center; padding:3rem; color:#94a3b8;">
+                    <p style="font-size:1.25rem; margin-bottom:0.5rem;"><?php esc_html_e( 'No properties configured yet.', 'nozule' ); ?></p>
+                    <p><?php esc_html_e( 'Add your first hotel property to get started.', 'nozule' ); ?></p>
+                </div>
+            </template>
+
+            <!-- Property cards grid -->
+            <div style="display:grid; grid-template-columns:repeat(auto-fill, minmax(340px, 1fr)); gap:1rem;">
+                <template x-for="p in properties" :key="p.id">
+                    <div class="nzl-card" style="padding:0; overflow:hidden; cursor:pointer; transition:box-shadow 0.15s;"
+                         @click="viewProperty(p)"
+                         @mouseenter="$el.style.boxShadow='0 4px 12px rgba(0,0,0,0.1)'"
+                         @mouseleave="$el.style.boxShadow=''">
+                        <!-- Cover -->
+                        <template x-if="p.cover_image_url">
+                            <div style="height:120px; background-size:cover; background-position:center; position:relative;"
+                                 :style="'background-image:url(' + p.cover_image_url + ')'">
+                                <div style="position:absolute; inset:0; background:linear-gradient(transparent 30%, rgba(0,0,0,0.5));"></div>
+                                <span style="position:absolute; top:8px; right:8px; font-size:0.7rem; font-weight:600; padding:0.15rem 0.5rem; border-radius:9999px;"
+                                      :style="p.status === 'active' ? 'background:#dcfce7; color:#166534;' : 'background:#f1f5f9; color:#64748b;'"
+                                      x-text="p.status"></span>
+                            </div>
+                        </template>
+                        <template x-if="!p.cover_image_url">
+                            <div style="height:120px; background:#f1f5f9; display:flex; align-items:center; justify-content:center; position:relative;">
+                                <span style="font-size:2rem; color:#94a3b8;">&#127976;</span>
+                                <span style="position:absolute; top:8px; right:8px; font-size:0.7rem; font-weight:600; padding:0.15rem 0.5rem; border-radius:9999px;"
+                                      :style="p.status === 'active' ? 'background:#dcfce7; color:#166534;' : 'background:#f1f5f9; color:#64748b;'"
+                                      x-text="p.status"></span>
+                            </div>
+                        </template>
+                        <div style="padding:1rem;">
+                            <div style="display:flex; align-items:center; gap:0.5rem; margin-bottom:0.25rem;">
+                                <template x-if="p.logo_url">
+                                    <img :src="p.logo_url" style="width:28px; height:28px; object-fit:contain; border-radius:4px; border:1px solid #e2e8f0;">
+                                </template>
+                                <h3 style="margin:0; font-size:1rem; font-weight:600;" x-text="p.name"></h3>
+                                <template x-if="p.star_rating">
+                                    <span style="color:#f59e0b; font-size:0.8rem;" x-text="'★'.repeat(p.star_rating)"></span>
+                                </template>
+                            </div>
+                            <div style="font-size:0.8rem; color:#64748b;">
+                                <span x-text="(p.property_type || 'hotel').charAt(0).toUpperCase() + (p.property_type || 'hotel').slice(1)"></span>
+                                <template x-if="p.city || p.country">
+                                    <span> &mdash; <span x-text="[p.city, p.country].filter(Boolean).join(', ')"></span></span>
+                                </template>
+                            </div>
+                            <div style="display:flex; gap:1rem; margin-top:0.5rem; font-size:0.75rem; color:#94a3b8;">
+                                <template x-if="p.total_rooms">
+                                    <span x-text="p.total_rooms + ' <?php echo esc_js( __( 'rooms', 'nozule' ) ); ?>'"></span>
+                                </template>
+                                <span x-text="p.currency || 'USD'"></span>
+                            </div>
+                        </div>
+                    </div>
+                </template>
+            </div>
+        </div>
+    </template>
+
+    <!-- No Property Yet (single-property mode) -->
+    <template x-if="!loading && !multiProperty && !property && !editing">
         <div class="nzl-card" style="text-align:center; padding:3rem; color:#94a3b8;">
             <p style="font-size:1.25rem; margin-bottom:0.5rem;"><?php esc_html_e( 'No property configured yet.', 'nozule' ); ?></p>
             <p><?php esc_html_e( 'Set up your hotel property details to get started.', 'nozule' ); ?></p>
@@ -41,7 +142,7 @@ if ( ! defined( 'ABSPATH' ) ) exit;
     </template>
 
     <!-- ======================== VIEW MODE ======================== -->
-    <template x-if="!loading && property && !editing">
+    <template x-if="!loading && property && !editing && (!multiProperty || view === 'detail')">
         <div>
             <!-- Header Card with Cover Image -->
             <div class="nzl-card" style="padding:0; overflow:hidden; margin-bottom:1.25rem;">
@@ -73,6 +174,12 @@ if ( ! defined( 'ABSPATH' ) ) exit;
                         </div>
                         <div style="font-size:0.75rem; color:#94a3b8;">
                             <div><?php esc_html_e( 'Property ID:', 'nozule' ); ?> <code style="font-size:0.7rem;" x-text="property.property_id"></code></div>
+                            <template x-if="multiProperty">
+                                <button class="nzl-btn nzl-btn-sm" style="margin-top:0.5rem; color:#dc2626; border-color:#fecaca;"
+                                        @click="deleteProperty(property.id)">
+                                    <?php esc_html_e( 'Delete', 'nozule' ); ?>
+                                </button>
+                            </template>
                         </div>
                     </div>
                 </div>

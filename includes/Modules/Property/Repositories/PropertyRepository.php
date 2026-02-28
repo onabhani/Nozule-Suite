@@ -19,16 +19,25 @@ class PropertyRepository extends BaseRepository {
 	}
 
 	/**
-	 * Get the current property (single-property mode).
+	 * Get the current property.
 	 *
-	 * Returns the first active property. When multi-property (NZL-019)
-	 * is implemented this will accept a property_id parameter.
+	 * In single-property mode returns the first active property.
+	 * In multi-property mode (NZL-019) accepts an optional property_id
+	 * to resolve a specific property.
 	 */
-	public function getCurrent(): ?Property {
+	public function getCurrent( ?string $propertyId = null ): ?Property {
 		$table = $this->tableName();
-		$row   = $this->db->getRow(
-			"SELECT * FROM {$table} WHERE status = 'active' ORDER BY id ASC LIMIT 1"
-		);
+
+		if ( $propertyId ) {
+			$row = $this->db->getRow(
+				"SELECT * FROM {$table} WHERE property_id = %s LIMIT 1",
+				$propertyId
+			);
+		} else {
+			$row = $this->db->getRow(
+				"SELECT * FROM {$table} WHERE status = 'active' ORDER BY id ASC LIMIT 1"
+			);
+		}
 
 		return $row ? Property::fromRow( $row ) : null;
 	}
