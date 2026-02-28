@@ -233,7 +233,10 @@ document.addEventListener('alpine:init', function () {
                 }
 
                 // Auto-generate slug if empty.
-                if (!self.form.slug) {
+                // Only transliterate client-side when the name contains ASCII
+                // letters/numbers; otherwise leave empty so the server-side
+                // sanitize_title() handles non-Latin scripts (e.g. Arabic).
+                if (!self.form.slug && /[A-Za-z0-9]/.test(self.form.name)) {
                     self.form.slug = self.form.name.toLowerCase()
                         .replace(/[^a-z0-9\s-]/g, '')
                         .replace(/\s+/g, '-')

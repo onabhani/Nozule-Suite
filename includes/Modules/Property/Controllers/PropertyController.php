@@ -190,9 +190,16 @@ class PropertyController {
 
 		$statusCode = isset( $result['id'] ) ? 404 : 422;
 
+		// Use the service-level message when available (e.g. "Property not found.");
+		// fall back to a generic message only if no specific message was provided.
+		$message = __( 'Failed to delete property.', 'nozule' );
+		if ( $statusCode === 404 && ! empty( $result['id'][0] ) ) {
+			$message = $result['id'][0];
+		}
+
 		return new WP_REST_Response( [
 			'success' => false,
-			'message' => __( 'Failed to delete property.', 'nozule' ),
+			'message' => $message,
 			'errors'  => $result,
 		], $statusCode );
 	}
@@ -240,9 +247,8 @@ class PropertyController {
 
 		$data = [];
 		foreach ( $fields as $field ) {
-			$value = $request->get_param( $field );
-			if ( $value !== null ) {
-				$data[ $field ] = $value;
+			if ( $request->has_param( $field ) ) {
+				$data[ $field ] = $request->get_param( $field );
 			}
 		}
 

@@ -63,6 +63,7 @@ class PropertyValidator extends BaseValidator {
 	private function updateRules(): array {
 		return [
 			'name' => [ 'maxLength' => 255 ],
+			'slug' => [ 'slug', 'maxLength' => 255 ],
 		];
 	}
 

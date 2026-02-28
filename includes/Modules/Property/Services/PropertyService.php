@@ -56,14 +56,14 @@ class PropertyService {
 		$cacheKey = $propertyId ? 'property_' . $propertyId : 'property_current';
 		$cached   = $this->cache->get( $cacheKey );
 		if ( $cached !== false ) {
-			return $cached;
+			return $cached === '__no_property__' ? null : $cached;
 		}
 
 		$property = $this->repository->getCurrent( $propertyId );
 
-		if ( $property ) {
-			$this->cache->set( $cacheKey, $property, 300 );
-		}
+		// Cache a sentinel when no property exists so we don't hit the DB on
+		// every subsequent call for the same 300-second window.
+		$this->cache->set( $cacheKey, $property ?? '__no_property__', 300 );
 
 		return $property;
 	}

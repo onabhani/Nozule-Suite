@@ -2,6 +2,7 @@
 
 namespace Nozule\Modules\Housekeeping\Controllers;
 
+use Nozule\Core\HotelRoles;
 use Nozule\Modules\Housekeeping\Models\HousekeepingTask;
 use Nozule\Modules\Housekeeping\Services\HousekeepingService;
 use WP_REST_Request;
@@ -294,11 +295,10 @@ class HousekeepingController {
 	public function staff( WP_REST_Request $request ): WP_REST_Response {
 		global $wpdb;
 
-		$hotel_roles = [ 'nzl_manager', 'nzl_reception', 'nzl_housekeeper', 'nzl_finance', 'nzl_concierge' ];
-		$cap_key     = $wpdb->prefix . 'capabilities';
+		$cap_key = $wpdb->prefix . 'capabilities';
 
 		$role_clauses = [];
-		foreach ( $hotel_roles as $role ) {
+		foreach ( HotelRoles::getSlugs() as $role ) {
 			$role_clauses[] = [
 				'key'     => $cap_key,
 				'value'   => '"' . $role . '"',

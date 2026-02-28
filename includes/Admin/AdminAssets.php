@@ -138,7 +138,6 @@ class AdminAssets {
             'nozule-admin-rate-shopping'    => 'rate-shopping.js',
             'nozule-admin-branding'         => 'branding.js',
             'nozule-admin-employees'        => 'employees.js',
-            'nozule-admin-property'         => 'property.js',
         ];
 
         $component_handles = [];
@@ -151,6 +150,18 @@ class AdminAssets {
                 true
             );
             $component_handles[] = $handle;
+        }
+
+        // Property script — only load on the Property admin screen.
+        if ( str_contains( $hook_suffix, 'nzl-property' ) ) {
+            wp_enqueue_script(
+                'nozule-admin-property',
+                NZL_PLUGIN_URL . 'assets/js/admin/property.js',
+                [ 'nozule-api', 'nozule-utils', 'nozule-store' ],
+                NZL_VERSION,
+                true
+            );
+            $component_handles[] = 'nozule-admin-property';
         }
 
         // Alpine.js CDN — loaded AFTER all component scripts so that
