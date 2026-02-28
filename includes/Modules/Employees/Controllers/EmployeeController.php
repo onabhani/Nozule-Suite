@@ -2,6 +2,7 @@
 
 namespace Nozule\Modules\Employees\Controllers;
 
+use Nozule\Core\HotelRoles;
 use WP_REST_Request;
 use WP_REST_Response;
 use WP_REST_Server;
@@ -40,14 +41,6 @@ class EmployeeController {
         'nzl_manage_messaging',
     ];
 
-    /** Available hotel roles. */
-    private const HOTEL_ROLES = [
-        'nzl_manager',
-        'nzl_reception',
-        'nzl_housekeeper',
-        'nzl_finance',
-        'nzl_concierge',
-    ];
 
     public function registerRoutes(): void {
         register_rest_route( self::NAMESPACE, '/admin/employees', [
@@ -97,7 +90,7 @@ class EmployeeController {
         $cap_key = $wpdb->prefix . 'capabilities';
 
         $role_clauses = [];
-        foreach ( self::HOTEL_ROLES as $role ) {
+        foreach ( HotelRoles::getSlugs() as $role ) {
             $role_clauses[] = [
                 'key'     => $cap_key,
                 'value'   => '"' . $role . '"',
@@ -147,7 +140,7 @@ class EmployeeController {
             ], 400 );
         }
 
-        if ( ! in_array( $role, self::HOTEL_ROLES, true ) ) {
+        if ( ! in_array( $role, HotelRoles::getSlugs(), true ) ) {
             return new WP_REST_Response( [
                 'success' => false,
                 'message' => __( 'Invalid role.', 'nozule' ),
@@ -202,7 +195,7 @@ class EmployeeController {
         $id   = (int) $request->get_param( 'id' );
         $user = get_userdata( $id );
 
-        if ( ! $user || empty( array_intersect( self::HOTEL_ROLES, $user->roles ) ) ) {
+        if ( ! $user || empty( array_intersect( HotelRoles::getSlugs(), $user->roles ) ) ) {
             return new WP_REST_Response( [
                 'success' => false,
                 'message' => __( 'Employee not found.', 'nozule' ),
@@ -259,7 +252,7 @@ class EmployeeController {
         // Update role if changed (skip if editing self without manage_options).
         $role = sanitize_text_field( $request->get_param( 'role' ) ?? '' );
         if ( $role && ! ( $is_self && ! current_user_can( 'manage_options' ) ) ) {
-            if ( ! in_array( $role, self::HOTEL_ROLES, true ) ) {
+            if ( ! in_array( $role, HotelRoles::getSlugs(), true ) ) {
                 return new WP_REST_Response( [
                     'success' => false,
                     'message' => __( 'Invalid role.', 'nozule' ),
@@ -289,7 +282,7 @@ class EmployeeController {
         $id   = (int) $request->get_param( 'id' );
         $user = get_userdata( $id );
 
-        if ( ! $user || empty( array_intersect( self::HOTEL_ROLES, $user->roles ) ) ) {
+        if ( ! $user || empty( array_intersect( HotelRoles::getSlugs(), $user->roles ) ) ) {
             return new WP_REST_Response( [
                 'success' => false,
                 'message' => __( 'Employee not found.', 'nozule' ),
@@ -368,7 +361,7 @@ class EmployeeController {
         // to checking the raw capabilities meta for an nzl_* role key.
         $role = '';
         foreach ( $user->roles as $r ) {
-            if ( in_array( $r, self::HOTEL_ROLES, true ) ) {
+            if ( in_array( $r, HotelRoles::getSlugs(), true ) ) {
                 $role = $r;
                 break;
             }
@@ -377,7 +370,7 @@ class EmployeeController {
             // Fallback: inspect the raw caps array stored in user meta.
             $raw_caps = get_user_meta( $user->ID, $GLOBALS['wpdb']->prefix . 'capabilities', true );
             if ( is_array( $raw_caps ) ) {
-                foreach ( self::HOTEL_ROLES as $hr ) {
+                foreach ( HotelRoles::getSlugs() as $hr ) {
                     if ( ! empty( $raw_caps[ $hr ] ) ) {
                         $role = $hr;
                         break;

@@ -33,6 +33,7 @@ class SettingsController {
         'notifications',
         'display',
         'integrations',
+        'features',
     ];
 
     /**
@@ -142,6 +143,12 @@ class SettingsController {
         }
 
         foreach ( $body as $group => $values ) {
+            // Features group requires system administrator (manage_options).
+            if ( $group === 'features' && ! current_user_can( 'manage_options' ) ) {
+                $errors[] = __( 'Only system administrators can modify feature settings.', 'nozule' );
+                continue;
+            }
+
             // Only allow known groups.
             if ( ! in_array( $group, self::SETTING_GROUPS, true ) ) {
                 $errors[] = sprintf(
@@ -340,6 +347,7 @@ class SettingsController {
             'integrations.sync_bookings',
             'integrations.sync_contacts',
             'integrations.sync_invoices',
+            'features.multi_property',
         ];
 
         $fullKey = $group . '.' . $key;

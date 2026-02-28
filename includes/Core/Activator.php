@@ -64,6 +64,12 @@ class Activator {
 
         require_once NZL_PLUGIN_DIR . 'migrations/009_create_phase4_tables.php';
         nzl_migration_009_create_phase4_tables();
+
+        require_once NZL_PLUGIN_DIR . 'migrations/010_create_property_table.php';
+        nzl_migration_010_create_property_table();
+
+        require_once NZL_PLUGIN_DIR . 'migrations/011_add_property_id_columns.php';
+        nzl_migration_011_add_property_id_columns();
     }
 
     /**

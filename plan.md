@@ -42,7 +42,7 @@
 | NZL-016 | Metasearch (Google Hotel Ads) | Done | v1.1.0 |
 | NZL-017 | Rate Restrictions | Done | v1.1.0 |
 | NZL-018 | Tour Operator Module | Future | Contract rates, allotments, commissions |
-| NZL-019 | Multi-Property Support | Future | Central dashboard, property_id in tables |
+| NZL-019 | Multi-Property Support | In Progress | v1.8.0 — feature toggle, property list, property_id migration |
 | NZL-020 | Review Solicitation | Done | v1.1.0 |
 | NZL-021 | GCC Payment Gateways | Future | PayTabs, Geidea, STC Pay, Apple Pay |
 | NZL-022 | Hijri Calendar | Future | Display alongside Gregorian |

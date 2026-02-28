@@ -2,6 +2,7 @@
 
 namespace Nozule\Modules\Housekeeping\Controllers;
 
+use Nozule\Core\HotelRoles;
 use Nozule\Modules\Housekeeping\Models\HousekeepingTask;
 use Nozule\Modules\Housekeeping\Services\HousekeepingService;
 use WP_REST_Request;
@@ -33,6 +34,13 @@ class HousekeepingController {
 	 */
 	public function registerRoutes(): void {
 		$namespace = 'nozule/v1';
+
+		// Staff list for assignment dropdowns (must be before (?P<id>\d+) route).
+		register_rest_route( $namespace, '/admin/housekeeping/staff', [
+			'methods'             => WP_REST_Server::READABLE,
+			'callback'            => [ $this, 'staff' ],
+			'permission_callback' => [ $this, 'checkStaffPermission' ],
+		] );
 
 		// Stats endpoint (must be registered before the (?P<id>\d+) route).
 		register_rest_route( $namespace, '/admin/housekeeping/stats', [
@@ -278,6 +286,42 @@ class HousekeepingController {
 		return new WP_REST_Response( [
 			'success' => true,
 			'data'    => $counts,
+		], 200 );
+	}
+
+	/**
+	 * List hotel staff members for assignment dropdowns.
+	 */
+	public function staff( WP_REST_Request $request ): WP_REST_Response {
+		global $wpdb;
+
+		$cap_key = $wpdb->prefix . 'capabilities';
+
+		$role_clauses = [];
+		foreach ( HotelRoles::getSlugs() as $role ) {
+			$role_clauses[] = [
+				'key'     => $cap_key,
+				'value'   => '"' . $role . '"',
+				'compare' => 'LIKE',
+			];
+		}
+
+		$users  = get_users( [
+			'meta_query' => array_merge( [ 'relation' => 'OR' ], $role_clauses ),
+			'orderby'    => 'display_name',
+			'order'      => 'ASC',
+		] );
+
+		$data = array_map( function ( \WP_User $user ) {
+			return [
+				'id'           => $user->ID,
+				'display_name' => $user->display_name,
+			];
+		}, $users );
+
+		return new WP_REST_Response( [
+			'success' => true,
+			'data'    => array_values( $data ),
 		], 200 );
 	}
 

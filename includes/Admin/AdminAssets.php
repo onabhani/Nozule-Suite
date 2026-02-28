@@ -152,6 +152,18 @@ class AdminAssets {
             $component_handles[] = $handle;
         }
 
+        // Property script — only load on the Property admin screen.
+        if ( str_contains( $hook_suffix, 'nzl-property' ) ) {
+            wp_enqueue_script(
+                'nozule-admin-property',
+                NZL_PLUGIN_URL . 'assets/js/admin/property.js',
+                [ 'nozule-api', 'nozule-utils', 'nozule-store' ],
+                NZL_VERSION,
+                true
+            );
+            $component_handles[] = 'nozule-admin-property';
+        }
+
         // Alpine.js CDN — loaded AFTER all component scripts so that
         // when Alpine auto-starts it fires alpine:init and all listeners
         // are already registered.
@@ -171,6 +183,7 @@ class AdminAssets {
 
         $settingsMgr = $this->container->get( SettingsManager::class );
         $operatingCountry = $settingsMgr ? $settingsMgr->get( 'general.operating_country', '' ) : '';
+        $multiProperty    = $settingsMgr ? $settingsMgr->get( 'features.multi_property', '0' ) : '0';
 
         wp_localize_script( 'nozule-api', 'NozuleAdmin', [
             'nonce'        => wp_create_nonce( 'wp_rest' ),
@@ -181,6 +194,7 @@ class AdminAssets {
             'locale'       => get_locale(),
             'isRtl'        => is_rtl(),
             'operatingCountry' => $operatingCountry,
+            'multiProperty'    => $multiProperty === '1' || $multiProperty === true,
             'userId'       => $current_user->ID,
             'user'         => [
                 'id'           => $current_user->ID,
