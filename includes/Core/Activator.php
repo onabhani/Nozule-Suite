@@ -78,6 +78,9 @@ class Activator {
         // Run it once after real credentials have been entered for the first
         // pilot hotel — new writes are already encrypted by WhatsAppService and
         // OdooService, so only legacy rows need conversion.
+
+        require_once NZL_PLUGIN_DIR . 'migrations/015_create_employees_table.php';
+        nzl_migration_015_create_employees_table();
     }
 
     /**
