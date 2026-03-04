@@ -419,3 +419,448 @@ This will cause a **database error** when any user tries to resolve a rate parit
 | Referential integrity gaps? | **YES** — no cascade deletes, orphan risk on entity deletion | MEDIUM |
 | wp_users as foreign keys? | **18 columns in 11 tables** + employees ARE WordPress users | HIGH |
 | Transient/cache in wp_options? | **YES** — CacheManager + SSE use transients (ephemeral, acceptable) | LOW |
+
+---
+---
+
+# Nozule PMS — API Layer Deep Audit
+
+**Date:** 2026-03-04
+**Scope:** REST routes, ajax handlers, authentication, response structure, input validation
+
+---
+
+## 8. Complete API Route Inventory
+
+### Data Transport: 100% WP REST API
+
+```
+admin-ajax.php handlers:  ZERO  (no wp_ajax_* hooks found anywhere)
+Direct $_POST/$_GET:      ZERO  (no form processing outside REST)
+Shortcode form handlers:  ZERO
+```
+
+**All data operations go through WP REST API** under the `nozule/v1` namespace. This is the cleanest possible starting point for a Laravel migration — every endpoint maps directly to a Laravel route.
+
+### Route Registration Architecture
+
+Routes are registered via two mechanisms:
+
+1. **Central registrar** — `includes/API/RestController.php` registers public, staff, and admin routes using `registerCrudRoutes()` helper
+2. **Self-registering controllers** — 37 module controllers call `register_rest_route()` in their own `registerRoutes()` method, bootstrapped from `Plugin.php:170-175`
+
+### Complete Route Table
+
+#### PUBLIC ENDPOINTS (permission_callback: `__return_true`)
+
+| # | Method | Route | Controller | Purpose |
+|---|--------|-------|------------|---------|
+| 1 | GET | `/room-types` | RoomTypeController::index | List active room types |
+| 2 | GET | `/room-types/{id}` | RoomTypeController::show | Get single room type |
+| 3 | GET | `/availability` | AvailabilityController::check | Search available rooms |
+| 4 | POST | `/bookings` | BookingController::store | Create guest booking |
+| 5 | GET | `/bookings/{booking_number}` | BookingController::show | Public booking lookup (requires email) |
+| 6 | POST | `/bookings/{booking_number}/cancel` | BookingController::cancel | Guest self-cancel |
+| 7 | GET | `/settings/public` | SettingsController::publicSettings | Safe public config subset |
+| 8 | POST | `/promo-codes/validate` | PromoCodeController::validate | Validate promo code |
+| 9 | GET | `/metasearch/google-hpa-feed` | MetasearchController::getGoogleFeed | Google HPA XML feed |
+
+#### STAFF ENDPOINTS (permission: `manage_options OR nzl_staff`)
+
+| # | Method | Route | Controller | Purpose |
+|---|--------|-------|------------|---------|
+| 8 | GET | `/admin/bookings` | AdminBookingController::index | List bookings |
+| 9 | POST | `/admin/bookings` | AdminBookingController::store | Create booking (staff) |
+| 10 | GET | `/admin/bookings/{id}` | AdminBookingController::show | Get booking detail |
+| 11 | PUT | `/admin/bookings/{id}` | AdminBookingController::update | Update booking |
+| 12 | POST | `/admin/bookings/{id}/confirm` | AdminBookingController::confirm | Confirm booking |
+| 13 | POST | `/admin/bookings/{id}/cancel` | AdminBookingController::cancel | Cancel booking |
+| 14 | POST | `/admin/bookings/{id}/check-in` | AdminBookingController::checkIn | Check-in |
+| 15 | POST | `/admin/bookings/{id}/check-out` | AdminBookingController::checkOut | Check-out |
+| 16 | POST | `/admin/bookings/{id}/assign-room` | AdminBookingController::assignRoom | Assign room |
+| 17 | POST | `/admin/bookings/{id}/payments` | AdminBookingController::payments | Record payment |
+| 18 | GET | `/admin/bookings/{id}/logs` | AdminBookingController::logs | Audit trail |
+| 19 | GET | `/admin/dashboard/stats` | DashboardController::stats | Today's stats |
+| 20 | GET | `/admin/dashboard/arrivals` | DashboardController::arrivals | Today's arrivals |
+| 21 | GET | `/admin/dashboard/departures` | DashboardController::departures | Today's departures |
+| 22 | GET | `/admin/dashboard/in-house` | DashboardController::inHouse | In-house guests |
+| 23 | GET | `/admin/calendar` | CalendarController::index | Calendar view |
+| 24 | GET | `/admin/guests` | GuestController::index | List guests |
+| 25 | GET | `/admin/guests/{id}` | GuestController::show | Guest detail |
+
+#### ADMIN ENDPOINTS (permission: `manage_options OR nzl_admin`)
+
+| # | Method | Route | Controller | Purpose |
+|---|--------|-------|------------|---------|
+| 26-30 | CRUD | `/admin/room-types[/{id}]` | RoomTypeController | Room type management |
+| 31-35 | CRUD | `/admin/rooms[/{id}]` | RoomController | Room management |
+| 36-40 | CRUD | `/admin/rate-plans[/{id}]` | RatePlanController | Rate plan management |
+| 41-45 | CRUD | `/admin/seasonal-rates[/{id}]` | SeasonalRateController | Seasonal rate management |
+| 46 | GET | `/admin/settings` | SettingsController::index | Get all settings |
+| 47 | PUT | `/admin/settings` | SettingsController::update | Update settings |
+| 48 | GET | `/admin/reports` | ReportController::index | Report summary |
+| 49 | GET | `/admin/reports/revenue` | ReportController::revenue | Revenue report |
+| 50 | GET | `/admin/reports/occupancy` | ReportController::occupancy | Occupancy report |
+| 51 | GET | `/admin/reports/sources` | ReportController::sources | Booking sources report |
+| 52 | GET | `/admin/reports/export` | ReportController::export | Export report (streams file) |
+| 53 | GET | `/admin/channels` | ChannelController::index | List channels |
+| 54 | POST | `/admin/channels` | ChannelController::store | Create channel mapping |
+| 55 | GET | `/admin/channels/{id}` | ChannelController::show | Channel detail |
+| 56 | PUT | `/admin/channels/{id}` | ChannelController::update | Update channel |
+| 57 | DELETE | `/admin/channels/{id}` | ChannelController::destroy | Delete channel |
+| 58 | POST | `/admin/channels/{id}/sync` | ChannelController::sync | Trigger sync |
+
+#### MODULE SELF-REGISTERED ENDPOINTS
+
+| # | Method | Route | Controller | Permission | Purpose |
+|---|--------|-------|------------|------------|---------|
+| 59 | GET | `/admin/events/stream` | SSEController::stream | nzl_staff | SSE real-time events |
+| 60-62 | GET,POST,PUT,DEL | `/admin/employees[/{id}]` | EmployeeController | manage_options OR nzl_manage_employees | Staff CRUD |
+| 63 | GET | `/admin/employees/capabilities` | EmployeeController::getCapabilities | manage_options OR nzl_manage_employees | Capability list |
+| 64-65 | GET,PUT | `/admin/property` | PropertyController | manage_options OR nzl_admin | Property detail |
+| 66-70 | CRUD | `/admin/inventory[/{id}]` | InventoryController | nzl_admin OR nzl_manage_inventory | Inventory mgmt |
+| 71 | POST | `/admin/inventory/bulk-update` | InventoryController | nzl_admin OR nzl_manage_inventory | Bulk update |
+| 72 | POST | `/admin/inventory/initialize` | InventoryController | nzl_admin OR nzl_manage_inventory | Initialize dates |
+| 73-77 | CRUD | `/admin/housekeeping[/{id}]` | HousekeepingController | nzl_admin OR nzl_manage_housekeeping | Tasks |
+| 78 | GET | `/admin/housekeeping/staff` | HousekeepingController | nzl_manage_housekeeping | Staff list |
+| 79-83 | CRUD | `/admin/taxes[/{id}]` | TaxController | nzl_admin OR nzl_manage_billing | Tax rules |
+| 84-88 | CRUD | `/admin/folios[/{id}]` | FolioController | nzl_admin OR nzl_manage_billing | Folio mgmt |
+| 89 | POST | `/admin/folios/{id}/items` | FolioController | nzl_manage_billing | Add folio item |
+| 90 | POST | `/admin/folios/{id}/close` | FolioController | nzl_manage_billing | Close folio |
+| 91-95 | CRUD | `/admin/promo-codes[/{id}]` | PromoCodeController | nzl_admin | Promo management |
+| 96-100 | CRUD | `/admin/email-templates[/{id}]` | EmailTemplateController | nzl_admin OR nzl_manage_messaging | Email templates |
+| 101 | POST | `/admin/email-templates/{id}/preview` | EmailTemplateController | nzl_manage_messaging | Preview template |
+| 102-105 | CRUD | `/admin/currencies[/{id}]` | CurrencyController | nzl_admin | Currency mgmt |
+| 106 | GET | `/admin/documents/{guest_id}/documents` | GuestDocumentController | nzl_manage_guests | Guest docs list |
+| 107 | POST | `/admin/documents/{guest_id}/documents` | GuestDocumentController | nzl_manage_guests | Upload doc |
+| 108 | GET | `/admin/documents/{id}` | GuestDocumentController::show | nzl_manage_guests | Doc detail |
+| 109 | DELETE | `/admin/documents/{id}` | GuestDocumentController::destroy | nzl_manage_guests | Delete doc |
+| 110 | POST | `/admin/documents/{id}/verify` | GuestDocumentController | nzl_manage_guests | Verify doc |
+| 111 | POST | `/admin/documents/{id}/ocr` | GuestDocumentController | nzl_manage_guests | Run OCR |
+| 112 | POST | `/admin/night-audit/run` | NightAuditController | nzl_admin | Run night audit |
+| 113 | GET | `/admin/night-audit/history` | NightAuditController | nzl_admin | Audit history |
+| 114 | GET | `/admin/night-audit/{date}` | NightAuditController | nzl_admin | Specific audit |
+| 115-119 | CRUD | `/admin/groups[/{id}]` | GroupBookingController | nzl_staff | Group bookings |
+| 120 | POST | `/admin/groups/{id}/confirm` | GroupBookingController | nzl_staff | Confirm group |
+| 121 | POST | `/admin/groups/{id}/cancel` | GroupBookingController | nzl_staff | Cancel group |
+| 122-126 | CRUD | `/admin/dynamic-pricing/occupancy[/{id}]` | DynamicPricingController | nzl_manage_rates | Occupancy rules |
+| 127-131 | CRUD | `/admin/dynamic-pricing/dow[/{id}]` | DynamicPricingController | nzl_manage_rates | Day-of-week rules |
+| 132-136 | CRUD | `/admin/dynamic-pricing/events[/{id}]` | DynamicPricingController | nzl_manage_rates | Event overrides |
+| 137-141 | CRUD | `/admin/rate-restrictions[/{id}]` | RateRestrictionController | nzl_manage_rates | Rate restrictions |
+| 142-143 | GET,PUT | `/admin/reviews/settings` | ReviewController | nzl_admin | Review settings |
+| 144 | GET | `/admin/reviews/requests` | ReviewController | nzl_admin | Review request list |
+| 145 | GET | `/reviews/track/{id}` | ReviewController::track | __return_true (public) | Pixel tracking |
+| 146-148 | GET,PUT | `/admin/whatsapp/settings` | WhatsAppController | nzl_admin | WhatsApp config |
+| 149-153 | CRUD | `/admin/whatsapp/templates[/{id}]` | WhatsAppController | nzl_manage_messaging | WA templates |
+| 154 | GET | `/admin/whatsapp/log` | WhatsAppController | nzl_manage_messaging | WA send log |
+| 155 | POST | `/admin/whatsapp/send` | WhatsAppController | nzl_manage_messaging | Send WA message |
+| 156 | POST | `/admin/whatsapp/test` | WhatsAppController | nzl_manage_messaging | Test WA config |
+| 157-159 | GET,POST,DEL | `/admin/channel-sync[/{id}]` | ChannelSyncController | nzl_manage_channels | Sync connections |
+| 160-164 | CRUD | `/admin/forecasting[/{id}]` | ForecastController | nzl_admin | Demand forecasts |
+| 165 | POST | `/admin/forecasting/generate` | ForecastController | nzl_admin | Generate forecast |
+| 166-170 | CRUD | `/admin/loyalty/tiers[/{id}]` | LoyaltyController | nzl_admin | Loyalty tiers |
+| 171-175 | CRUD | `/admin/loyalty/rewards[/{id}]` | LoyaltyController | nzl_admin | Loyalty rewards |
+| 176-178 | GET,POST | `/admin/loyalty/members[/{id}]` | LoyaltyController | nzl_admin | Loyalty members |
+| 179 | GET | `/admin/loyalty/members/{id}/transactions` | LoyaltyController | nzl_admin | Member txns |
+| 180 | POST | `/admin/loyalty/members/{id}/points` | LoyaltyController | nzl_admin | Adjust points |
+| 181-185 | CRUD | `/admin/pos/outlets[/{id}]` | POSController | nzl_admin OR nzl_manage_pos | POS outlets |
+| 186-190 | CRUD | `/admin/pos/items[/{id}]` | POSController | nzl_manage_pos | POS menu items |
+| 191-195 | CRUD | `/admin/pos/orders[/{id}]` | POSController | nzl_manage_pos | POS orders |
+| 196 | POST | `/admin/pos/orders/{id}/charge-to-folio` | POSController | nzl_manage_pos | Charge to folio |
+| 197-199 | CRUD | `/admin/rate-shopping/competitors[/{id}]` | RateShopController | nzl_admin | Competitors |
+| 200 | GET | `/admin/rate-shopping/results` | RateShopController | nzl_admin | Rate results |
+| 201 | POST | `/admin/rate-shopping/fetch` | RateShopController | nzl_admin | Fetch rates |
+| 202 | GET | `/admin/rate-shopping/alerts` | RateShopController | nzl_admin | Parity alerts |
+| 203 | POST | `/admin/rate-shopping/alerts/{id}/resolve` | RateShopController | nzl_admin | Resolve alert |
+| 204-206 | CRUD | `/admin/brands[/{id}]` | BrandController | manage_options | Brand config |
+| 207 | POST | `/admin/brands/{id}/activate` | BrandController | manage_options | Activate brand |
+| 208-210 | CRUD | `/admin/integrations[/{id}]` | IntegrationController | manage_options | Integrations |
+| 211 | POST | `/admin/integrations/{id}/test` | IntegrationController | manage_options | Test integration |
+| 212 | GET | `/admin/metasearch/feeds/{type}` | MetasearchController | __return_true (public) | Metasearch XML feeds |
+| 213 | GET | `/admin/metasearch/settings` | MetasearchController | nzl_admin | Metasearch config |
+| 214 | PUT | `/admin/metasearch/settings` | MetasearchController | nzl_admin | Update config |
+
+**Total: ~214 route registrations across 39 files.**
+
+### Public Endpoints Summary
+
+| # | Public Endpoint | Risk Assessment |
+|---|----------------|-----------------|
+| 1 | GET `/room-types` | LOW — public catalog data |
+| 2 | GET `/room-types/{id}` | LOW — public catalog data |
+| 3 | GET `/availability` | LOW — no sensitive data exposed |
+| 4 | POST `/bookings` | MEDIUM — no rate limiting, no CAPTCHA |
+| 5 | GET `/bookings/{booking_number}` | MEDIUM — email-based auth (weak) |
+| 6 | POST `/bookings/{booking_number}/cancel` | MEDIUM — email-based auth (weak) |
+| 7 | GET `/settings/public` | LOW — filtered safe subset only |
+| 8 | POST `/promo-codes/validate` | LOW — validates promo code, no sensitive data |
+| 9 | GET `/reviews/track/{id}` | LOW — 1x1 tracking pixel |
+| 10 | GET `/metasearch/google-hpa-feed` | LOW — public XML feed for Google Hotel Ads |
+
+---
+
+## 9. Authentication and Authorization
+
+### Auth Mechanism
+
+**WordPress cookie-based session authentication only.** No JWT, no OAuth, no API keys, no application passwords.
+
+```
+JWT tokens:           NOT IMPLEMENTED
+OAuth:                NOT IMPLEMENTED
+API keys:             NOT IMPLEMENTED
+Application passwords: NOT IMPLEMENTED
+Rate limiting:        NOT IMPLEMENTED
+HMAC request signing: NOT IMPLEMENTED
+```
+
+The REST API relies on WordPress's built-in cookie + nonce authentication:
+- `Plugin.php:251` passes `wp_create_nonce('wp_rest')` to the frontend via `wp_localize_script()`
+- All authenticated requests require the user to be logged into WordPress
+- The nonce is sent as `X-WP-Nonce` header by the React frontend
+
+### Permission Model — 4 Tiers
+
+```
+Tier 0: PUBLIC          → __return_true
+Tier 1: STAFF           → manage_options OR nzl_staff
+Tier 2: ADMIN           → manage_options OR nzl_admin
+Tier 3: CAPABILITY-BASED → manage_options OR nzl_manage_{module}
+Tier 4: WP SUPER ADMIN  → manage_options only (brands, integrations, features group)
+```
+
+### Permission Callback Patterns
+
+All callbacks are consistent:
+
+```php
+// Pattern 1: Inline lambda (RestController.php)
+$staff_permission = fn() => current_user_can('manage_options') || current_user_can('nzl_staff');
+$admin_permission = fn() => current_user_can('manage_options') || current_user_can('nzl_admin');
+
+// Pattern 2: Controller method (self-registering controllers)
+public function checkAdminPermission(WP_REST_Request $request): bool {
+    return current_user_can('manage_options') || current_user_can('nzl_admin');
+}
+
+// Pattern 3: Module-specific capability
+fn() => current_user_can('manage_options') || current_user_can('nzl_manage_housekeeping')
+```
+
+### Security Issues Found
+
+**ISSUE 9a: No per-resource authorization (IDOR risk)**
+
+Staff endpoints check *capability* but not *resource ownership*. Any staff user with `nzl_staff` can access ANY booking, guest, folio, or housekeeping task — regardless of assignment or property.
+
+```
+GET /admin/bookings/999     → Any staff can view any booking
+PUT /admin/bookings/999     → Any staff can edit any booking
+GET /admin/guests/999       → Any staff can view any guest
+```
+
+This is acceptable for single-property, trusted-staff scenarios but is a vulnerability for multi-property deployments.
+
+**ISSUE 9b: Weak public booking auth**
+
+Public booking lookup (`GET /bookings/{number}`) and cancel (`POST /bookings/{number}/cancel`) use only booking_number + email for authentication. An attacker who knows both can view and cancel any booking. No rate limiting exists to prevent enumeration.
+
+**ISSUE 9c: No rate limiting on public endpoints**
+
+`POST /bookings` (create booking) has no rate limiting, CAPTCHA, or abuse prevention. A bot could flood the system with fake reservations.
+
+**ISSUE 9d: SSE endpoint uses nzl_staff only**
+
+`GET /admin/events/stream` requires only `nzl_staff` — no `manage_options` fallback. This means WordPress admins without `nzl_staff` capability would be denied. Inconsistent with all other staff routes.
+
+---
+
+## 10. Response Structure Consistency
+
+### Three Distinct Patterns Found
+
+**Pattern A: Standard envelope (most controllers)**
+```json
+{
+  "success": true,
+  "data": { ... },
+  "message": "Operation completed.",
+  "meta": { "total": 42, "pages": 3 }
+}
+```
+Used by: AdminBookingController, BookingController, RoomTypeController, RoomController, DashboardController, AvailabilityController, EmployeeController, HousekeepingController, FolioController, TaxController, POSController, LoyaltyController
+
+**Pattern B: Flat response (some controllers)**
+```json
+{
+  "message": "Channel mapping created.",
+  "mapping": { ... }
+}
+// Or raw object:
+{ "general": { ... }, "currency": { ... } }
+```
+Used by: SettingsController (get returns raw object), ChannelController, GuestController (single GET returns flat guest object)
+
+**Pattern C: Structured error (RatePlanController only)**
+```json
+{
+  "success": false,
+  "error": {
+    "code": "NOT_FOUND",
+    "message": "Rate plan not found.",
+    "fields": { "name": ["Name is required"] }
+  }
+}
+```
+Used by: RatePlanController only
+
+### Pagination — 3 Different Formats
+
+| Controller | Format |
+|-----------|--------|
+| AdminBookingController | `{ data: [...], meta: { total, pages } }` |
+| GuestController | `{ data: { items: [...], pagination: { page, per_page, total, total_pages } } }` + `X-WP-Total` header |
+| ChannelController | `{ mappings: [...], total: N, pages: N }` flat keys |
+
+### Error Responses — Inconsistent
+
+| Controller | 404 Format | Validation Error Format |
+|-----------|-----------|----------------------|
+| Most | `{ success: false, message: "..." }` | `{ success: false, message: "...", errors: {...} }` |
+| RatePlanController | `{ success: false, error: { code: "NOT_FOUND", message: "..." } }` | `{ success: false, error: { code: "VALIDATION_ERROR", fields: {...} } }` |
+| GuestController | `{ message: "Guest not found." }` (no success key) | N/A |
+| SettingsController | `{ message: "...", errors: [...] }` (no success key) | Same |
+
+### HTTP Status Codes — Consistent
+
+All controllers correctly use: 200 (success), 201 (created), 400 (bad request), 404 (not found), 409 (conflict), 422 (validation failed), 500 (server error).
+
+### Assessment
+
+**No shared response helper exists.** Each controller builds its own response shape. The dominant pattern (`success` + `data` + `message` + `meta`) is used by ~70% of controllers, but the remaining 30% deviate.
+
+**Migration recommendation:** Create a single `ApiResponse` helper in Laravel that standardizes all responses into Pattern A. The React frontend already handles Pattern A — the deviations are likely bugs that the frontend works around.
+
+---
+
+## 11. Input Validation and Sanitization
+
+### Superglobal Usage — Near Zero
+
+Only 2 files access PHP superglobals directly:
+
+| File | Line | Superglobal | Sanitized? | Purpose |
+|------|------|-------------|-----------|---------|
+| `StaffIsolation.php` | 138 | `$_GET['page']` | YES — `sanitize_text_field()` | Admin menu page detection |
+| `BookingService.php` | 613-625 | `$_SERVER['HTTP_CF_CONNECTING_IP']`, `$_SERVER['HTTP_X_FORWARDED_FOR']`, `$_SERVER['REMOTE_ADDR']` | YES — `sanitize_text_field(wp_unslash())` | Client IP detection |
+
+**No raw `$_POST` or `$_REQUEST` access anywhere.** All request data flows through `WP_REST_Request::get_param()`.
+
+### REST-Level Validation (Route Args)
+
+ID parameters use consistent validation across all controllers:
+
+```php
+'args' => [
+    'id' => [
+        'validate_callback' => fn($v) => is_numeric($v) && (int) $v > 0,
+        'sanitize_callback' => 'absint',
+    ],
+]
+```
+
+Routes with typed URL patterns (`(?P<id>\d+)`) provide additional regex-level validation before the callback fires.
+
+### Controller-Level Sanitization
+
+All controllers sanitize inputs manually via WordPress functions:
+
+| Function | Usage | Coverage |
+|----------|-------|---------|
+| `sanitize_text_field()` | 150+ calls | All string inputs |
+| `sanitize_email()` | 20+ calls | Email fields |
+| `sanitize_textarea_field()` | 20+ calls | Notes, descriptions, special requests |
+| `absint()` / `(int)` | 100+ calls | All integer inputs |
+| `wp_kses_post()` | 0 calls | Not used (email template HTML stored as-is) |
+
+### SQL Injection — Fully Protected
+
+All database access goes through the `Database` wrapper class which uses `$wpdb->prepare()` for every parameterized query:
+
+```php
+// Database.php — every query method uses prepare()
+public function getRow(string $query, ...$args): ?object {
+    if (!empty($args)) {
+        $query = $this->wpdb->prepare($query, ...$args);
+    }
+    return $this->wpdb->get_row($query);
+}
+```
+
+Zero raw SQL concatenation with user input found.
+
+### Validation Gaps Found
+
+**GAP 11a: `orderby` and `order` parameters not validated against allowlists**
+
+Multiple controllers pass `orderby` and `order` directly from request to repository:
+
+```php
+// AdminBookingController, GuestController, GroupBookingController
+'orderby' => $request->get_param('orderby') ?? 'created_at',
+'order'   => $request->get_param('order') ?? 'DESC',
+```
+
+These go to the repository where they're used in SQL `ORDER BY` clauses. While `$wpdb->prepare()` doesn't apply to column names/sort direction, the repositories appear to use allowlists internally. Still, the validation should happen at the API boundary.
+
+**GAP 11b: Search parameters passed raw to repositories**
+
+```php
+// AdminBookingController::index()
+'status' => $request->get_param('status') ?? '',
+'source' => $request->get_param('source') ?? '',
+'search' => $request->get_param('search') ?? '',
+```
+
+No `sanitize_text_field()` at the controller level. The repository likely handles this via `$wpdb->prepare()` with `%s` placeholders, but sanitization should happen at the API boundary for defense in depth.
+
+**GAP 11c: Email template HTML body not sanitized**
+
+`EmailTemplateController` stores `body` and `body_ar` fields as raw HTML in the database. While only admins can edit templates, stored XSS via template editing is possible if an admin account is compromised. `wp_kses_post()` should be applied.
+
+**GAP 11d: `GET /availability` has no args validation defined**
+
+The availability endpoint has `permission_callback: __return_true` and no `args` block. All validation is deferred to the `AvailabilityController::check()` method body, meaning malformed requests hit the controller before being rejected.
+
+**GAP 11e: `POST /bookings` has no args validation defined**
+
+Same issue — public booking creation has no REST-level parameter schema. Validation happens inside `BookingController::store()` and `BookingService`, but the request reaches the controller unvalidated.
+
+### Entity Existence Checks — Good
+
+All controllers that accept resource IDs check existence before operating:
+
+```php
+// Standard pattern across all controllers:
+$booking = $this->repository->find($id);
+if (!$booking) {
+    return new WP_REST_Response(['success' => false, 'message' => 'Not found.'], 404);
+}
+```
+
+---
+
+## Summary of API Layer Findings
+
+| Question | Answer | Migration Risk |
+|----------|--------|----------------|
+| All data via REST API? | **YES** — 214 routes, zero ajax handlers, zero direct $_POST | LOW |
+| Auth mechanism? | WordPress cookie + nonce only. No JWT/OAuth/API keys | MEDIUM — must implement JWT/Sanctum for Laravel |
+| Any public endpoints that shouldn't be? | **Mostly OK** — 9 public routes, all justified. Booking lookup/cancel auth is weak | LOW-MEDIUM |
+| Response structure consistent? | **NO** — 3 patterns, 3 pagination formats, inconsistent error shapes | MEDIUM — standardize during migration |
+| Input validation at API boundary? | **MOSTLY** — ID validation solid, sanitization good. Gaps in orderby/search/email HTML | LOW-MEDIUM |
+| Raw superglobal access? | **Near zero** — only 2 files, both properly sanitized | LOW |
+| SQL injection risk? | **NONE** — all queries via $wpdb->prepare() | NONE |
+| XSS risk? | **LOW** — JSON responses, no direct echo of user input. Email template HTML unsanitized | LOW |
+| Rate limiting? | **NOT IMPLEMENTED** — public endpoints unprotected | MEDIUM — add during migration |
+| Per-resource authorization? | **NOT IMPLEMENTED** — any staff can access any resource | MEDIUM-HIGH for multi-property |
