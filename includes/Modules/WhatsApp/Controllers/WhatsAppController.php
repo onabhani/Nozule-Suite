@@ -366,7 +366,7 @@ class WhatsAppController {
 	public function getSettings( \WP_REST_Request $request ): \WP_REST_Response {
 		$settings = $this->service->getSettings();
 
-		// Mask the access token for security.
+		// Build a masked hint for the UI, then strip the raw token entirely.
 		if ( ! empty( $settings['access_token'] ) ) {
 			$token = $settings['access_token'];
 			if ( strlen( $token ) > 8 ) {
@@ -377,6 +377,9 @@ class WhatsAppController {
 		} else {
 			$settings['access_token_masked'] = '';
 		}
+
+		// Never return the raw token over the API.
+		unset( $settings['access_token'] );
 
 		return new \WP_REST_Response( [
 			'success' => true,
@@ -396,6 +399,10 @@ class WhatsAppController {
 		$allowedKeys = [ 'phone_number_id', 'access_token', 'business_id', 'enabled', 'api_version' ];
 		foreach ( $allowedKeys as $key ) {
 			if ( isset( $params[ $key ] ) ) {
+				// Skip masked placeholders so we never overwrite a real credential.
+				if ( $params[ $key ] === '••••••••' ) {
+					continue;
+				}
 				$data[ $key ] = $params[ $key ];
 			}
 		}
