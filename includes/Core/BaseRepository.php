@@ -51,10 +51,10 @@ abstract class BaseRepository {
      *
      * @return BaseModel[]
      */
-    public function all( string $orderBy = 'id', string $order = 'ASC' ): array {
+    public function all( string $orderBy = 'id', string $order = 'ASC', int $limit = 1000 ): array {
         $table   = $this->tableName();
         $orderBy = sanitize_sql_orderby( "{$orderBy} {$order}" ) ?: 'id ASC';
-        $rows    = $this->db->getResults( "SELECT * FROM {$table} ORDER BY {$orderBy}" );
+        $rows    = $this->db->getResults( "SELECT * FROM {$table} ORDER BY {$orderBy} LIMIT %d", $limit );
         return $this->model::fromRows( $rows );
     }
 
