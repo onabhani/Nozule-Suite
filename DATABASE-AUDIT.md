@@ -1673,3 +1673,344 @@ The plugin never sets or modifies `WP_DEBUG`. It only checks the value for condi
 | Sensitive data encrypted? | **PARTIALLY** — only channel credentials encrypted. Guest PII, WhatsApp token, payment data in plaintext. | **CRITICAL** |
 | File uploads validated? | **PARTIALLY** — extension + MIME whitelist, but MIME check skippable. No execution protection. No auth on file access. | **HIGH** |
 | Error messages exposing internals? | **NO** — business logic messages only. No stack traces, file paths, or SQL. | LOW |
+
+---
+
+## 24. Business Logic Separation from WordPress Hooks (Q7)
+
+**Overall Assessment: EXCELLENT separation — 90% of modules score 9-10/10.**
+
+The plugin uses a consistent **4-layer Module architecture**:
+
+```
+Module (WordPress hooks + bootstrap)
+  → Controller (REST endpoints)
+    → Service (business logic)
+      → Repository (data access)
+```
+
+### Best Examples (10/10 Separation)
+
+| Module | File | Pattern |
+|--------|------|---------|
+| Notifications | `NotificationsModule.php` | Pure delegation — `onBookingCreated()` is 3 lines calling service |
+| Branding | `BrandingModule.php` | Hook callbacks are simple service delegates |
+| Reviews | `ReviewModule.php` | Clean REST + cron, zero business logic in hooks |
+| Integrations | `IntegrationsModule.php` | 3-line closures, all logic in services |
+| Forecasting | `ForecastingModule.php` | Cron handler delegates to service in try/catch |
+
+### Worst Offenders
+
+| Module | File | Lines | Hook | Issue | Score |
+|--------|------|-------|------|-------|-------|
+| **Metasearch** | `MetasearchModule.php` | 72-90 | `wp_head` | Inline closure with 3 conditional checks + data fetch + output — should be a named method delegating to service | 6/10 |
+| **Billing** | `BillingModule.php` | 146-176 | `nozule/booking/checked_in` | Direct `$db->getRow()` SQL query + business logic (folio existence check) inside hook callback | 7/10 |
+| **Housekeeping** | `HousekeepingModule.php` | 106-126 | `nozule/booking/checked_out` | Direct `$db->getRow("SELECT room_id FROM {$table}")` inside hook callback | 7/10 |
+
+### Consistent Patterns Observed
+
+- **REST route registration**: 30+ modules use 1-2 line closures that call `$controller->registerRoutes()`
+- **Booking lifecycle events**: Named methods (e.g., `onBookingCheckedOut`) that delegate to services
+- **Cron handlers**: Named methods with try/catch wrapping service calls
+- **No inline business logic in `add_action()` closures** (except 3 offenders above)
+
+**Migration Impact**: LOW — hooks are thin wrappers. Business logic lives in Services/Repositories and can be extracted cleanly.
+
+---
+
+## 25. PHP Class Classification (Q8)
+
+**Total: ~257 PHP classes across 305 files.**
+
+### Summary by Category
+
+| Category | Count | Description |
+|----------|-------|-------------|
+| **Models** | 77 | Extend `BaseModel`, data representation with `fromRow()`, type casting, JSON field decoding |
+| **Services** | 40 | Business logic orchestration, calculations, external integrations |
+| **Controllers** | 35 | REST endpoint handlers + 30 Admin Page classes |
+| **Repositories** | 35 | Extend `BaseRepository`, database CRUD operations |
+| **Helper/Utility** | 30 | Validators (12), Core utilities (Database, Logger, Cache, Container, etc.) |
+| **Modules** | 20 | Extend `BaseModule`, WordPress hook registration + DI wiring |
+| **Mixed** | 2 | Violate single responsibility |
+
+### Mixed Classes (Violations)
+
+**1. `Plugin` class** (`includes/Core/Plugin.php`) — **GOD CLASS**
+- Bootstrap + service registration + module management + hook registration + REST route setup + shortcode registration + asset management + maintenance tasks
+- **Fix**: Extract `PluginBootstrapper`, `HookRegistry`, `ModuleRegistry`, `AssetManager`
+
+**2. `RestController`** (`includes/API/RestController.php`) — **DUAL ROLE**
+- Acts as both route registrar AND dispatcher
+- Permission callbacks defined inline alongside route definitions
+- **Fix**: Split into `RouteRegistry` + `RouteDispatcher`
+
+### Module Architecture (per module)
+
+Every feature module follows the same structure:
+```
+Module/
+├── Models/          (1-7 classes per module)
+├── Repositories/    (1-4 classes per module)
+├── Services/        (1-3 classes per module)
+├── Controllers/     (1-4 classes per module)
+├── Validators/      (0-2 classes per module)
+├── Exceptions/      (0-2 classes, Bookings only)
+└── XxxModule.php    (1 module bootstrap)
+```
+
+### Notable: No Employee Model or Repository
+
+The `Employees` module has only `EmployeeController` + `EmployeesModule`. It operates directly on WordPress `wp_users`/`wp_usermeta` via `wp_insert_user()`, `get_users()`, `get_user_meta()`. This is the **single biggest migration blocker** for user management.
+
+**Migration Impact**: MEDIUM — class structure maps cleanly to Laravel (Model→Eloquent, Repository→can be replaced, Service→stays, Controller→stays). The 2 Mixed classes need refactoring.
+
+---
+
+## 26. WP-Native Function Calls in Business Logic — Portability Blockers (Q9)
+
+### CRITICAL: Direct WordPress API Calls in Services
+
+#### Email Sending (`wp_mail()`) — 2 Services
+
+| File | Line | Method |
+|------|------|--------|
+| `Messaging/Services/EmailService.php` | 108 | `sendRawEmail()` — `wp_mail( $to, $subject, $body, $headers )` |
+| `Notifications/Services/NotificationService.php` | 328 | `sendEmail()` — `wp_mail( $args['to'], $args['subject'], ... )` |
+
+**Fix**: Create `MailerInterface` → inject `WpMailer` in WordPress, `SmtpMailer` in Laravel.
+
+#### HTTP Client (`wp_remote_post/get()`) — 4 Services
+
+| File | Line | Context |
+|------|------|---------|
+| `Channels/Services/BookingComApiClient.php` | 421 | OTA channel sync API calls |
+| `Integrations/Services/WebhookConnector.php` | 114 | External webhook dispatch |
+| `Integrations/Services/OdooConnector.php` | 311 | Odoo ERP integration |
+| `WhatsApp/Services/WhatsAppService.php` | 366 | WhatsApp Business API |
+
+Each also uses `wp_remote_retrieve_response_code()` and `wp_remote_retrieve_body()` (12+ additional calls).
+
+**Fix**: Create `HttpClientInterface` → inject PSR-18 compatible client.
+
+#### File Uploads (`wp_handle_upload()`) — 1 Service
+
+| File | Line | Context |
+|------|------|---------|
+| `Documents/Services/GuestDocumentService.php` | 264, 287 | Requires `ABSPATH . 'wp-admin/includes/file.php'`, uses `wp_handle_upload()` |
+
+Also uses `add_filter()`/`remove_filter()` for upload directory manipulation.
+
+**Fix**: Create `FileUploadInterface` abstraction.
+
+### HIGH: WordPress Options Leaking into Services
+
+#### `get_option()` in Services — 8 instances
+
+| File | Line | What's Read |
+|------|------|-------------|
+| `Notifications/Services/NotificationService.php` | 287, 309, 648 | `admin_email`, `date_format` |
+| `Notifications/Services/TemplateService.php` | 117, 292 | `date_format`, `admin_email` |
+| `Messaging/Services/EmailService.php` | 163, 244 | `admin_email` (fallback) |
+| `WhatsApp/Services/WhatsAppService.php` | 231 | `admin_email` (fallback) |
+
+Pattern: `$this->settings->get( 'hotel.email', get_option( 'admin_email' ) )` — uses WP option as fallback.
+
+**Fix**: Standardize on `SettingsManager` exclusively. Seed `hotel.email` from `admin_email` during activation.
+
+#### `get_bloginfo()` in Services — 6 instances
+
+Same pattern: `$this->settings->get( 'hotel.name', get_bloginfo( 'name' ) )` in NotificationService, TemplateService, EmailService, WhatsAppService.
+
+### HIGH: WordPress Hook System in Services — 15+ calls
+
+| Service | `do_action()` | `apply_filters()` |
+|---------|---------------|-------------------|
+| `BookingService` | 8 (lifecycle events) | 0 |
+| `NotificationService` | 3 (send events) | 2 (email args) |
+| `NightAuditService` | 1 | 0 |
+| `IntegrationService` | 1 | 1 |
+| `TemplateService` | 0 | 2 |
+| `BookingComApiClient` | 0 | 1 |
+
+The plugin has its own `EventDispatcher` class but services bypass it, calling WordPress hooks directly.
+
+**Fix**: Route all events through `EventDispatcher` interface. WordPress adapter fires `do_action()`, Laravel adapter fires Laravel events.
+
+### MEDIUM: WordPress Date/Time — 15+ instances in Services
+
+Services use `current_time('mysql')` and `wp_date()` instead of PHP's `DateTime`.
+
+Found in: `ChannelSyncService` (5), `HousekeepingService` (2), `NightAuditService` (2), `BookingService` (1+), `POSService` (1), `ReviewService` (1), `DocumentService` (1).
+
+**Fix**: Use `DateTimeImmutable` with timezone injection.
+
+### MEDIUM: URL Building in Services — 6 instances
+
+| File | Function | Context |
+|------|----------|---------|
+| `NotificationService.php:687` | `home_url()` | Booking confirmation URL |
+| `NotificationService.php:690,693` | `add_query_arg()` | URL parameter building |
+| `IntegrationService.php:170` | `home_url()` | Webhook payload site URL |
+| `WebhookConnector.php:36` | `home_url()` | Test webhook payload |
+| `GoogleHotelAdsService.php:261` | `home_url()` | Schema.org landing URL |
+| `ReviewService.php:283,287` | `add_query_arg()` | Review tracking URLs |
+
+### ACCEPTABLE: Controllers & Modules (Not Blockers)
+
+| Function | Where Used | Assessment |
+|----------|------------|------------|
+| `current_user_can()` | RestController, Admin Pages | Expected at API boundary |
+| `get_current_user_id()` | Controllers | Expected at API boundary |
+| `sanitize_text_field()` etc. | Controllers (423 instances) | Expected — input sanitization |
+| `wp_insert_user()` etc. | EmployeeController | Expected (but needs abstraction) |
+| `wp_create_nonce()` | Plugin.php admin config | Expected for WP REST auth |
+
+### Complete Portability Blocker Count
+
+| Severity | Count | Location |
+|----------|-------|----------|
+| **CRITICAL** | 7 calls | `wp_mail()` (2), `wp_remote_post()` (4), `wp_handle_upload()` (1) |
+| **HIGH** | 29 calls | `get_option()` (8), `get_bloginfo()` (6), `do_action/apply_filters` (15+) |
+| **MEDIUM** | 21+ calls | `current_time/wp_date` (15+), `home_url/add_query_arg` (6) |
+| **Total in Services** | **57+** | Across 15 service classes |
+
+---
+
+## 27. Hardcoded WordPress Paths, URLs, and Constants (Q10)
+
+### In Business Logic (Outside Bootstrap/Config)
+
+| Constant/Function | File | Line | Context | Severity |
+|-------------------|------|------|---------|----------|
+| `ABSPATH` | `Documents/Services/GuestDocumentService.php` | 264 | `require_once ABSPATH . 'wp-admin/includes/file.php'` | **HIGH** |
+| `home_url()` | `Notifications/Services/NotificationService.php` | 687 | Booking confirmation URL | MEDIUM |
+| `home_url()` | `Integrations/Services/IntegrationService.php` | 170 | Webhook payload | MEDIUM |
+| `home_url()` | `Integrations/Services/WebhookConnector.php` | 36 | Test webhook payload | MEDIUM |
+| `home_url()` | `Metasearch/Services/GoogleHotelAdsService.php` | 261 | Schema.org landing URL | MEDIUM |
+| `add_query_arg()` | `Notifications/Services/NotificationService.php` | 690, 693 | URL params | MEDIUM |
+| `add_query_arg()` | `Reviews/Services/ReviewService.php` | 283, 287 | Review URLs | MEDIUM |
+
+### NOT Found in Business Logic (Good)
+
+| Constant | Status |
+|----------|--------|
+| `WP_CONTENT_DIR` | Not in services/repos |
+| `WP_PLUGIN_DIR` | Not in services/repos |
+| `NZL_PLUGIN_DIR` | Bootstrap only |
+| `NZL_PLUGIN_URL` | Bootstrap only |
+| `NZL_VERSION` | Bootstrap only |
+| `NZL_DB_VERSION` | Activator only |
+| `WPINC` | Not found anywhere |
+| `plugins_url()` | Admin/Core only |
+| `admin_url()` | Admin/Core only |
+
+**Migration Impact**: LOW-MEDIUM — only 1 `ABSPATH` usage and 6 URL function calls need replacement. Plugin constants properly isolated.
+
+---
+
+## 28. DTO / Data Contract Layer (Q11)
+
+**Answer: NO formal DTOs — uses a hybrid pseudo-DTO pattern with array-based data contracts.**
+
+### What Exists
+
+1. **`BaseModel`** — acts as pseudo-DTO for database hydration
+   - `fromRow(object $row)` → type casting → `new static($data)`
+   - Models define `$intFields`, `$jsonFields`, `$casts` for automatic type conversion
+   - `toArray()` for serialization back to arrays
+
+2. **`BaseValidator`** — acts as implicit data contract
+   - Declarative rules define the expected shape: `['name' => ['required', 'min' => 2, 'max' => 100]]`
+   - 16 validation methods (required, email, date, integer, min, max, slug, etc.)
+   - 12 module-specific validators extend it
+
+3. **Controllers extract params** — selective field whitelisting
+   ```php
+   // RoomTypeController::extractRoomTypeData()
+   $fields = ['name', 'slug', 'description', 'max_occupancy', 'base_price', ...];
+   foreach ($fields as $field) {
+       $value = $request->get_param($field);
+       if ($value !== null) { $data[$field] = $value; }
+   }
+   // Then per-field sanitization
+   ```
+
+### What's Missing
+
+- **No DTO classes** — no `CreateBookingRequest`, `UpdateRoomTypeRequest` typed objects
+- **No interfaces for data shapes** — service methods accept `array $data`
+- **No response DTOs** — controllers build response arrays inline
+
+### Data Flow: HTTP Request → Database
+
+```
+HTTP Request (WP_REST_Request)
+  ↓ get_param() / get_params()
+Controller (selective extraction + sanitization)
+  ↓ array $data
+Service (validates via Validator + transforms + enriches)
+  ↓ array $data (typed values)
+Repository::create(array $data)
+  ↓ parameterized query
+Database ($wpdb->prepare)
+  ↓ returns stdClass
+Model::fromRow() → type casting → BaseModel instance
+```
+
+### Worst Offender: BookingController
+
+```php
+// Passes entire request array directly to service
+$booking = $this->service->createBooking($request->get_params());
+```
+
+No field whitelisting at controller level — relies entirely on service-level validation.
+
+### Best Example: RoomTypeController
+
+```php
+private function extractRoomTypeData(WP_REST_Request $request): array {
+    $fields = ['name', 'slug', 'description', 'max_occupancy', ...];
+    $data = [];
+    foreach ($fields as $field) {
+        $value = $request->get_param($field);
+        if ($value !== null) { $data[$field] = $value; }
+    }
+    if (isset($data['name'])) { $data['name'] = sanitize_text_field($data['name']); }
+    if (isset($data['slug'])) { $data['slug'] = sanitize_title($data['slug']); }
+    if (isset($data['base_price'])) { $data['base_price'] = (float)$data['base_price']; }
+    return $data;
+}
+```
+
+### Direct `$_POST`/`$_GET` Access
+
+**Only 1 occurrence in entire codebase:**
+- `Admin/StaffIsolation.php:138` — `$page = sanitize_text_field($_GET['page'] ?? '')`
+
+All other data access uses `WP_REST_Request` API. Zero `$_POST`/`$_REQUEST` usage.
+
+### Migration Impact
+
+| Aspect | Current | Laravel Target | Effort |
+|--------|---------|---------------|--------|
+| Input extraction | `WP_REST_Request->get_param()` | `Request->input()` / Form Requests | LOW |
+| Validation | Custom `BaseValidator` | Laravel `Validator` / Form Requests | MEDIUM |
+| Type casting | Model `$casts` arrays | Eloquent `$casts` | LOW |
+| Response building | Inline arrays | API Resources | MEDIUM |
+| DTO layer | Missing | Laravel Form Requests = DTOs | NEW WORK |
+
+**Recommendation**: When migrating to Laravel, create Form Request classes per endpoint. The existing validator rules translate almost 1:1 to Laravel validation rules.
+
+---
+
+## Architecture Audit Summary (Q7-Q11)
+
+| Question | Finding | Migration Risk |
+|----------|---------|---------------|
+| Q7: Business logic separated from WP hooks? | **YES** — 90% excellent. 3 minor offenders (Metasearch, Billing, Housekeeping) | **LOW** |
+| Q8: Service classes or procedural? | **257 classes, well-organized**. Module→Controller→Service→Repository pattern. 2 Mixed classes (Plugin, RestController) | **LOW** |
+| Q9: WP-native calls in core logic? | **57+ calls in 15 services**. Critical: `wp_mail` (2), `wp_remote_post` (4), `wp_handle_upload` (1). High: `get_option` (8), `do_action` (15+) | **HIGH** |
+| Q10: Hardcoded WP paths/URLs? | **7 instances** in services. 1 `ABSPATH`, 6 URL function calls. Plugin constants properly isolated to bootstrap | **LOW** |
+| Q11: DTO/data contract layer? | **No formal DTOs**. Array-based contracts with validators as implicit schemas. Models as pseudo-DTOs. Only 1 `$_GET` usage in entire codebase | **MEDIUM** |
