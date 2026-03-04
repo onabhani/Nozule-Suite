@@ -864,3 +864,398 @@ if (!$booking) {
 | XSS risk? | **LOW** — JSON responses, no direct echo of user input. Email template HTML unsanitized | LOW |
 | Rate limiting? | **NOT IMPLEMENTED** — public endpoints unprotected | MEDIUM — add during migration |
 | Per-resource authorization? | **NOT IMPLEMENTED** — any staff can access any resource | MEDIUM-HIGH for multi-property |
+
+---
+---
+
+# Nozule PMS — Performance & Infrastructure Deep Audit
+
+**Date:** 2026-03-04
+**Scope:** N+1 queries, caching, unbounded queries, wp-cron, missing indexes, synchronous HTTP
+
+---
+
+## 12. N+1 Query Patterns
+
+### Critical N+1 Issues (Must Fix)
+
+**N+1 #1: `InventoryRepository::initializeInventory()`** — HIGH
+`includes/Modules/Rooms/Repositories/InventoryRepository.php:197-221`
+
+```php
+while ( $current <= $end ) {
+    $dateStr  = $current->format( 'Y-m-d' );
+    $existing = $this->getForDate( $roomTypeId, $dateStr );  // SELECT per day
+    if ( ! $existing ) {
+        $id = $this->db->insert( $this->table, [...] );      // INSERT per day
+    }
+    $current = $current->modify( '+1 day' );
+}
+```
+**Impact:** 365-day init = 365+ queries. User-facing (room setup).
+**Fix:** Batch SELECT for entire range, then batch INSERT for missing dates.
+
+---
+
+**N+1 #2: `ChannelSyncService::pushAvailability()`** — HIGH
+`includes/Modules/Channels/Services/ChannelSyncService.php:128-150`
+
+```php
+foreach ( $mappings as $mapping ) {
+    $rows = $this->db->getResults(
+        "SELECT date, available_rooms, stop_sell, min_stay
+         FROM {$inventoryTable}
+         WHERE room_type_id = %d AND date >= %s AND date <= %s",
+        $mapping->local_room_type_id, $startDate, $endDate
+    );  // SELECT per mapping
+}
+```
+**Impact:** O(M) queries where M = channel mappings (could be 10-50+). Background + user-triggered.
+**Fix:** Single query with `WHERE room_type_id IN (...)`, group results in PHP.
+
+---
+
+**N+1 #3: `ChannelSyncService::pushRates()`** — HIGH
+`includes/Modules/Channels/Services/ChannelSyncService.php:268-293`
+
+Same pattern as #2 but for rate data with a JOIN. Same fix applies.
+
+---
+
+**N+1 #4: `NotificationService::sendScheduledReminders()`** — MEDIUM-HIGH
+`includes/Modules/Notifications/Services/NotificationService.php:487-510`
+
+```php
+foreach ( $check_in_bookings as $booking ) {
+    $notification = $this->queue( $booking, 'check_in_reminder' );
+    // queue() internally calls:
+    //   hasBeenSent()    → SELECT (1 query)
+    //   resolveGuest()   → SELECT (1 query)
+    //   buildTemplate()  → possible query
+    //   repository->create() → INSERT (1 query)
+}
+```
+**Impact:** 3-4 queries per booking. 100 arrivals = 300-400 queries. Background cron job.
+**Fix:** Batch-fetch guest data, batch-check sent status with `WHERE booking_id IN (...)`.
+
+---
+
+### Acceptable Patterns (No Fix Needed)
+
+| File | Pattern | Why OK |
+|------|---------|--------|
+| `ReportService.php` | Batch query + in-memory loop | Queries happen once, loop is CPU-only |
+| `PricingService::enforceRestrictions()` | Single query, then loop validation | No DB inside loop |
+| `SettingsManager::loadAutoloadSettings()` | Single query, loop for JSON decode | CPU-only loop |
+| `HousekeepingRepository::countByStatus()` | GROUP BY + loop to format | Formatting only |
+| `ReviewService::processPendingRequests()` | Batch fetch + per-item UPDATE | Status updates are inherently per-item |
+| Migration seed loops | `foreach` with INSERT | Run once at setup, not user-facing |
+
+---
+
+## 13. Object Caching
+
+### CacheManager Architecture
+
+`includes/Core/CacheManager.php` — dual-layer cache:
+
+```
+Layer 1: wp_cache_get/set (WordPress object cache — in-memory per request,
+         persistent with Redis/Memcached if external cache plugin installed)
+Layer 2: get_transient/set_transient (wp_options table fallback — persistent
+         across requests even without external cache)
+```
+
+Both layers are always written. Read checks object cache first, falls back to transient.
+
+### Where Cache IS Used
+
+| Module | What's Cached | TTL | File |
+|--------|--------------|-----|------|
+| **Reports** | Revenue report | 300s | `ReportService.php:49,135` |
+| **Reports** | Occupancy report | 300s | `ReportService.php:153,240` |
+| **Reports** | Source analysis | 300s | `ReportService.php:257,324` |
+| **Reports** | Guest demographics | 300s | `ReportService.php:341,484` |
+| **Reports** | Forecast report | 300s | `ReportService.php:501,608` |
+| **Reports** | Financial report | 300s | `ReportService.php:625,775` |
+| **Reports** | ADR/RevPAR | 120s | `ReportService.php:797,920` |
+| **Settings** | Public settings | 600s | `SettingsController.php:216,228` |
+| **Settings** | Auto-loaded settings | In-memory per request | `SettingsManager.php:148-163` |
+| **Pricing** | Calculated rates | Via CacheManager | `PricingService.php` |
+| **Property** | Property detail | Via CacheManager | `PropertyController.php` |
+| **SSE** | Event queue | 3600s | `SSEController.php:149` (transient-only) |
+
+### Where Cache is NOT Used (Gaps)
+
+| Module | Expensive Query | Called From | Impact |
+|--------|----------------|------------|--------|
+| **Dashboard stats** | 5+ aggregate queries (occupancy, revenue, arrivals, departures) | `DashboardController::stats()` — every admin page load | HIGH — hits DB on every dashboard visit |
+| **Availability check** | Complex date-range join across inventory + bookings | `AvailabilityController::check()` — public endpoint | MEDIUM — every search hits DB |
+| **Calendar view** | Month-wide booking + room query | `CalendarController::index()` — staff page | MEDIUM — hits DB on every calendar load |
+| **Room type list** | Full list with rates | `RoomTypeController::index()` — public + admin | LOW-MEDIUM — small result set but frequent |
+| **Guest lookup** | Full text search | `GuestController::index()` — staff search | LOW — search is inherently uncacheable |
+| **Employee list** | `get_users()` with meta query | `EmployeeController::list()` — admin page | LOW — small user count |
+
+### Assessment
+
+Caching is **well-implemented for reports** (the heaviest queries) and **completely missing for the dashboard and calendar** (the most frequently accessed pages). Without an external object cache plugin (Redis/Memcached), `wp_cache_get/set` provides zero benefit (in-memory only, reset every request) and all persistence comes from transients in `wp_options`.
+
+---
+
+## 14. Unbounded Queries
+
+### Queries Without LIMIT That Could Return Many Rows
+
+#### HIGH RISK (operational tables, grows over time)
+
+| Repository | Method | Query | Potential Rows |
+|-----------|--------|-------|---------------|
+| `BookingRepository` | `getByStatus()` | `SELECT * FROM bookings WHERE status = %s` | Thousands (all confirmed/checked-in) |
+| `BookingRepository` | `getByCheckInDate()` | `SELECT * FROM bookings WHERE check_in = %s` | 50-200 per day |
+| `BookingRepository` | `getByCheckOutDate()` | `SELECT * FROM bookings WHERE check_out = %s` | 50-200 per day |
+| `BookingRepository` | `getByGuestId()` | `SELECT * FROM bookings WHERE guest_id = %d` | Unbounded repeat guests |
+| `BookingRepository` | `getInHouseGuests()` | `SELECT * FROM bookings WHERE status = 'checked_in'` | All in-house (OK for small hotels) |
+| `FolioRepository` | `getByGuest()` | `SELECT * FROM folios WHERE guest_id = %d` | Unbounded |
+| `FolioRepository` | `getByStatus()` | `SELECT * FROM folios WHERE status = %s` | All open folios |
+| `NotificationRepository` | `getByBookingId()` | `SELECT * FROM notifications WHERE booking_id = %d` | Could be many per booking |
+| `NotificationRepository` | `getByGuestId()` | `SELECT * FROM notifications WHERE guest_id = %d` | Unbounded |
+| `HousekeepingRepository` | `getByStatus()` | `SELECT * FROM housekeeping WHERE status = %s` | All dirty rooms |
+| `HousekeepingRepository` | `getAllWithRoomInfo()` | `SELECT * FROM housekeeping JOIN rooms` | All tasks ever |
+| `GroupBookingRepository` | `getByStatus()` | `SELECT * FROM group_bookings WHERE status = %s` | All groups of type |
+| `GroupBookingRepository` | `search()` | `SELECT * FROM group_bookings WHERE name LIKE %s` | Unbounded |
+| `EmailLogRepository` | `getByBookingId()` | `SELECT * FROM email_log WHERE booking_id = %d` | Unbounded |
+| `WhatsAppLogRepository` | `getByBookingId()` | `SELECT * FROM whatsapp_log WHERE booking_id = %d` | Unbounded |
+
+#### LOW RISK (reference tables, small row counts)
+
+| Repository | Method | Query | Why Low Risk |
+|-----------|--------|-------|-------------|
+| `RoomTypeRepository` | `getActive()` | `SELECT * FROM room_types WHERE status = 'active'` | Typically 5-20 room types |
+| `RoomTypeRepository` | `getAllOrdered()` | `SELECT * FROM room_types ORDER BY sort_order` | Same |
+| `RoomRepository` | `getByRoomType()` | `SELECT * FROM rooms WHERE room_type_id = %d` | Typically 10-50 rooms per type |
+| `RoomRepository` | `getAllWithType()` | `SELECT * FROM rooms JOIN room_types` | Max ~200 rooms total |
+| `RatePlanRepository` | `getActive()` | `SELECT * FROM rate_plans WHERE status = 'active'` | Typically 5-15 plans |
+| `TaxRepository` | `getActive()` | `SELECT * FROM taxes WHERE is_active = 1` | Typically 2-5 taxes |
+| `CurrencyRepository` | `getActive()` | `SELECT * FROM currencies WHERE is_active = 1` | Typically 3-5 currencies |
+| `DynamicPricingRepository` | Various `getAll*()` | Full table scans | Typically <50 rules |
+
+#### Paginated Queries (OK)
+
+`AdminBookingController::index()`, `GuestController::index()`, and `FolioController::index()` all use pagination with LIMIT/OFFSET. These are safe.
+
+### Assessment
+
+**50+ unbounded SELECT queries** across the codebase. Most are in repository `getBy*()` methods that assume small result sets. For a hotel with years of booking history, queries like `getByGuestId()` or `getByStatus('confirmed')` could return thousands of rows.
+
+**Fix priority:** Add default LIMIT (e.g., 1000) to all `getBy*()` methods. For methods that genuinely need all rows (e.g., report aggregations), use COUNT first to warn if result set is large.
+
+---
+
+## 15. wp-cron Scheduled Events
+
+### Complete Cron Event Inventory
+
+| # | Hook | Interval | Registered In | Callback | What It Does |
+|---|------|----------|--------------|----------|-------------|
+| 1 | `nzl_daily_maintenance` | Daily | `Activator.php:212` | `Plugin::runDailyMaintenance()` | Database cleanup, old notification purge |
+| 2 | `nzl_send_reminders` | Hourly | `Activator.php:216` | `Plugin::sendReminders()` → `NotificationService::sendScheduledReminders()` | Pre-arrival/departure email reminders |
+| 3 | `nzl_channel_sync` | Hourly | `ChannelsModule.php:117` | `ChannelsModule::runScheduledSync()` | Push availability/rates to OTAs |
+| 4 | `nzl_channel_pull_reservations` | Every 15 min | `ChannelSyncModule.php:186` | `ChannelSyncModule::runReservationPull()` | Pull new bookings from OTAs |
+| 5 | `nzl_channel_push_inventory` | Hourly | `ChannelSyncModule.php:191` | `ChannelSyncModule::runInventoryPush()` | Push inventory updates to OTAs |
+| 6 | `nozule/cron/process_notifications` | Every 5 min | `NotificationsModule.php:168` | `NotificationsModule::processQueue()` → `NotificationService::processQueue()` | Send queued email/WhatsApp/SMS |
+| 7 | `nzl_rate_shop_check` | Twice daily | `RateShoppingModule.php:79` | `RateShoppingModule::runScheduledParityCheck()` | Scrape competitor rates, check parity |
+| 8 | `nzl_process_review_requests` | Every 15 min | `ReviewModule.php:94` | `ReviewService::processPendingRequests()` | Send post-checkout review solicitation emails |
+| 9 | `nzl_generate_forecasts` | Daily | `ForecastingModule.php:68` | `ForecastService::generateAll()` | Calculate demand forecasts for next 90 days |
+
+### Custom Cron Schedules Registered
+
+| Name | Interval | Registered By |
+|------|----------|--------------|
+| `five_minutes` | 300s | `NotificationsModule.php:162` |
+| `nzl_every_15_minutes` | 900s | `ReviewModule.php:86` |
+| `nzl_fifteen_minutes` | 900s | `ChannelSyncModule.php:172` |
+
+### Risk Assessment
+
+| Hook | Time-Critical? | Heavy? | Should Be Real Cron? |
+|------|---------------|--------|---------------------|
+| `nzl_daily_maintenance` | No | Low | No — daily cleanup is fine on wp-cron |
+| `nzl_send_reminders` | **YES** — guests expect reminders at specific times | Medium (N+1 issue #4) | **YES** — wp-cron depends on site traffic |
+| `nzl_channel_sync` | **YES** — stale OTA data = overbookings | High (HTTP calls to OTA APIs) | **YES** — must run regardless of traffic |
+| `nzl_channel_pull_reservations` | **CRITICAL** — missed OTA bookings = double bookings | High (HTTP calls) | **YES** — 15-min interval is aggressive for wp-cron |
+| `nzl_channel_push_inventory` | **YES** — stale inventory on OTAs | High (HTTP calls) | **YES** — must push after every change |
+| `nozule/cron/process_notifications` | **YES** — email delivery delays | Medium (sends emails/WhatsApp) | **YES** — 5-min interval unreliable on wp-cron |
+| `nzl_rate_shop_check` | No | High (scrapes competitor sites) | Moderate — twice daily is tolerable |
+| `nzl_process_review_requests` | No | Low-Medium | No — review emails can be delayed |
+| `nzl_generate_forecasts` | No | High (90-day forecast calculation) | No — daily is fine, but should run during low-traffic |
+
+### Critical wp-cron Limitation
+
+**wp-cron is NOT real cron.** It only fires when someone visits the site. For a hotel with low website traffic overnight, these events will be delayed:
+
+- **Channel pull (15 min):** A booking made at 2 AM on Booking.com won't be pulled until the next site visit — could be hours. This causes double-booking risk.
+- **Notification queue (5 min):** Confirmation emails will be delayed until someone visits the site.
+- **Channel push (hourly):** Inventory changes won't reach OTAs until a visit triggers cron.
+
+**Recommendation:** Configure `DISABLE_WP_CRON` + real server cron (`* * * * * wget -q -O - https://site.com/wp-cron.php`) for all time-critical events. In Laravel, use `php artisan schedule:run` with system crontab.
+
+---
+
+## 16. Missing Database Indexes
+
+### Complete Index Audit
+
+#### Tables With Good Index Coverage
+
+| Table | Indexes | Assessment |
+|-------|---------|-----------|
+| `nzl_bookings` | PK, UNIQUE(booking_number), KEY(guest_id), KEY(room_type_id), KEY(check_in), KEY(check_out), KEY(status), KEY(source), KEY(created_at), KEY(status, check_in) | **GOOD** — composite (status, check_in) covers common queries |
+| `nzl_room_inventory` | PK, UNIQUE(room_type_id, date), KEY(date) | **GOOD** — unique composite covers date-range lookups |
+| `nzl_housekeeping_tasks` | PK, KEY(room_id), KEY(assigned_to), KEY(status), KEY(priority), KEY(created_at) | **GOOD** |
+| `nzl_folios` | PK, UNIQUE(folio_number), KEY(booking_id), KEY(group_booking_id), KEY(guest_id), KEY(status) | **GOOD** |
+| `nzl_channel_mappings` | PK, UNIQUE(channel, room_type_id, rate_plan_id), KEY(room_type_id), KEY(channel), KEY(status) | **GOOD** |
+
+#### Tables With Missing Indexes
+
+| Table | Missing Index | Used In WHERE/JOIN | Impact |
+|-------|--------------|-------------------|--------|
+| **`nzl_guests`** | `wp_user_id` | Guest-user lookup | LOW — rare query |
+| **`nzl_guests`** | `created_at` | Recent guests sort | LOW — small table |
+| **`nzl_payments`** | `(booking_id, status)` composite | Unpaid payment lookup | MEDIUM — common query |
+| **`nzl_seasonal_rates`** | `(room_type_id, status, start_date, end_date)` composite | Active rate for room type + date | **HIGH** — pricing engine query |
+| **`nzl_seasonal_rates`** | `rate_plan_id` | Rate plan rate lookup | MEDIUM — frequently queried |
+| **`nzl_rate_plans`** | `(room_type_id, status, is_default)` composite | Default rate plan lookup | MEDIUM |
+| **`nzl_notifications`** | `guest_id` | Guest notification history | LOW |
+| **`nzl_notifications`** | `(status, created_at)` composite | Queue processing ORDER BY | MEDIUM — cron job query |
+| **`nzl_group_bookings`** | `check_out` | Date range overlap queries | MEDIUM |
+| **`nzl_email_log`** | `(status, created_at)` composite | Queue processing | MEDIUM |
+| **`nzl_booking_logs`** | `booking_id` | Audit trail display | **HIGH** — loaded on every booking detail view |
+| **`nzl_folio_items`** | `(folio_id, category)` composite | Folio category filter | LOW-MEDIUM |
+| **`nzl_group_booking_rooms`** | `guest_id` | Guest-to-group lookup | LOW |
+| **`nzl_rate_restrictions`** | `(room_type_id, date_from, date_to, is_active)` composite | Active restrictions for date range | MEDIUM |
+| **`nzl_loyalty_members`** | `guest_id` | Guest loyalty lookup | LOW |
+| **`nzl_loyalty_transactions`** | `member_id` | Transaction history | LOW |
+| **`nzl_pos_order_items`** | `order_id` | Order line items | MEDIUM |
+| **`nzl_review_requests`** | `(status, send_after)` composite | Queue processing | Already exists! |
+
+#### Most Critical Missing Indexes (Fix First)
+
+1. **`nzl_booking_logs.booking_id`** — Every booking detail page queries this. No index = full table scan on growing table.
+2. **`nzl_seasonal_rates (room_type_id, status, start_date, end_date)`** — Pricing engine queries this on every availability check and booking. Without composite index, the DB scans all seasonal rates.
+3. **`nzl_payments (booking_id, status)`** — Payment status check runs on every booking detail view and folio calculation.
+4. **`nzl_notifications (status, created_at)`** — Cron job processes queue every 5 minutes, sorted by created_at.
+
+---
+
+## 17. Synchronous External HTTP Calls
+
+### Complete HTTP Call Inventory
+
+| # | File | Method | External Service | In Request Path? | Blocking? |
+|---|------|--------|-----------------|-----------------|-----------|
+| 1 | `WhatsAppService.php:366` | `wp_remote_post()` | **Meta WhatsApp Cloud API** | **YES** — `POST /admin/whatsapp/send` and `POST /admin/whatsapp/test` | **YES — blocks user request** |
+| 2 | `WhatsAppService.php:366` | `wp_remote_post()` | **Meta WhatsApp Cloud API** | YES — also called from `processQueue()` (cron) | Cron path is OK |
+| 3 | `BookingComApiClient.php:421` | `wp_remote_post()` | **Booking.com XML API** | Mostly cron (push availability/rates, pull reservations) | Cron path is OK |
+| 4 | `BookingComApiClient.php:421` | `wp_remote_post()` | **Booking.com XML API** | **YES** — `POST /admin/channels/{id}/sync` (manual sync) and `POST /admin/integrations/{id}/test` | **YES — blocks user request** |
+| 5 | `OdooConnector.php:311` | `wp_remote_post()` | **Odoo ERP JSON-RPC** | **YES** — called when creating invoices/contacts during booking flow | **YES — blocks user request** |
+| 6 | `WebhookConnector.php:114` | `wp_remote_post()` | **User-configured webhook URL** | **YES** — fires on booking events | **YES — blocks event processing** |
+
+### Call Path Analysis
+
+#### Path 1: WhatsApp Send (USER-FACING, BLOCKING)
+```
+User clicks "Send WhatsApp" →
+  WhatsAppController::send() →
+    WhatsAppService::sendMessage() →
+      wp_remote_post( Meta Cloud API )  ← BLOCKS 1-5 seconds
+```
+**Risk:** If Meta API is slow or down, the admin UI hangs. No timeout configured.
+
+#### Path 2: Channel Manual Sync (USER-FACING, BLOCKING)
+```
+User clicks "Sync Now" →
+  ChannelController::sync() →
+    ChannelService::syncAvailability() →
+      BookingComApiClient::pushAvailability() →
+        wp_remote_post( Booking.com XML API )  ← BLOCKS 2-10 seconds per call
+```
+**Risk:** Multiple HTTP calls in a loop (N+1 #2 and #3). Each blocks. Total could be 30+ seconds.
+
+#### Path 3: Odoo Integration (USER-FACING, BLOCKING)
+```
+Booking confirmed →
+  IntegrationModule hooks →
+    OdooConnector::createInvoice() →
+      wp_remote_post( Odoo JSON-RPC )  ← BLOCKS 1-5 seconds
+        (also calls authenticate() first = 2 HTTP calls)
+```
+**Risk:** Two synchronous HTTP calls during booking confirmation. If Odoo is down, confirmation fails or hangs.
+
+#### Path 4: Webhook (EVENT-DRIVEN, BLOCKING)
+```
+Booking created/confirmed/cancelled →
+  IntegrationModule hooks →
+    WebhookConnector::send() →
+      wp_remote_post( user URL )  ← BLOCKS until response or timeout
+```
+**Risk:** User-configured URL could be anything. Slow webhook = slow booking operations.
+
+#### Path 5: Cron Jobs (BACKGROUND, ACCEPTABLE)
+```
+nzl_channel_pull_reservations → BookingComApiClient → wp_remote_post()  ← OK (cron)
+nzl_channel_push_inventory   → BookingComApiClient → wp_remote_post()  ← OK (cron)
+nozule/cron/process_notifications → WhatsAppService → wp_remote_post() ← OK (cron)
+```
+These are acceptable because they run in background cron, not blocking user requests.
+
+### Timeout Configuration
+
+```php
+// WhatsAppService.php:366
+wp_remote_post( $url, [
+    'timeout' => 30,  // 30 second timeout — TOO HIGH for user-facing
+    'body'    => wp_json_encode( $payload ),
+    ...
+]);
+
+// OdooConnector.php:311
+wp_remote_post( $endpoint, [
+    'timeout' => 15,  // 15 second timeout
+    ...
+]);
+
+// WebhookConnector.php:114
+wp_remote_post( $url, [
+    'timeout' => 10,  // 10 second timeout
+    ...
+]);
+
+// BookingComApiClient.php:421
+wp_remote_post( $url, $args );  // DEFAULT timeout (5 seconds)
+```
+
+### Assessment
+
+**4 synchronous blocking HTTP calls in user-facing request paths.** The Odoo and Webhook calls are particularly dangerous because they fire on booking lifecycle events (confirm, cancel, check-in) — the most critical user operations.
+
+**Recommendation for Laravel migration:**
+- Queue all external HTTP calls via Laravel Jobs
+- WhatsApp send → dispatch `SendWhatsAppJob`
+- Channel sync → dispatch `SyncChannelJob`
+- Odoo integration → dispatch `SyncOdooJob`
+- Webhooks → dispatch `FireWebhookJob`
+- Use Laravel Horizon for queue monitoring
+- Set aggressive timeouts (5s max for user-triggered, 30s for background)
+
+---
+
+## Summary of Performance Findings
+
+| Question | Answer | Severity |
+|----------|--------|----------|
+| N+1 query patterns? | **4 critical** — inventory init, channel sync (×2), notification reminders | HIGH |
+| Object caching used? | **Partially** — reports cached (5 min), dashboard/calendar/availability NOT cached | MEDIUM |
+| Unbounded queries? | **50+ SELECT without LIMIT** across repositories. Most assume small result sets | MEDIUM-HIGH |
+| wp-cron issues? | **9 scheduled events**, 5 are time-critical. wp-cron is traffic-dependent — unreliable | HIGH |
+| Missing indexes? | **4 critical** — booking_logs.booking_id, seasonal_rates composite, payments composite, notifications queue | MEDIUM-HIGH |
+| Synchronous HTTP? | **4 blocking calls** in user-facing paths — WhatsApp, Booking.com, Odoo, Webhooks | HIGH |
