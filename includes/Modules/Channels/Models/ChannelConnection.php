@@ -3,6 +3,7 @@
 namespace Nozule\Modules\Channels\Models;
 
 use Nozule\Core\BaseModel;
+use Nozule\Core\CredentialVault;
 
 /**
  * Channel Connection model.
@@ -54,70 +55,28 @@ class ChannelConnection extends BaseModel {
 	/**
 	 * Decrypt and return the stored credentials.
 	 *
-	 * Credentials are stored as an AES-256-CBC encrypted JSON string
-	 * using the WordPress AUTH_KEY as the encryption key.
+	 * Delegates to CredentialVault for the actual decryption.
 	 *
 	 * @return array Associative array of credential key-value pairs.
 	 */
 	public function getDecryptedCredentials(): array {
-		$raw = $this->credentials;
-
-		if ( empty( $raw ) ) {
+		if ( empty( $this->credentials ) ) {
 			return [];
 		}
 
-		$key = self::getEncryptionKey();
-
-		// Try to decrypt.
-		$decoded = base64_decode( $raw, true );
-		if ( $decoded === false ) {
-			// Not base64 — might be plain JSON (legacy).
-			$plain = json_decode( $raw, true );
-			return is_array( $plain ) ? $plain : [];
-		}
-
-		$iv_length = openssl_cipher_iv_length( 'aes-256-cbc' );
-		if ( strlen( $decoded ) < $iv_length ) {
-			return [];
-		}
-
-		$iv        = substr( $decoded, 0, $iv_length );
-		$encrypted = substr( $decoded, $iv_length );
-
-		$decrypted = openssl_decrypt( $encrypted, 'aes-256-cbc', $key, OPENSSL_RAW_DATA, $iv );
-
-		if ( $decrypted === false ) {
-			return [];
-		}
-
-		$result = json_decode( $decrypted, true );
-
-		return is_array( $result ) ? $result : [];
+		return CredentialVault::decrypt( $this->credentials );
 	}
 
 	/**
 	 * Encrypt credentials for storage.
 	 *
+	 * Delegates to CredentialVault for the actual encryption.
+	 *
 	 * @param array $credentials Associative array of credentials.
 	 * @return string Encrypted, base64-encoded string.
 	 */
 	public static function encryptCredentials( array $credentials ): string {
-		$key       = self::getEncryptionKey();
-		$json      = wp_json_encode( $credentials );
-		$iv_length = openssl_cipher_iv_length( 'aes-256-cbc' );
-		$iv        = openssl_random_pseudo_bytes( $iv_length );
-
-		$encrypted = openssl_encrypt( $json, 'aes-256-cbc', $key, OPENSSL_RAW_DATA, $iv );
-
-		return base64_encode( $iv . $encrypted );
-	}
-
-	/**
-	 * Get the encryption key derived from AUTH_KEY.
-	 */
-	private static function getEncryptionKey(): string {
-		$auth_key = defined( 'AUTH_KEY' ) ? AUTH_KEY : 'nzl-default-key';
-		return hash( 'sha256', $auth_key, true );
+		return CredentialVault::encrypt( $credentials );
 	}
 
 	/**
