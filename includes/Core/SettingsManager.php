@@ -12,7 +12,7 @@ class SettingsManager {
      *
      * @var string[]
      */
-    private const SENSITIVE_KEYS = [
+    public const SENSITIVE_KEYS = [
         'integrations.odoo_api_key',
         'integrations.webhook_secret',
         'metasearch.partner_key',
