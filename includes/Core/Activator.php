@@ -70,6 +70,14 @@ class Activator {
 
         require_once NZL_PLUGIN_DIR . 'migrations/011_add_property_id_columns.php';
         nzl_migration_011_add_property_id_columns();
+
+        // TODO (pre-go-live): Create and run migrations/014_encrypt_existing_credentials.php
+        // This migration must re-encrypt any plaintext access_token, business_id,
+        // and phone_number_id rows in nzl_whatsapp_settings (and the equivalent
+        // Odoo keys in nzl_settings) using CredentialVault::encrypt().
+        // Run it once after real credentials have been entered for the first
+        // pilot hotel — new writes are already encrypted by WhatsAppService and
+        // OdooService, so only legacy rows need conversion.
     }
 
     /**
