@@ -3,6 +3,8 @@
 namespace Nozule\Modules\Employees\Controllers;
 
 use Nozule\Core\HotelRoles;
+use Nozule\Modules\Employees\Models\Employee;
+use Nozule\Modules\Employees\Repositories\EmployeeRepository;
 use WP_REST_Request;
 use WP_REST_Response;
 use WP_REST_Server;
@@ -41,6 +43,11 @@ class EmployeeController {
         'nzl_manage_messaging',
     ];
 
+    private EmployeeRepository $repo;
+
+    public function __construct( EmployeeRepository $repo ) {
+        $this->repo = $repo;
+    }
 
     public function registerRoutes(): void {
         register_rest_route( self::NAMESPACE, '/admin/employees', [
@@ -79,43 +86,23 @@ class EmployeeController {
     }
 
     /**
-     * List all users with nzl_* roles.
-     *
-     * Uses an explicit meta_query on the capabilities key to ensure
-     * custom roles are found regardless of WordPress role registration state.
+     * List all active employees from nzl_employees.
      */
     public function list( WP_REST_Request $request ): WP_REST_Response {
-        global $wpdb;
-
-        $cap_key = $wpdb->prefix . 'capabilities';
-
-        $role_clauses = [];
-        foreach ( HotelRoles::getSlugs() as $role ) {
-            $role_clauses[] = [
-                'key'     => $cap_key,
-                'value'   => '"' . $role . '"',
-                'compare' => 'LIKE',
-            ];
-        }
-
-        $args = [
-            'meta_query' => array_merge( [ 'relation' => 'OR' ], $role_clauses ),
-            'orderby'    => 'display_name',
-            'order'      => 'ASC',
-        ];
+        $employees = $this->repo->findActive();
 
         $search = sanitize_text_field( $request->get_param( 'search' ) ?? '' );
         if ( $search ) {
-            $args['search']         = '*' . $search . '*';
-            $args['search_columns'] = [ 'user_login', 'user_email', 'display_name' ];
+            $lower     = mb_strtolower( $search );
+            $employees = array_values( array_filter(
+                $employees,
+                fn( Employee $e ) =>
+                    str_contains( mb_strtolower( $e->display_name ?? '' ), $lower )
+                    || str_contains( mb_strtolower( $e->email ?? '' ), $lower )
+            ) );
         }
 
-        $users  = get_users( $args );
-        $result = [];
-
-        foreach ( $users as $user ) {
-            $result[] = $this->formatUser( $user );
-        }
+        $result = array_map( fn( Employee $e ) => $this->formatEmployee( $e ), $employees );
 
         return new WP_REST_Response( [
             'success' => true,
@@ -125,6 +112,9 @@ class EmployeeController {
 
     /**
      * Create a new hotel staff user.
+     *
+     * Inserts a WP user for authentication, then stores the canonical
+     * employee record in nzl_employees with the returned wp_user_id.
      */
     public function create( WP_REST_Request $request ): WP_REST_Response {
         $username     = sanitize_user( $request->get_param( 'username' ) ?? '' );
@@ -161,7 +151,8 @@ class EmployeeController {
             ], 400 );
         }
 
-        $user_id = wp_insert_user( [
+        // Create WP user for authentication.
+        $wp_user_id = wp_insert_user( [
             'user_login'   => $username,
             'user_email'   => $email,
             'user_pass'    => $password,
@@ -169,33 +160,55 @@ class EmployeeController {
             'role'         => $role,
         ] );
 
-        if ( is_wp_error( $user_id ) ) {
+        if ( is_wp_error( $wp_user_id ) ) {
             return new WP_REST_Response( [
                 'success' => false,
-                'message' => $user_id->get_error_message(),
+                'message' => $wp_user_id->get_error_message(),
             ], 400 );
         }
 
-        // Apply custom capabilities if provided.
-        $this->applyCapabilities( $user_id, $request->get_param( 'capabilities' ) );
+        // Apply WP capabilities for permission checks.
+        $this->applyWpCapabilities( $wp_user_id, $request->get_param( 'capabilities' ) );
 
-        $user = get_userdata( $user_id );
+        // Resolve capabilities array for the employee row.
+        $caps = $this->resolveCapabilities( $request->get_param( 'capabilities' ) );
+
+        // Insert canonical employee record.
+        $employee = $this->repo->create( [
+            'wp_user_id'   => $wp_user_id,
+            'email'        => $email,
+            'display_name' => $display_name ?: $username,
+            'phone'        => sanitize_text_field( $request->get_param( 'phone' ) ?? '' ) ?: null,
+            'role'         => $role,
+            'capabilities' => wp_json_encode( $caps ),
+            'is_active'    => 1,
+        ] );
+
+        if ( ! $employee ) {
+            return new WP_REST_Response( [
+                'success' => false,
+                'message' => __( 'Failed to create employee record.', 'nozule' ),
+            ], 500 );
+        }
 
         return new WP_REST_Response( [
             'success' => true,
             'message' => __( 'Employee created successfully.', 'nozule' ),
-            'data'    => $this->formatUser( $user ),
+            'data'    => $this->formatEmployee( $employee ),
         ], 201 );
     }
 
     /**
      * Update an existing employee.
+     *
+     * Updates nzl_employees as source of truth. Propagates password and
+     * email changes to the WP user so authentication keeps working.
      */
     public function update( WP_REST_Request $request ): WP_REST_Response {
-        $id   = (int) $request->get_param( 'id' );
-        $user = get_userdata( $id );
+        $id       = (int) $request->get_param( 'id' );
+        $employee = $this->repo->find( $id );
 
-        if ( ! $user || empty( array_intersect( HotelRoles::getSlugs(), $user->roles ) ) ) {
+        if ( ! $employee || ! $employee->is_active ) {
             return new WP_REST_Response( [
                 'success' => false,
                 'message' => __( 'Employee not found.', 'nozule' ),
@@ -204,7 +217,7 @@ class EmployeeController {
 
         // Prevent users from editing their own role or capabilities
         // (only WordPress administrators may do so).
-        $is_self = ( $id === get_current_user_id() );
+        $is_self = ( (int) $employee->wp_user_id === get_current_user_id() );
         if ( $is_self && ! current_user_can( 'manage_options' ) ) {
             $requested_caps = $request->get_param( 'capabilities' );
             $requested_role = $request->get_param( 'role' );
@@ -216,40 +229,33 @@ class EmployeeController {
             }
         }
 
-        $update_data = [ 'ID' => $id ];
+        // Build nzl_employees update payload.
+        $emp_data = [];
 
         $display_name = $request->get_param( 'display_name' );
         if ( $display_name !== null ) {
-            $update_data['display_name'] = sanitize_text_field( $display_name );
+            $emp_data['display_name'] = sanitize_text_field( $display_name );
         }
 
         $email = $request->get_param( 'email' );
         if ( $email !== null ) {
-            $email = sanitize_email( $email );
+            $email    = sanitize_email( $email );
             $existing = email_exists( $email );
-            if ( $existing && $existing !== $id ) {
+            if ( $existing && $existing !== (int) $employee->wp_user_id ) {
                 return new WP_REST_Response( [
                     'success' => false,
                     'message' => __( 'Email already exists.', 'nozule' ),
                 ], 400 );
             }
-            $update_data['user_email'] = $email;
+            $emp_data['email'] = $email;
         }
 
-        $password = $request->get_param( 'password' );
-        if ( ! empty( $password ) ) {
-            $update_data['user_pass'] = $password;
+        $phone = $request->get_param( 'phone' );
+        if ( $phone !== null ) {
+            $emp_data['phone'] = sanitize_text_field( $phone ) ?: null;
         }
 
-        $result = wp_update_user( $update_data );
-        if ( is_wp_error( $result ) ) {
-            return new WP_REST_Response( [
-                'success' => false,
-                'message' => $result->get_error_message(),
-            ], 400 );
-        }
-
-        // Update role if changed (skip if editing self without manage_options).
+        // Role change.
         $role = sanitize_text_field( $request->get_param( 'role' ) ?? '' );
         if ( $role && ! ( $is_self && ! current_user_can( 'manage_options' ) ) ) {
             if ( ! in_array( $role, HotelRoles::getSlugs(), true ) ) {
@@ -258,31 +264,85 @@ class EmployeeController {
                     'message' => __( 'Invalid role.', 'nozule' ),
                 ], 400 );
             }
-            $user->set_role( $role );
+            $emp_data['role'] = $role;
         }
 
-        // Apply custom capabilities (skip if editing self without manage_options).
+        // Capabilities.
         if ( ! ( $is_self && ! current_user_can( 'manage_options' ) ) ) {
-            $this->applyCapabilities( $id, $request->get_param( 'capabilities' ) );
+            $raw_caps = $request->get_param( 'capabilities' );
+            if ( is_array( $raw_caps ) ) {
+                $emp_data['capabilities'] = wp_json_encode( $this->resolveCapabilities( $raw_caps ) );
+            }
         }
 
-        $user = get_userdata( $id );
+        // Update nzl_employees row.
+        if ( ! empty( $emp_data ) ) {
+            $this->repo->update( $id, $emp_data );
+        }
+
+        // Propagate password / email / display_name changes to WP user for auth.
+        $wp_update = [ 'ID' => (int) $employee->wp_user_id ];
+        $needs_wp  = false;
+
+        if ( isset( $emp_data['email'] ) ) {
+            $wp_update['user_email'] = $emp_data['email'];
+            $needs_wp = true;
+        }
+
+        $password = $request->get_param( 'password' );
+        if ( ! empty( $password ) ) {
+            $wp_update['user_pass'] = $password;
+            $needs_wp = true;
+        }
+
+        if ( isset( $emp_data['display_name'] ) ) {
+            $wp_update['display_name'] = $emp_data['display_name'];
+            $needs_wp = true;
+        }
+
+        if ( $needs_wp ) {
+            $result = wp_update_user( $wp_update );
+            if ( is_wp_error( $result ) ) {
+                return new WP_REST_Response( [
+                    'success' => false,
+                    'message' => $result->get_error_message(),
+                ], 400 );
+            }
+        }
+
+        // Sync WP role + capabilities so auth checks keep working.
+        if ( $employee->wp_user_id ) {
+            $wp_user = get_userdata( (int) $employee->wp_user_id );
+            if ( $wp_user ) {
+                if ( isset( $emp_data['role'] ) ) {
+                    $wp_user->set_role( $emp_data['role'] );
+                }
+                if ( ! ( $is_self && ! current_user_can( 'manage_options' ) ) ) {
+                    $this->applyWpCapabilities( (int) $employee->wp_user_id, $request->get_param( 'capabilities' ) );
+                }
+            }
+        }
+
+        $updated = $this->repo->find( $id );
 
         return new WP_REST_Response( [
             'success' => true,
             'message' => __( 'Employee updated successfully.', 'nozule' ),
-            'data'    => $this->formatUser( $user ),
+            'data'    => $this->formatEmployee( $updated ),
         ], 200 );
     }
 
     /**
-     * Deactivate an employee (set role to subscriber — effectively locked out).
+     * Deactivate an employee.
+     *
+     * Soft-deletes the nzl_employees row (is_active = 0) and strips the
+     * WP user's nzl_* role so they can no longer log in as staff.
      */
     public function deactivate( WP_REST_Request $request ): WP_REST_Response {
-        $id   = (int) $request->get_param( 'id' );
-        $user = get_userdata( $id );
+        $id       = (int) $request->get_param( 'id' );
+        $employee = $this->repo->find( $id );
 
-        if ( ! $user || empty( array_intersect( HotelRoles::getSlugs(), $user->roles ) ) ) {
+        if ( ! $employee || ! $employee->is_active ) {
             return new WP_REST_Response( [
                 'success' => false,
                 'message' => __( 'Employee not found.', 'nozule' ),
@@ -290,18 +350,26 @@ class EmployeeController {
         }
 
         // Don't allow deactivating yourself.
-        if ( $id === get_current_user_id() ) {
+        if ( (int) $employee->wp_user_id === get_current_user_id() ) {
             return new WP_REST_Response( [
                 'success' => false,
                 'message' => __( 'You cannot deactivate yourself.', 'nozule' ),
             ], 400 );
         }
 
-        // Strip nzl capabilities and set to subscriber.
-        foreach ( self::ALL_CAPABILITIES as $cap ) {
-            $user->remove_cap( $cap );
+        // Soft-delete in nzl_employees.
+        $this->repo->update( $id, [ 'is_active' => 0 ] );
+
+        // Strip nzl capabilities and demote WP user to subscriber.
+        if ( $employee->wp_user_id ) {
+            $wp_user = get_userdata( (int) $employee->wp_user_id );
+            if ( $wp_user ) {
+                foreach ( self::ALL_CAPABILITIES as $cap ) {
+                    $wp_user->remove_cap( $cap );
+                }
+                $wp_user->set_role( 'subscriber' );
+            }
         }
-        $user->set_role( 'subscriber' );
 
         return new WP_REST_Response( [
             'success' => true,
@@ -346,67 +414,40 @@ class EmployeeController {
     }
 
     /**
-     * Format a WP_User for the API response.
+     * Format an Employee model for the API response.
      */
-    private function formatUser( \WP_User $user ): array {
-        $nzl_caps = [];
-        foreach ( self::ALL_CAPABILITIES as $cap ) {
-            if ( $user->has_cap( $cap ) ) {
-                $nzl_caps[] = $cap;
-            }
-        }
-
-        // Determine the hotel role. WordPress $user->roles may be empty if
-        // the custom role is not registered via add_role() yet, so fall back
-        // to checking the raw capabilities meta for an nzl_* role key.
-        $role = '';
-        foreach ( $user->roles as $r ) {
-            if ( in_array( $r, HotelRoles::getSlugs(), true ) ) {
-                $role = $r;
-                break;
-            }
-        }
-        if ( ! $role ) {
-            // Fallback: inspect the raw caps array stored in user meta.
-            $raw_caps = get_user_meta( $user->ID, $GLOBALS['wpdb']->prefix . 'capabilities', true );
-            if ( is_array( $raw_caps ) ) {
-                foreach ( HotelRoles::getSlugs() as $hr ) {
-                    if ( ! empty( $raw_caps[ $hr ] ) ) {
-                        $role = $hr;
-                        break;
-                    }
-                }
-            }
-        }
+    private function formatEmployee( Employee $employee ): array {
+        $caps = is_array( $employee->capabilities ) ? $employee->capabilities : [];
 
         return [
-            'id'           => $user->ID,
-            'username'     => $user->user_login,
-            'email'        => $user->user_email,
-            'display_name' => $user->display_name,
-            'role'         => $role,
-            'capabilities' => $nzl_caps,
-            'registered'   => $user->user_registered,
+            'id'           => (int) $employee->id,
+            'wp_user_id'   => $employee->wp_user_id ? (int) $employee->wp_user_id : null,
+            'email'        => $employee->email,
+            'display_name' => $employee->display_name,
+            'phone'        => $employee->phone,
+            'role'         => $employee->role,
+            'capabilities' => $caps,
+            'is_active'    => (bool) $employee->is_active,
+            'created_at'   => $employee->created_at,
         ];
     }
 
     /**
-     * Apply a list of capabilities to a user.
+     * Apply capabilities to the WP user so permission checks keep working.
      *
-     * @param int        $user_id      WordPress user ID.
+     * @param int        $wp_user_id  WordPress user ID.
      * @param array|null $capabilities Array of capability keys to grant.
      */
-    private function applyCapabilities( int $user_id, $capabilities ): void {
+    private function applyWpCapabilities( int $wp_user_id, $capabilities ): void {
         if ( ! is_array( $capabilities ) ) {
             return;
         }
 
-        $user = get_userdata( $user_id );
+        $user = get_userdata( $wp_user_id );
         if ( ! $user ) {
             return;
         }
 
-        // Set each capability: grant if in the list, remove if not.
         foreach ( self::ALL_CAPABILITIES as $cap ) {
             if ( in_array( $cap, $capabilities, true ) ) {
                 $user->add_cap( $cap );
@@ -414,5 +455,19 @@ class EmployeeController {
                 $user->remove_cap( $cap );
             }
         }
+    }
+
+    /**
+     * Resolve a raw capabilities param into a filtered array of valid keys.
+     *
+     * @param mixed $capabilities Raw capabilities from request.
+     * @return string[]
+     */
+    private function resolveCapabilities( $capabilities ): array {
+        if ( ! is_array( $capabilities ) ) {
+            return [];
+        }
+
+        return array_values( array_intersect( $capabilities, self::ALL_CAPABILITIES ) );
     }
 }
