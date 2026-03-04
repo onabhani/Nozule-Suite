@@ -2014,3 +2014,372 @@ All other data access uses `WP_REST_Request` API. Zero `$_POST`/`$_REQUEST` usag
 | Q9: WP-native calls in core logic? | **57+ calls in 15 services**. Critical: `wp_mail` (2), `wp_remote_post` (4), `wp_handle_upload` (1). High: `get_option` (8), `do_action` (15+) | **HIGH** |
 | Q10: Hardcoded WP paths/URLs? | **7 instances** in services. 1 `ABSPATH`, 6 URL function calls. Plugin constants properly isolated to bootstrap | **LOW** |
 | Q11: DTO/data contract layer? | **No formal DTOs**. Array-based contracts with validators as implicit schemas. Models as pseudo-DTOs. Only 1 `$_GET` usage in entire codebase | **MEDIUM** |
+
+---
+
+## 29. Plugin Entry Point & Bootstrap Sequence (Q28)
+
+### Load Order Diagram
+
+```
+WordPress loads plugins
+  ↓
+nozule.php executes
+  ├─ Define 6 constants (NZL_VERSION, NZL_PLUGIN_DIR, NZL_DB_VERSION, etc.)
+  ├─ Register autoloader (Composer or manual PSR-4 fallback)
+  ├─ Register activation hook → Activator::activate()
+  ├─ Register deactivation hook → Deactivator::deactivate()
+  └─ add_action( 'plugins_loaded', nozule_manager()->boot(), 10 )
+      ↓
+  plugins_loaded fires
+      ↓
+  Plugin::boot()  [Singleton, guarded by $booted flag]
+    ├─ Phase 1: registerCoreServices()
+    │   ├─ Database (singleton factory)
+    │   ├─ CacheManager (singleton factory)
+    │   ├─ SettingsManager (singleton, depends on Database)
+    │   ├─ Logger (singleton, depends on Database)
+    │   └─ EventDispatcher (singleton factory)
+    │   [All registered as lazy closures — NOT instantiated yet]
+    │
+    ├─ Phase 2: registerModules()  [29 modules in fixed order]
+    │   for each module:
+    │     ├─ new ModuleClass( $this->container )  [direct instantiation]
+    │     └─ module->register()
+    │         ├─ registerRepositories()  → singleton closures
+    │         ├─ registerValidators()    → singleton closures
+    │         ├─ registerServices()      → singleton closures
+    │         ├─ registerControllers()   → singleton closures
+    │         └─ registerHooks()         → add_action/add_filter
+    │   [~200 service bindings registered, NONE instantiated]
+    │
+    ├─ Phase 3: registerHooks()
+    │   ├─ init → loadTextDomain()
+    │   ├─ rest_api_init → registerRestRoutes()
+    │   ├─ if is_admin():
+    │   │   ├─ new AdminMenu($container) → register()
+    │   │   ├─ new AdminAssets($container) → register()
+    │   │   └─ new StaffIsolation() → register()
+    │   ├─ wp_enqueue_scripts → enqueuePublicAssets()
+    │   ├─ registerShortcodes() (4 shortcodes)
+    │   ├─ new PWA() → register()
+    │   ├─ new LoginBranding($container) → register()
+    │   └─ Cron hooks: nzl_daily_maintenance, nzl_send_reminders
+    │
+    └─ do_action( 'nozule/booted', $this )  [extension point]
+        ↓
+  init fires (priority 0)
+    └─ Activator::maybeUpgrade()  [run migrations if version changed]
+        ↓
+  rest_api_init fires
+    ├─ RestController → registerRoutes()  [214+ routes]
+    ├─ SSEController → registerRoutes()
+    └─ Each module's controller->registerRoutes() via container->get()
+        [Controllers instantiated ON FIRST REQUEST, not during boot]
+```
+
+### Dependency Injection Container
+
+**Type**: Custom hand-rolled DI container (`includes/Core/Container.php`, 103 lines).
+
+**Binding types**:
+- `singleton($abstract, $callable)` — cached after first resolution (used for everything)
+- `bind($abstract, $callable)` — new instance each time (exists but unused in codebase)
+
+**Resolution strategies** (in order):
+1. Return cached singleton instance if exists
+2. Execute registered factory closure (receives `Container $c` for dependency resolution)
+3. **Auto-wiring fallback**: Reflection-based constructor introspection — resolves type-hinted parameters recursively
+
+```php
+// Typical module registration pattern:
+$this->container->singleton( RoomService::class, function ( Container $c ) {
+    return new RoomService(
+        $c->get( RoomTypeRepository::class ),
+        $c->get( RoomRepository::class ),
+        $c->get( InventoryRepository::class ),
+        $c->get( RoomTypeValidator::class ),
+        $c->get( CacheManager::class ),
+        $c->get( EventDispatcher::class ),
+        $c->get( Logger::class )
+    );
+});
+```
+
+**No circular dependency detection** — relies on careful ordering.
+
+### Scattered `new ClassName()` Outside Container
+
+| Location | Classes | Issue |
+|----------|---------|-------|
+| `Plugin::registerModules()` | 29 Module classes | **Acceptable** — modules receive container |
+| `Plugin::registerHooks()` | AdminMenu, AdminAssets, StaffIsolation, PWA, LoginBranding | **Acceptable** — admin bootstrapping |
+| `Plugin::registerRestRoutes()` | RestController, SSEController | **Acceptable** — receives container |
+| `AdminMenu::render*()` | **18 Page classes** | **Issue** — bypasses container entirely |
+
+The 18 admin Page classes (`HousekeepingPage`, `BillingPage`, `GroupsPage`, etc.) are instantiated with `new PageClass()` directly in AdminMenu render callbacks, not via the container. They have no constructor dependencies, so this works but is inconsistent.
+
+### Global Access
+
+```php
+function nozule_manager(): \Nozule\Core\Plugin {
+    return \Nozule\Core\Plugin::getInstance();
+}
+```
+
+Available for themes/addons: `nozule_manager()->container()->get( ServiceClass::class )`
+
+**Migration Impact**: MEDIUM — The custom container maps to Laravel's Service Container. Module `register()` methods translate almost 1:1 to Laravel ServiceProviders. The singleton pattern and 18 scattered Page instantiations need cleanup.
+
+---
+
+## 30. Manual Include/Require Calls (Q29)
+
+### Autoloading Configuration
+
+**Composer PSR-4**: Configured in `composer.json` — `"Nozule\\": "includes/"`
+
+**Dual autoloader** in `nozule.php` (lines 31-52):
+1. Primary: `vendor/autoload.php` (if Composer installed)
+2. Fallback: Custom `spl_autoload_register()` mapping `Nozule\` → `includes/`
+
+**Note**: `vendor/` directory does not exist — plugin ships without Composer install, relying on fallback autoloader.
+
+### Complete Include/Require Inventory
+
+**Total: 56 manual includes**
+
+| Category | Count | PSR-4 Replaceable? | Status |
+|----------|-------|---------------------|--------|
+| WordPress core (`upgrade.php`, `file.php`) | 10 | No — WP internal files | **Justified** |
+| Migration files (`migrations/*.php`) | 11 | No — procedural scripts | **Justified** |
+| Template includes (`templates/*.php`) | 33 | No — view layer | **Justified** |
+| Plugin entry point (`Activator.php`, `Deactivator.php`) | 2 | Yes — could use autoloader | **Minor** |
+| **Total** | **56** | **2 replaceable** | |
+
+### Details
+
+**WordPress core includes** (10 files):
+- `ABSPATH . 'wp-admin/includes/upgrade.php'` — required for `dbDelta()` in all 9 migration files
+- `ABSPATH . 'wp-admin/includes/file.php'` — required for `wp_handle_upload()` in `GuestDocumentService.php`
+
+**Migration includes** (11 files in `Activator.php`):
+```
+require_once NZL_PLUGIN_DIR . 'migrations/001_create_tables.php';
+require_once NZL_PLUGIN_DIR . 'migrations/002_seed_data.php';
+... through 011_add_property_id_columns.php
+```
+Each migration is a procedural PHP file defining a single function (e.g., `nzl_migration_001_create_tables()`).
+
+**Template includes** (33 files):
+- 29 admin templates: `include NZL_PLUGIN_DIR . 'templates/admin/[page].php'`
+- 4 public templates: `templates/public/booking-widget.php`, `room-cards.php`, `booking-form.php`, `confirmation.php`
+
+**Migration Impact**: LOW — All 257 class files use PSR-4 autoloading. The 56 manual includes are justified (WordPress core, procedural migrations, templates). Only 2 could use the autoloader but aren't problematic.
+
+---
+
+## 31. Constants File & Config Layer vs Magic Strings (Q30)
+
+### What's Centralized (Good)
+
+**Plugin constants** (`nozule.php`): 6 `NZL_*` constants properly defined.
+
+**Model status constants** (63 total across 20+ models):
+```php
+// Booking.php
+const STATUS_PENDING     = 'pending';
+const STATUS_CONFIRMED   = 'confirmed';
+const STATUS_CHECKED_IN  = 'checked_in';
+const STATUS_CHECKED_OUT = 'checked_out';
+const STATUS_CANCELLED   = 'cancelled';
+const STATUS_NO_SHOW     = 'no_show';
+
+// Similar patterns in: Payment, Room, HousekeepingTask, EmailLog,
+// WhatsAppLog, ReviewRequest, POSOrder, Folio, NightAudit, etc.
+```
+
+**API endpoints**: Booking.com URLs as class constants (`BookingComApiClient::DEFAULT_BASE_URL`).
+
+**Database table names**: Centralized through `Database::table()` wrapper — ~90% compliance.
+
+**SettingsManager**: Database-backed key-value store with group prefixes (`currency.default`, `hotel.name`).
+
+### What's Scattered (Bad)
+
+**1. Capability names — 226+ hardcoded strings across 60+ files**
+
+```php
+// Scattered everywhere as raw strings:
+current_user_can( 'nzl_admin' )
+current_user_can( 'nzl_manage_bookings' )
+current_user_can( 'manage_options' )
+```
+
+No `Capabilities::ADMIN` or `Capabilities::MANAGE_BOOKINGS` constants exist.
+
+**2. Role names — hardcoded in 15+ files**
+
+```php
+$nzl_roles = ['nzl_manager', 'nzl_reception', 'nzl_housekeeper', 'nzl_finance', 'nzl_concierge'];
+```
+
+No `Roles::MANAGER` constants.
+
+**3. Status strings in JavaScript templates — 95+ occurrences**
+
+```javascript
+// templates/admin/bookings.php
+b.status === 'pending'
+b.status === 'confirmed'
+b.status === 'cancelled'
+```
+
+PHP model constants not exposed to JavaScript layer.
+
+**4. Cron hook names — scattered across 10+ files**
+
+```php
+// Hardcoded in Activator, Deactivator, Plugin, ChannelSyncModule, uninstall.php:
+'nzl_daily_maintenance'
+'nzl_send_reminders'
+'nzl_sync_channels'
+'nzl_channel_pull_reservations'
+'nzl_channel_push_inventory'
+```
+
+**5. Default business values — hardcoded in seed migration**
+
+```php
+// migrations/002_seed_data.php — magic numbers:
+'child_max_age'        => '12',
+'infant_max_age'       => '2',
+'max_advance_days'     => '365',
+'default_check_in_time'  => '14:00',
+'default_check_out_time' => '12:00',
+'reminder_days_before' => '1',
+```
+
+Not defined as named constants anywhere.
+
+### Table Name Hardcoding Assessment
+
+**Good**: All repositories use `$this->tableName()` or `$this->db->table('xxx')`.
+
+**Exceptions** (justified):
+- Migration files use `$wpdb->prefix . 'nzl_*'` directly (unavoidable — run before container exists)
+- `uninstall.php` lists table names directly for DROP (runs without plugin loaded)
+
+**Migration Impact**: MEDIUM — Model status constants translate directly to Laravel enums. But 226+ scattered capability strings and 95+ template magic strings need centralization before migration. Missing a `Constants` class is a maintainability issue but not a technical blocker.
+
+---
+
+## 32. Test Coverage (Q31)
+
+### Current Status: **ZERO TESTS**
+
+| Item | Found? |
+|------|--------|
+| `tests/` directory | No |
+| `phpunit.xml` / `phpunit.xml.dist` | No |
+| `*Test.php` files | No |
+| PHPUnit in `composer.json` | No |
+| Pest / Codeception | No |
+| Jest / Vitest in `package.json` | No |
+| GitHub Actions workflows | No |
+| `.phpunit.result.cache` | No |
+| Any CI/CD configuration | No |
+
+**330+ PHP files with zero automated test coverage.**
+
+### 5 Most Critical Functions That Need Tests Before Migration
+
+#### 1. `BookingService::createBooking(array $data): Booking`
+**File**: `includes/Modules/Bookings/Services/BookingService.php` (lines 71-178)
+
+**Why**: Entry point for the booking state machine. Orchestrates guest resolution, availability check, pricing calculation, inventory deduction, payment initialization, and audit logging — all inside a database transaction.
+
+**Test scenarios**:
+- Valid booking persists with status=pending, correct total, inventory deducted
+- Transaction rollback on error restores inventory
+- Concurrent bookings don't cause overbooking (race condition)
+- Guest resolution: find by email OR create new
+- Validation errors rejected before any DB changes
+
+#### 2. `PricingService::calculateStayPrice(): PricingResult`
+**File**: `includes/Modules/Pricing/Services/PricingService.php` (lines 86-222)
+
+**Why**: Revenue-critical. Combines base price + rate plan modifiers + seasonal rates + extra person charges + taxes + discounts. A 1% calculation error compounds across all bookings.
+
+**Test scenarios**:
+- Nightly rate = base_price + modifier (percentage, fixed, absolute)
+- Seasonal rates override base price correctly
+- Extra person charges per adult/child over base_occupancy, per night
+- Tax applied to (subtotal + fees - discount), never double-counted
+- Min/max stay restrictions enforced
+- CTA/CTD/stop-sell restrictions block booking
+
+#### 3. `AvailabilityService::checkAvailability()` + `deductInventory()` + `restoreInventory()`
+**File**: `includes/Modules/Rooms/Services/AvailabilityService.php` (lines 58-357)
+
+**Why**: Overbooking prevention is existential. Inventory deduction must be atomic; partial deductions cause phantom bookings.
+
+**Test scenarios**:
+- Returns only room types available for every night in range
+- Deduction is atomic — all-or-nothing across date range
+- Database-level check prevents deduction if insufficient inventory
+- Restoration on cancellation mirrors deduction exactly
+- Cache invalidation after deduction/restoration
+- Concurrent deductions don't oversell
+
+#### 4. `FolioService::addItem(int $folioId, array $data): FolioItem|array`
+**File**: `includes/Modules/Billing/Services/FolioService.php` (lines 167-240)
+
+**Why**: Financial accuracy — folio items are the billing foundation. Tax miscalculation affects revenue recognition and legal compliance.
+
+**Test scenarios**:
+- Room charges: tax calculated via TaxService
+- Discounts: NO tax applied, subtotal stored as absolute value
+- Payments: NO tax, stored as positive amount
+- Folio totals recalculated after each item: grand_total = subtotal + tax - discount
+- Cannot add items to closed/voided folio
+- Balance due = grand_total - paid_amount
+
+#### 5. `BookingService::confirmBooking()` / `checkIn()` / `checkOut()` / `cancelBooking()`
+**File**: `includes/Modules/Bookings/Services/BookingService.php` (lines 187-397)
+
+**Why**: State machine integrity. Invalid transitions corrupt data; cancellation must restore inventory atomically.
+
+**Test scenarios**:
+- Valid transitions: pending→confirmed→checked_in→checked_out
+- Invalid transitions throw `InvalidStateException` (e.g., pending→checked_out)
+- Cancellation restores inventory atomically
+- Each transition: timestamp set, audit log created, notification queued
+- No-show marking: overdue pending/confirmed auto-marked
+- Check-out updates guest stats (total_nights, last_stay)
+
+### Recommended Testing Stack
+
+```json
+// composer.json additions
+{
+    "require-dev": {
+        "phpunit/phpunit": "^10.0",
+        "mockery/mockery": "^1.6",
+        "pcov/cov": "^1.0"
+    }
+}
+```
+
+**Migration Impact**: **CRITICAL** — Zero test coverage means no safety net for migration. Any refactoring risks introducing silent regressions in pricing, inventory, and billing. Writing tests for the 5 critical functions above is a **hard prerequisite** before touching any business logic.
+
+---
+
+## Infrastructure Audit Summary (Q28-Q31)
+
+| Question | Finding | Migration Risk |
+|----------|---------|---------------|
+| Q28: Bootstrap sequence & DI? | Singleton Plugin + custom Container with auto-wiring. Clean 3-phase boot: core services → 29 modules → hooks. ~200 lazy singleton bindings. 18 scattered `new Page()` calls. | **MEDIUM** |
+| Q29: Manual includes vs PSR-4? | 257 classes autoloaded via PSR-4. 56 manual includes — all justified (WP core, migrations, templates). Only 2 replaceable. | **LOW** |
+| Q30: Constants vs magic strings? | 63 model status constants (good). But 226+ hardcoded capability strings, 95+ magic strings in JS templates, scattered cron hook names, no Constants class. | **MEDIUM** |
+| Q31: Test coverage? | **ZERO**. No PHPUnit, no tests, no CI/CD. 330+ PHP files untested. 5 critical functions need tests before any migration work. | **CRITICAL** |
