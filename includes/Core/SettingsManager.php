@@ -7,6 +7,17 @@ namespace Nozule\Core;
  */
 class SettingsManager {
 
+    /**
+     * Keys whose values are encrypted at rest via CredentialVault.
+     *
+     * @var string[]
+     */
+    private const SENSITIVE_KEYS = [
+        'integrations.odoo_api_key',
+        'integrations.webhook_secret',
+        'metasearch.partner_key',
+    ];
+
     private Database $db;
     private array $cache = [];
     private bool $loaded = false;
@@ -41,8 +52,7 @@ class SettingsManager {
         );
 
         if ( $value !== null ) {
-            $decoded = json_decode( $value, true );
-            $result  = ( json_last_error() === JSON_ERROR_NONE ) ? $decoded : $value;
+            $result = $this->maybeDecrypt( $key, $value );
             $this->cache[ $key ] = $result;
             return $result;
         }
@@ -59,7 +69,7 @@ class SettingsManager {
         $parts      = explode( '.', $key, 2 );
         $group      = $parts[0] ?? 'general';
         $option_key = $parts[1] ?? $parts[0];
-        $store      = is_array( $value ) || is_object( $value ) ? wp_json_encode( $value ) : (string) $value;
+        $store = $this->maybeEncrypt( $key, $value );
 
         $table    = $this->db->table( 'settings' );
         $existing = $this->db->getVar(
@@ -118,8 +128,8 @@ class SettingsManager {
 
         $settings = [];
         foreach ( $results as $row ) {
-            $decoded = json_decode( $row->option_value, true );
-            $settings[ $row->option_key ] = ( json_last_error() === JSON_ERROR_NONE ) ? $decoded : $row->option_value;
+            $full_key = $group . '.' . $row->option_key;
+            $settings[ $row->option_key ] = $this->maybeDecrypt( $full_key, $row->option_value );
         }
 
         return $settings;
@@ -134,12 +144,46 @@ class SettingsManager {
 
         $settings = [];
         foreach ( $results as $row ) {
-            $decoded = json_decode( $row->option_value, true );
-            $value   = ( json_last_error() === JSON_ERROR_NONE ) ? $decoded : $row->option_value;
-            $settings[ $row->option_group ][ $row->option_key ] = $value;
+            $full_key = $row->option_group . '.' . $row->option_key;
+            $settings[ $row->option_group ][ $row->option_key ] = $this->maybeDecrypt( $full_key, $row->option_value );
         }
 
         return $settings;
+    }
+
+    /**
+     * Encrypt a value before storage if the key is sensitive.
+     *
+     * @param mixed $value
+     * @return string Value ready for the database.
+     */
+    private function maybeEncrypt( string $key, $value ): string {
+        if ( in_array( $key, self::SENSITIVE_KEYS, true ) ) {
+            return CredentialVault::encrypt( [ 'value' => $value ] );
+        }
+
+        return is_array( $value ) || is_object( $value ) ? wp_json_encode( $value ) : (string) $value;
+    }
+
+    /**
+     * Decrypt a raw database value if the key is sensitive.
+     *
+     * Handles legacy plaintext gracefully: if the stored value is not
+     * a valid CredentialVault ciphertext it is returned as-is, so
+     * existing unencrypted rows keep working until the next write
+     * re-encrypts them.
+     *
+     * @return mixed Decrypted scalar or decoded value.
+     */
+    private function maybeDecrypt( string $key, string $raw ) {
+        if ( in_array( $key, self::SENSITIVE_KEYS, true ) && CredentialVault::isEncrypted( $raw ) ) {
+            $payload = CredentialVault::decrypt( $raw );
+            return $payload['value'] ?? '';
+        }
+
+        // Standard JSON-decode path for non-sensitive keys (and legacy plaintext sensitive keys).
+        $decoded = json_decode( $raw, true );
+        return ( json_last_error() === JSON_ERROR_NONE ) ? $decoded : $raw;
     }
 
     /**
@@ -158,8 +202,7 @@ class SettingsManager {
 
         foreach ( $results as $row ) {
             $key     = $row->option_group . '.' . $row->option_key;
-            $decoded = json_decode( $row->option_value, true );
-            $this->cache[ $key ] = ( json_last_error() === JSON_ERROR_NONE ) ? $decoded : $row->option_value;
+            $this->cache[ $key ] = $this->maybeDecrypt( $key, $row->option_value );
         }
     }
 }
