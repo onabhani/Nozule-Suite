@@ -1259,3 +1259,417 @@ wp_remote_post( $url, $args );  // DEFAULT timeout (5 seconds)
 | wp-cron issues? | **9 scheduled events**, 5 are time-critical. wp-cron is traffic-dependent — unreliable | HIGH |
 | Missing indexes? | **4 critical** — booking_logs.booking_id, seasonal_rates composite, payments composite, notifications queue | MEDIUM-HIGH |
 | Synchronous HTTP? | **4 blocking calls** in user-facing paths — WhatsApp, Booking.com, Odoo, Webhooks | HIGH |
+
+---
+---
+
+# Nozule PMS — Security Deep Audit
+
+**Date:** 2026-03-04
+**Scope:** SQL injection, authorization, CSRF/nonces, PII encryption, file uploads, error disclosure
+
+---
+
+## 18. Prepared Statements Audit
+
+### Database Wrapper — Safe by Design
+
+`includes/Core/Database.php` wraps all `$wpdb` methods. Every query method (`getRow`, `getResults`, `getVar`, `query`) calls `$wpdb->prepare()` when arguments are provided:
+
+```php
+public function getResults( string $query, ...$args ): array {
+    if ( ! empty( $args ) ) {
+        $query = $this->wpdb->prepare( $query, ...$args );
+    }
+    return $this->wpdb->get_results( $query ) ?: [];
+}
+```
+
+Insert/update/delete use `$wpdb->insert()`, `$wpdb->update()`, `$wpdb->delete()` — which internally use `prepare()` for all values.
+
+### String Concatenation Issues Found
+
+#### ISSUE 18a: ORDER BY column name injection (14 repositories)
+
+**Pattern in `BaseRepository::all()` and 13 child repositories:**
+
+```php
+// BaseRepository.php:54-58
+public function all( string $orderBy = 'id', string $order = 'ASC' ): array {
+    $table   = $this->tableName();
+    $orderBy = sanitize_sql_orderby( "{$orderBy} {$order}" ) ?: 'id ASC';
+    $rows    = $this->db->getResults( "SELECT * FROM {$table} ORDER BY {$orderBy}" );
+    return $this->model::fromRows( $rows );
+}
+
+// BookingRepository.php:301-323 (and 12 other repositories)
+$allowed_columns = ['id', 'booking_number', 'check_in', ...];
+$orderby = in_array( $args['orderby'], $allowed_columns, true ) ? $args['orderby'] : 'created_at';
+$order   = strtoupper( $args['order'] ) === 'ASC' ? 'ASC' : 'DESC';
+// ...
+$rows = $this->db->getResults(
+    "SELECT b.* FROM {$table} b ... ORDER BY b.{$orderby} {$order} LIMIT %d OFFSET %d",
+    ...$params
+);
+```
+
+**Risk level: LOW-MEDIUM.** The `$orderby` values are validated against allowlists (`in_array(..., true)`), and `$order` is forced to ASC/DESC. `prepare()` cannot parameterize column names — this is the correct WordPress approach. However:
+
+- `BaseRepository::all()` uses `sanitize_sql_orderby()` which is weaker than an allowlist
+- The `all()` method accepts arbitrary strings from callers (not directly from user input, but from controllers)
+- A controller bug could pass unsanitized input to `all()`
+
+**Repositories using allowlist pattern (SAFE):**
+BookingRepository, GuestRepository, EmailLogRepository, EmailTemplateRepository, GuestDocumentRepository, ChannelMappingRepository, ChannelSyncLogRepository, GroupBookingRepository, NotificationRepository, PromoCodeRepository, ReviewRepository, WhatsAppLogRepository, WhatsAppTemplateRepository
+
+All 13 use `in_array($args['orderby'], $allowed_columns, true)` — this is **correctly implemented**.
+
+#### ISSUE 18b: Dynamic WHERE clause in BaseRepository::count()
+
+```php
+// BaseRepository.php:91-107
+public function count( ?array $where = null ): int {
+    $table = $this->tableName();
+    if ( $where ) {
+        $conditions = [];
+        $values     = [];
+        foreach ( $where as $col => $val ) {
+            $conditions[] = "`{$col}` = %s";  // Column name from caller
+            $values[]     = $val;              // Value goes through prepare()
+        }
+        $where_clause = implode( ' AND ', $conditions );
+        return (int) $this->db->getVar(
+            "SELECT COUNT(*) FROM {$table} WHERE {$where_clause}",
+            ...$values
+        );
+    }
+}
+```
+
+**Risk: LOW.** Column names come from internal code (not user input), and values are properly prepared. The backtick escaping of `$col` provides some protection. But a coding error in a caller could inject malicious column names.
+
+#### ISSUE 18c: Table name interpolation in migrations
+
+All 11 migration files use `{$prefix}` interpolation in SQL strings:
+```php
+$sql = "CREATE TABLE {$prefix}nzl_room_types (...)";
+```
+
+**Risk: NONE.** `$prefix` comes from `$wpdb->prefix`, a trusted WordPress constant. This is standard WordPress practice.
+
+#### ISSUE 18d: LIKE pattern in CacheManager::flush()
+
+```php
+// CacheManager.php:69-71
+$wpdb->query(
+    "DELETE FROM {$wpdb->options} WHERE option_name LIKE '_transient_nzl_%'"
+);
+```
+
+**Risk: NONE.** The LIKE pattern is a static string, not user input. `{$wpdb->options}` is a trusted constant.
+
+### Summary
+
+| Issue | Risk | Pattern | Fix Needed? |
+|-------|------|---------|------------|
+| ORDER BY with allowlist (13 repos) | LOW | `in_array()` check before interpolation | No — correctly implemented |
+| `BaseRepository::all()` with `sanitize_sql_orderby()` | LOW-MEDIUM | Weaker than allowlist, but not directly user-callable | Consider hardening |
+| `BaseRepository::count()` column names | LOW | Column names from internal code only | Monitor |
+| Table name interpolation | NONE | WordPress standard | No |
+| LIKE patterns | NONE | Static strings | No |
+
+**Verdict: No SQL injection vulnerabilities found.** All user-provided values go through `$wpdb->prepare()`. Column names in ORDER BY are validated against allowlists. The Database wrapper enforces prepared statements on every code path.
+
+---
+
+## 19. Capability Checking on Every Privileged Action
+
+### Route-Level Permission Callbacks
+
+**Every single REST route has a `permission_callback` defined.** No routes are missing this parameter (which would cause WordPress to default to allowing unauthenticated access with a `_doing_it_wrong` warning).
+
+#### Public Routes (19 `__return_true` callbacks)
+
+| # | Route | Controller | Justification |
+|---|-------|-----------|--------------|
+| 1 | GET `/room-types` | RoomTypeController::index | Public catalog |
+| 2 | GET `/room-types/{id}` | RoomTypeController::show | Public catalog |
+| 3 | GET `/availability` | AvailabilityController::check | Public search |
+| 4 | POST `/bookings` | BookingController::store | Guest booking creation |
+| 5 | GET `/bookings/{number}` | BookingController::show | Guest lookup (requires email param) |
+| 6 | POST `/bookings/{number}/cancel` | BookingController::cancel | Guest self-cancel (requires email) |
+| 7 | GET `/settings/public` | SettingsController::publicSettings | Safe subset only |
+| 8 | POST `/promo-codes/validate` | PromoCodeController::validate | Promo validation |
+| 9 | GET `/reviews/track/{id}` | ReviewController::track | Tracking pixel |
+| 10 | GET `/metasearch/feeds/{type}` | MetasearchController | XML feed for Google/TripAdvisor |
+| 11 | GET `/admin/room-types` | RoomTypeController::index | Public read of room types |
+| 12 | GET `/admin/room-types/{id}` | RoomTypeController::show | Public read of room type detail |
+| 13 | GET `/currencies` | CurrencyController::publicList | Public currency list |
+| 14 | GET `/property/public` | PropertyController::publicShow | Public property info |
+
+**Assessment:** All public endpoints expose only read-only public data or guest-facing booking operations. No admin-only data is leaked through public endpoints.
+
+**One concern:** Routes #11-12 (`/admin/room-types`) use `__return_true` — these are public reads registered under the `/admin/` prefix. Not a security issue (they return the same data as routes #1-2), but confusing. The `/admin/` namespace should be reserved for authenticated routes.
+
+#### Protected Routes — Permission Tier Coverage
+
+| Tier | Permission | Route Count | Pattern |
+|------|-----------|-------------|---------|
+| Staff | `manage_options \|\| nzl_staff` | ~25 | Booking operations, dashboard, calendar, guests |
+| Admin | `manage_options \|\| nzl_admin` | ~90 | All CRUD endpoints |
+| Module | `manage_options \|\| nzl_manage_{module}` | ~60 | Module-specific operations |
+| Super | `manage_options` only | ~15 | Brands, integrations, advanced features |
+
+**Every protected route checks capability at the route registration level** via `permission_callback`. WordPress verifies this before the callback function executes.
+
+### Missing Per-Entity Authorization
+
+As noted in section 9 (API audit), there are **no per-resource ownership checks**. A staff user with `nzl_staff` can access any booking, guest, folio, etc. — not just their own or their property's. This is an IDOR (Insecure Direct Object Reference) gap relevant to multi-property deployments.
+
+---
+
+## 20. Nonce Verification
+
+### WordPress REST API Nonce Architecture
+
+WordPress REST API has **built-in CSRF protection** for cookie-authenticated requests:
+
+1. Frontend receives nonce: `wp_create_nonce('wp_rest')` (3 locations):
+   - `Plugin.php:251` via `wp_localize_script()`
+   - `AdminAssets.php:189` via `wp_localize_script()`
+   - `templates/admin/reception-portal.php:26` inline
+
+2. Frontend sends nonce as `X-WP-Nonce` header on every request
+
+3. WordPress core verifies nonce automatically in `rest_cookie_check_errors()` — if a cookie is present but the nonce is invalid/missing, the request is treated as unauthenticated (permission callback fails)
+
+### Manual Nonce Checks
+
+```
+wp_verify_nonce():      0 occurrences in plugin code
+check_ajax_referer():   0 occurrences in plugin code
+```
+
+This is **correct** — manual nonce verification is unnecessary because WordPress REST API handles it automatically. The plugin correctly relies on the framework.
+
+### Non-REST Form Handlers
+
+```
+admin-post.php handlers: 0
+wp_ajax handlers:        0
+Direct $_POST handlers:  0
+```
+
+**No form handlers exist outside the REST API.** There is no surface area for CSRF attacks via traditional form submissions.
+
+### State-Changing GET Requests
+
+No DELETE or state-changing operations use GET method. All destructive operations use POST, PUT, or DELETE methods — which require the nonce.
+
+### Incoming Webhook Receivers
+
+**No incoming webhook endpoints exist.** The plugin only *sends* webhooks (via `WebhookConnector`), it doesn't receive them. The Booking.com integration uses polling (cron pulls), not push webhooks. This means there's no attack surface for webhook forgery.
+
+### Assessment
+
+**CSRF protection is complete.** The WordPress REST API nonce system covers all state-changing endpoints. No legacy form handlers or ajax handlers exist that could bypass this protection.
+
+---
+
+## 21. Sensitive Data Storage
+
+### Encryption Status by Data Type
+
+#### ENCRYPTED (Channel Credentials Only)
+
+| Table | Column | Encryption | Method |
+|-------|--------|-----------|--------|
+| `nzl_channel_connections` | `credentials` | **AES-256-CBC** | `ChannelConnection::encryptCredentials()` |
+
+Implementation in `includes/Modules/Channels/Models/ChannelConnection.php:104-113`:
+- Key: SHA-256 hash of WordPress `AUTH_KEY` constant
+- IV: Random per encryption via `openssl_random_pseudo_bytes()`
+- Format: `base64(IV + encrypted_data)`
+- Legacy fallback: Handles unencrypted JSON for pre-encryption records
+
+#### PLAINTEXT — CRITICAL (Guest PII)
+
+| Table | Column | Data | Risk |
+|-------|--------|------|------|
+| `nzl_guests` | `email` | Email address | HIGH — GDPR PII |
+| `nzl_guests` | `phone` | Phone number | HIGH — GDPR PII |
+| `nzl_guests` | `phone_alt` | Alt phone | HIGH |
+| `nzl_guests` | `id_number` | National ID / Passport number | **CRITICAL** |
+| `nzl_guests` | `id_type` | Document type | MEDIUM |
+| `nzl_guests` | `date_of_birth` | DOB | **CRITICAL** |
+| `nzl_guests` | `address` | Street address | HIGH |
+| `nzl_guest_documents` | `document_number` | Passport/ID number | **CRITICAL** |
+| `nzl_guest_documents` | `mrz_line1` | Machine Readable Zone line 1 | **CRITICAL** |
+| `nzl_guest_documents` | `mrz_line2` | Machine Readable Zone line 2 | **CRITICAL** |
+| `nzl_guest_documents` | `date_of_birth` | DOB from passport | **CRITICAL** |
+| `nzl_guest_documents` | `first_name` / `last_name` | Name from document | HIGH |
+| `nzl_guest_documents` | `nationality` | Nationality | MEDIUM |
+| `nzl_guest_documents` | `file_path` | Path to uploaded passport scan | HIGH |
+
+#### PLAINTEXT — HIGH (API Credentials & Tokens)
+
+| Table | Column | Data | Risk |
+|-------|--------|------|------|
+| `nzl_whatsapp_settings` | `setting_value` (key=`access_token`) | Meta WhatsApp API bearer token | **CRITICAL** |
+| `nzl_whatsapp_settings` | `setting_value` (key=`phone_number_id`) | WhatsApp phone number ID | HIGH |
+| `nzl_whatsapp_settings` | `setting_value` (key=`business_id`) | WhatsApp business ID | MEDIUM |
+
+**Additional exposure:** The `GET /admin/whatsapp-settings` endpoint returns the **full plaintext `access_token`** alongside the masked version (`access_token_masked`). The masking adds a new key but does not remove the original from the response payload.
+
+#### PLAINTEXT — MEDIUM (Payment & Business Data)
+
+| Table | Column | Data | Risk |
+|-------|--------|------|------|
+| `nzl_payments` | `gateway_response` | Payment gateway JSON response | MEDIUM — may contain transaction tokens |
+| `nzl_properties` | `tax_id` | Tax/VAT ID | MEDIUM |
+| `nzl_properties` | `license_number` | Business license number | MEDIUM |
+
+### Encryption Audit
+
+```
+openssl_encrypt/decrypt:  ChannelConnection.php only
+sodium_crypto_*:          NOT USED
+hash_hmac:                WebhookConnector.php (outgoing signature only)
+wp_hash_password:         NOT USED (relies on WordPress for user passwords)
+```
+
+**Only 1 of 4 sensitive data categories is encrypted.** Channel credentials use proper AES-256-CBC. Guest PII, WhatsApp tokens, and payment data are all stored in plaintext.
+
+---
+
+## 22. File Upload Security
+
+### Upload Handler
+
+`includes/Modules/Documents/Services/GuestDocumentService.php:257-305` uses `wp_handle_upload()` — the standard WordPress upload handler.
+
+### Validation
+
+`includes/Modules/Documents/Validators/GuestDocumentValidator.php`:
+
+```php
+private const ALLOWED_MIME_TYPES = [
+    'image/jpeg', 'image/jpg', 'image/png', 'application/pdf',
+];
+private const MAX_FILE_SIZE = 5 * 1024 * 1024; // 5 MB
+private const ALLOWED_EXTENSIONS = [ 'jpg', 'jpeg', 'png', 'pdf' ];
+```
+
+| Check | Implemented? | Method |
+|-------|-------------|--------|
+| File extension whitelist | YES | `ALLOWED_EXTENSIONS` array check |
+| MIME type whitelist | **PARTIAL** — only validates if MIME type is non-empty | `in_array($mime_type, ALLOWED_MIME_TYPES)` but skips check if empty |
+| File size limit | YES | 5 MB max |
+| File content sniffing | NO — relies on browser-reported MIME type | `$file['type']` is client-provided |
+
+### Storage Location
+
+```php
+$upload_dir_filter = function ( array $uploads ) use ( $guestId ): array {
+    $subdir            = '/nozule/documents/' . $guestId;
+    $uploads['subdir'] = $subdir;
+    $uploads['path']   = $uploads['basedir'] . $subdir;
+    $uploads['url']    = $uploads['baseurl'] . $subdir;
+    return $uploads;
+};
+```
+
+Files stored at: `wp-content/uploads/nozule/documents/{guestId}/`
+
+| Security Measure | Status |
+|-----------------|--------|
+| Files inside webroot? | **YES** — accessible via URL |
+| .htaccess to block PHP execution? | **NO** — not found |
+| Index.php/index.html to prevent directory listing? | **NO** |
+| Authentication required for access? | **NO** — direct URL access possible |
+| Random file names? | **PARTIAL** — WordPress adds hash prefix |
+
+### Issues
+
+1. **MIME type validation gap:** If the browser doesn't send a MIME type, the check is skipped entirely
+2. **No server-side content sniffing:** File is not inspected with `finfo_file()` or `getimagesize()` to verify actual content matches claimed type
+3. **No execution protection:** A renamed `.php` file could potentially be uploaded and executed
+4. **Direct URL access:** Passport scans and ID documents are accessible to anyone who knows/guesses the URL pattern
+
+---
+
+## 23. Error Message Disclosure
+
+### Exception Messages in REST Responses
+
+All controllers catch exceptions and return the message to the client:
+
+```php
+// BookingController.php, AdminBookingController.php, etc.
+} catch ( \InvalidArgumentException $e ) {
+    return new WP_REST_Response( [
+        'success' => false,
+        'message' => $e->getMessage(),
+    ], 400 );
+} catch ( \RuntimeException $e ) {
+    return new WP_REST_Response( [
+        'success' => false,
+        'message' => $e->getMessage(),
+    ], 500 );
+}
+```
+
+| What's Exposed | Status |
+|----------------|--------|
+| Exception messages | **YES** — returned as `message` field |
+| Stack traces | **NO** — `getTrace()` never called |
+| File paths | **NO** — `getFile()` never called |
+| Line numbers | **NO** — `getLine()` never called |
+| SQL queries | **NO** — database errors caught at service layer |
+| Table/column names | **NO** — not exposed in API responses |
+
+Exception messages are **business-logic strings** like:
+- "No rooms available for the selected room type and dates."
+- "Cannot confirm booking: current status is 'pending'."
+- "Guest not found."
+
+These reveal business logic state but not technical internals. **Acceptable for development, should be genericized for production.**
+
+### Logger Implementation
+
+`includes/Core/Logger.php` only writes to `error_log()` when `WP_DEBUG_LOG` is enabled:
+
+```php
+private function log( string $level, string $message, array $context = [] ): void {
+    if ( defined( 'WP_DEBUG_LOG' ) && WP_DEBUG_LOG ) {
+        error_log( $formatted );
+    }
+    do_action( 'nozule/log', $level, $message, $context );
+}
+```
+
+### WP_DEBUG References
+
+```
+WP_DEBUG:     Referenced in Logger.php:41 (conditional debug logging)
+WP_DEBUG_LOG: Referenced in Logger.php:57 (conditional file logging)
+```
+
+The plugin never sets or modifies `WP_DEBUG`. It only checks the value for conditional logging. **No risk from the plugin itself** — but a production site with `WP_DEBUG = true` would expose debug logs.
+
+### Assessment
+
+**No stack traces, file paths, SQL queries, or database structure exposed in API responses.** Exception messages are user-friendly business logic strings. The main risk is that error messages reveal booking state machine transitions, which could help an attacker understand system behavior.
+
+---
+
+## Summary of Security Findings
+
+| Question | Answer | Severity |
+|----------|--------|----------|
+| All queries using prepared statements? | **YES** — Database wrapper enforces `prepare()`. ORDER BY uses allowlists. | LOW |
+| Capability checking on every action? | **YES** — every route has `permission_callback`. No per-entity auth (IDOR risk). | LOW (single-property) / MEDIUM (multi-property) |
+| Nonce verification present? | **YES** — WordPress REST API handles CSRF automatically. No non-REST handlers exist. | NONE |
+| Sensitive data encrypted? | **PARTIALLY** — only channel credentials encrypted. Guest PII, WhatsApp token, payment data in plaintext. | **CRITICAL** |
+| File uploads validated? | **PARTIALLY** — extension + MIME whitelist, but MIME check skippable. No execution protection. No auth on file access. | **HIGH** |
+| Error messages exposing internals? | **NO** — business logic messages only. No stack traces, file paths, or SQL. | LOW |
