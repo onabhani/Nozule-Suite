@@ -85,4 +85,5 @@ add_action( 'init', function () {
 // Dev/debug WP-CLI commands (only when WP_DEBUG is on).
 if ( defined( 'WP_CLI' ) && WP_CLI && defined( 'WP_DEBUG' ) && WP_DEBUG ) {
     \WP_CLI::add_command( 'nozule test-vault', \Nozule\CLI\TestVaultCommand::class );
+    \WP_CLI::add_command( 'nozule sync-employees', \Nozule\CLI\SyncEmployeesCommand::class );
 }
