@@ -2383,3 +2383,211 @@ Not defined as named constants anywhere.
 | Q29: Manual includes vs PSR-4? | 257 classes autoloaded via PSR-4. 56 manual includes — all justified (WP core, migrations, templates). Only 2 replaceable. | **LOW** |
 | Q30: Constants vs magic strings? | 63 model status constants (good). But 226+ hardcoded capability strings, 95+ magic strings in JS templates, scattered cron hook names, no Constants class. | **MEDIUM** |
 | Q31: Test coverage? | **ZERO**. No PHPUnit, no tests, no CI/CD. 330+ PHP files untested. 5 critical functions need tests before any migration work. | **CRITICAL** |
+
+---
+
+## 33. Migration Readiness Score Per Module (Q32)
+
+### Scoring Methodology
+
+Each module is scored on two axes:
+- **Data portable?** — Are tables custom (`nzl_*`)? Is data access through repositories? Any `wp_posts`/`wp_users`/`wp_options` dependency?
+- **Logic portable?** — How many WP-native function calls in the service layer? Is business logic pure PHP or WP-coupled?
+
+### Module Scorecard
+
+| Module | Data Portable? | Logic Portable? | WP Calls in Services | Effort | Key Blocker |
+|--------|---------------|-----------------|---------------------|--------|-------------|
+| **Reservation Engine** (Bookings + Pricing + Availability) | YES — 3 custom tables, 100% repository pattern | GOOD — PricingService has 0 WP calls; BookingService has 25 (sanitize, user ID, timestamps, do_action) | 25 total (mostly in BookingService) | **Med** | `get_current_user_id()` ×5, `do_action()` ×6 in BookingService; PricingService & AvailabilityService are already framework-agnostic |
+| **Room Management** (Rooms + RoomTypes + Inventory) | YES — 3 custom tables, full repository pattern | EXCELLENT — ~3 WP calls (date helpers only), all logic in RoomService with injected repos/validators/cache/events | ~3 | **Low** | CacheManager wrapper needs verification; trivial `current_time()` replacement |
+| **Guest Management** | YES — custom `guests` table, full repository pattern | EXCELLENT — 9 WP calls (all sanitization: `sanitize_text_field` ×7, `sanitize_email` ×1, `sanitize_textarea_field` ×1) | 9 | **Low** | Replace WP sanitizers with `filter_var()` / custom validators. No wp_users coupling at all. |
+| **Billing / Folio** | YES — 3 custom tables (`folios`, `folio_items`, `taxes`), full repository pattern | GOOD — 22 WP calls: `get_current_user_id()` ×4, `current_time()` ×3, `sanitize_text_field()` ×2, `__()` ×12+. Tax calculation is 100% pure PHP. | ~22 | **Med** | User context capture (4 sites) and timestamp generation (3 sites) need abstraction. Core tax math is fully portable. |
+| **Housekeeping** | YES — custom `housekeeping_tasks` table, full repository pattern | EXCELLENT — 11 WP calls: `get_current_user_id()` ×1, `current_time()` ×2, `__()` ×8. Task state machine is pure PHP. | ~11 | **Low** | 1 user ID call, 2 timestamps. `assigned_to` stores generic integer — no wp_users JOIN. Most portable module. |
+| **Reporting** | YES — reads from custom tables only (`bookings`, `room_inventory`, `room_types`, `guests`, `payments`). Zero wp_users/wp_posts. | GOOD — 2 WP calls (`wp_date()` ×2) + `sanitize_file_name()` ×2 in ExportService. 850+ lines of pure SQL aggregation logic. | ~4 | **Med-High** | Raw SQL throughout (no repository pattern). 12 query methods use MySQL-specific functions (`DATE_FORMAT`, `DATEDIFF`). Need query builder or ORM refactoring for DB portability. |
+| **User / Staff Management** | **NO** — 100% on `wp_users` + `wp_usermeta`. Zero custom tables. No Employee model or repository exists. | **NO** — 22+ direct WP user functions: `wp_insert_user()`, `wp_update_user()`, `get_users()`, `get_user_meta()`, `get_userdata()`, `username_exists()`, `email_exists()`. All in EmployeeController. | 22+ | **High** | **FULL REWRITE**. Must create: `employees` table, Employee model, EmployeeRepository, EmployeeService, RBAC system. This is the single biggest migration blocker across the entire plugin. |
+| **Channel Manager** (Channels + ChannelSync + BookingCom) | YES — 4 custom tables (`channel_connections`, `channel_rate_map`, `channel_sync_logs`, `channel_mappings`), full repository pattern | MODERATE — 19 WP calls: `wp_remote_post()` ×1, `wp_remote_retrieve_*()` ×5, `current_time()` ×4, `wp_date()` ×4, `wp_generate_uuid4()` ×3, `apply_filters()` ×1. Plus AUTH_KEY encryption coupling. | 19 | **Med-High** | `wp_remote_post()` → PSR-18 HTTP client. AUTH_KEY encryption → ENV-based key. BookingComApiClient encapsulates all HTTP — clean replacement target. |
+| **Notifications + Messaging** | YES — custom tables (`notifications`, `email_templates`, `email_log`, `whatsapp_log`) | POOR — `wp_mail()` ×2 (in EmailService + NotificationService), `get_option()` ×8 as fallbacks, `do_action()/apply_filters()` ×7, `home_url()` ×1, `add_query_arg()` ×2. | ~20 | **Med-High** | `wp_mail()` is the hardest — needs `MailerInterface`. `get_option('admin_email')` fallbacks need SettingsManager standardization. |
+
+### Visual Summary
+
+```
+                    Data Portable?
+                    ▲
+            HIGH    │  Room Mgmt    Guest Mgmt    Housekeeping
+                    │  Reservation  Billing       Channel Mgr
+                    │  Reporting    Notifications
+            LOW     │                              Employees ✗
+                    └──────────────────────────────────────► Logic Portable?
+                         HIGH                    LOW
+```
+
+### Migration Order Recommendation
+
+```
+Phase 1 (Easy wins):     Guest Mgmt → Room Mgmt → Housekeeping
+Phase 2 (Core engine):   Reservation Engine → Billing
+Phase 3 (Integrations):  Channel Manager → Notifications/Messaging
+Phase 4 (Reporting):     Reports (SQL refactoring to Eloquent)
+Phase 5 (Rewrite):       Employees (full RBAC rebuild)
+```
+
+---
+
+## 34. Top 5 Changes to Make RIGHT NOW (Q33)
+
+These changes serve dual purpose: **(a)** reduce migration effort later AND **(b)** improve performance/stability today.
+
+### 1. Write tests for the 5 critical business functions
+
+**Why now**: Zero test coverage is the #1 migration risk. Without tests, you cannot safely refactor anything. These same tests protect production today against regression bugs.
+
+**What to do**:
+```bash
+composer require --dev phpunit/phpunit mockery/mockery
+```
+
+**Functions to test** (in priority order):
+
+| # | Method | File | Lines | Why Critical |
+|---|--------|------|-------|-------------|
+| 1 | `BookingService::createBooking()` | `Bookings/Services/BookingService.php` | 71-178 | Financial: creates bookings, deducts inventory, calculates pricing in a transaction. Race conditions = overbooking. |
+| 2 | `PricingService::calculateStayPrice()` | `Pricing/Services/PricingService.php` | 86-222 | Financial: rate plan modifiers + seasonal + extra person + tax. 1% error compounds across all revenue. |
+| 3 | `AvailabilityService::deductInventory()` | `Rooms/Services/AvailabilityService.php` | ~180-250 | Overbooking prevention: atomic inventory deduction across date range. Partial deduction = phantom bookings. |
+| 4 | `FolioService::addItem()` | `Billing/Services/FolioService.php` | 167-240 | Financial: tax calculation per category, folio total recalculation. Affects invoices and revenue. |
+| 5 | `BookingService::cancelBooking()` | `Bookings/Services/BookingService.php` | ~300-397 | Inventory restoration: must restore exactly what was deducted. Failure = lost inventory or phantom availability. |
+
+**Impact**: Migration risk drops from CRITICAL to MEDIUM. Production stability improves immediately.
+
+---
+
+### 2. Add the 4 critical missing database indexes
+
+**Why now**: Fixes slow queries in production TODAY. Also ensures the schema is performant before migrating to Laravel (these same indexes will be needed in Laravel migrations).
+
+**What to do** — create `migrations/012_add_missing_indexes.php`:
+
+```sql
+-- 1. bookings.status — used in every dashboard/calendar/report query
+ALTER TABLE {prefix}nzl_bookings ADD INDEX idx_status (status);
+
+-- 2. bookings.check_in + check_out — used in availability, calendar, occupancy
+ALTER TABLE {prefix}nzl_bookings ADD INDEX idx_checkin_checkout (check_in, check_out);
+
+-- 3. room_inventory.room_type_id + date — the hottest query in the system
+ALTER TABLE {prefix}nzl_room_inventory ADD INDEX idx_roomtype_date (room_type_id, date);
+
+-- 4. notifications.status + scheduled_at — queue processing query
+ALTER TABLE {prefix}nzl_notifications ADD INDEX idx_status_scheduled (status, scheduled_at);
+```
+
+**Impact**: Dashboard/calendar load times improve 5-10x on properties with >1000 bookings. Availability checks become index-scan instead of full table scan.
+
+---
+
+### 3. Create an `employees` table and Employee model/repository
+
+**Why now**: The Employees module is 100% coupled to `wp_users` — this is the **single biggest migration blocker**. Decoupling it now also fixes the architectural inconsistency (every other module has custom tables). And it removes the dependency on WordPress user serialization format.
+
+**What to do**:
+
+1. Create `migrations/013_create_employees_table.php`:
+```sql
+CREATE TABLE {prefix}nzl_employees (
+    id BIGINT UNSIGNED AUTO_INCREMENT PRIMARY KEY,
+    wp_user_id BIGINT UNSIGNED NULL,        -- nullable for post-migration
+    email VARCHAR(100) NOT NULL UNIQUE,
+    display_name VARCHAR(100) NOT NULL,
+    phone VARCHAR(20) NULL,
+    role VARCHAR(50) NOT NULL,               -- 'manager', 'reception', etc.
+    capabilities JSON NOT NULL DEFAULT '{}',
+    is_active TINYINT(1) NOT NULL DEFAULT 1,
+    created_at DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    updated_at DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+    INDEX idx_role (role),
+    INDEX idx_wp_user_id (wp_user_id)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
+```
+
+2. Create `Employee` model + `EmployeeRepository` + `EmployeeService`
+3. Refactor `EmployeeController` to use the new service instead of direct `wp_insert_user()`/`get_users()`
+4. Write a one-time sync: copy existing WP users with `nzl_*` roles into `nzl_employees`
+5. Keep `wp_user_id` as a bridge column during transition
+
+**Impact**: Eliminates the 22+ direct WP user function calls. Unblocks the entire Employees module for migration. Other modules that store `created_by`/`assigned_to` user IDs can start referencing the new table.
+
+---
+
+### 4. Standardize `get_option()` fallbacks in services to use SettingsManager exclusively
+
+**Why now**: 8 `get_option('admin_email')` calls and 6 `get_bloginfo('name')` calls are scattered across services as fallbacks. This is a portability blocker (Q9 finding) AND a bug risk — if someone changes `admin_email` in WordPress but sets a different email in Nozule settings, behavior is inconsistent.
+
+**What to do**:
+
+1. In `Activator::seedDefaultSettings()`, seed `hotel.email` from `get_option('admin_email')` and `hotel.name` from `get_bloginfo('name')` on first activation
+2. Replace all service-layer fallbacks:
+
+| File | Line | Before | After |
+|------|------|--------|-------|
+| `NotificationService.php` | 287 | `$this->settings->get('notifications.from_email', get_option('admin_email'))` | `$this->settings->get('notifications.from_email')` |
+| `NotificationService.php` | 309 | `$this->settings->get('hotel.email', get_option('admin_email'))` | `$this->settings->get('hotel.email')` |
+| `NotificationService.php` | 648 | `get_option('date_format', 'Y-m-d')` | `$this->settings->get('display.date_format', 'Y-m-d')` |
+| `TemplateService.php` | 117 | `get_option('date_format', 'Y-m-d')` | `$this->settings->get('display.date_format', 'Y-m-d')` |
+| `TemplateService.php` | 292 | `get_option('admin_email')` | `$this->settings->get('hotel.email')` |
+| `EmailService.php` | 163 | `get_option('admin_email')` | `$this->settings->get('hotel.email')` |
+| `EmailService.php` | 244 | `get_option('admin_email')` | `$this->settings->get('hotel.email')` |
+| `WhatsAppService.php` | 231 | `get_option('admin_email')` | `$this->settings->get('hotel.email')` |
+
+Also replace `get_bloginfo('name')` fallbacks in the same files (6 occurrences) with `$this->settings->get('hotel.name')`.
+
+**Impact**: Removes 14 WP-native calls from services. Fixes inconsistent configuration behavior. Makes 5 service classes fully portable through SettingsManager interface.
+
+---
+
+### 5. Add `LIMIT` to the 50+ unbounded SELECT queries
+
+**Why now**: Fixes production stability TODAY — a property with 10,000+ bookings will hit memory limits on unbounded queries. Also establishes the pattern before migration (Laravel's `paginate()` expects bounded queries).
+
+**Priority targets** (highest traffic, most data):
+
+| File | Method | Current Query | Fix |
+|------|--------|---------------|-----|
+| `BookingRepository.php` | `all()` inherited from BaseRepository | `SELECT * FROM bookings ORDER BY ...` (no LIMIT) | Add default `LIMIT 1000` to `BaseRepository::all()` |
+| `NotificationRepository.php` | `getPending()` | `SELECT * FROM notifications WHERE status='pending'` | Add `LIMIT 100` + `ORDER BY scheduled_at ASC` |
+| `ReportService.php` | All 7 report methods | Various aggregation queries | Already bounded by date range — verify and add `LIMIT 10000` safety net |
+| `BaseRepository::all()` | Used by 35 repositories | `SELECT * FROM {table}` | **Add `int $limit = 1000` parameter** |
+
+**Specific fix for `BaseRepository::all()`** (`includes/Core/BaseRepository.php:54`):
+
+```php
+// Before:
+public function all( string $orderBy = 'id', string $order = 'ASC' ): array {
+    $table   = $this->tableName();
+    $orderBy = sanitize_sql_orderby( "{$orderBy} {$order}" ) ?: 'id ASC';
+    $rows    = $this->db->getResults( "SELECT * FROM {$table} ORDER BY {$orderBy}" );
+    return $this->model::fromRows( $rows );
+}
+
+// After:
+public function all( string $orderBy = 'id', string $order = 'ASC', int $limit = 1000 ): array {
+    $table   = $this->tableName();
+    $orderBy = sanitize_sql_orderby( "{$orderBy} {$order}" ) ?: 'id ASC';
+    $rows    = $this->db->getResults(
+        "SELECT * FROM {$table} ORDER BY {$orderBy} LIMIT %d", $limit
+    );
+    return $this->model::fromRows( $rows );
+}
+```
+
+**Impact**: Prevents OOM crashes on large datasets. Establishes bounded-query discipline before migration. All 35 repositories inherit the fix automatically.
+
+---
+
+### Priority Summary
+
+| # | Change | Reduces Migration Effort | Improves Prod Today | Effort |
+|---|--------|------------------------|---------------------|--------|
+| 1 | Write tests for 5 critical functions | **HIGH** — safety net for all refactoring | **HIGH** — catches regressions | 3-5 days |
+| 2 | Add 4 missing indexes | **MED** — same indexes needed in Laravel | **HIGH** — 5-10x query speedup | 1 hour |
+| 3 | Create employees table + model | **CRITICAL** — unblocks biggest blocker | **MED** — better data model | 3-5 days |
+| 4 | Standardize get_option → SettingsManager | **HIGH** — removes 14 WP calls from services | **MED** — fixes config inconsistency | 2-3 hours |
+| 5 | Add LIMIT to unbounded queries | **MED** — bounded-query discipline | **HIGH** — prevents OOM on large data | 2-3 hours |
