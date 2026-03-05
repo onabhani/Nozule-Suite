@@ -3,6 +3,7 @@
 namespace Nozule\Modules\Rooms\Controllers;
 
 use Nozule\Modules\Rooms\Services\AvailabilityService;
+use NZL\Core\RateLimiter;
 use WP_REST_Request;
 use WP_REST_Response;
 use WP_REST_Server;
@@ -65,6 +66,9 @@ class AvailabilityController {
 	 * Search availability.
 	 */
 	public function search( WP_REST_Request $request ): WP_REST_Response {
+		$limited = RateLimiter::middleware( $request, 'availability_search', 60, 60 );
+		if ( $limited ) return $limited;
+
 		$checkIn    = $request->get_param( 'check_in' );
 		$checkOut   = $request->get_param( 'check_out' );
 		$guests     = absint( $request->get_param( 'guests' ) ) ?: 1;

@@ -4,6 +4,7 @@ namespace Nozule\Modules\Promotions\Controllers;
 
 use Nozule\Modules\Promotions\Models\PromoCode;
 use Nozule\Modules\Promotions\Services\PromoCodeService;
+use NZL\Core\RateLimiter;
 use WP_REST_Request;
 use WP_REST_Response;
 use WP_REST_Server;
@@ -218,6 +219,9 @@ class PromoCodeController {
 	 * Validate a promo code for a booking (public endpoint).
 	 */
 	public function validateCode( WP_REST_Request $request ): WP_REST_Response {
+		$limited = RateLimiter::middleware( $request, 'promo_validate', 20, 3600 );
+		if ( $limited ) return $limited;
+
 		$code     = sanitize_text_field( $request->get_param( 'code' ) ?? '' );
 		$subtotal = (float) ( $request->get_param( 'subtotal' ) ?? 0 );
 		$nights   = (int) ( $request->get_param( 'nights' ) ?? 1 );
