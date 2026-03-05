@@ -3,6 +3,7 @@
 namespace Nozule\API;
 
 use Nozule\Core\Container;
+use Nozule\Core\PropertyScope;
 use Nozule\Modules\Rooms\Controllers\RoomTypeController;
 use Nozule\Modules\Rooms\Controllers\RoomController;
 use Nozule\Modules\Rooms\Controllers\InventoryController;
@@ -45,6 +46,17 @@ class RestController {
         $this->registerPublicRoutes();
         $this->registerStaffRoutes();
         $this->registerAdminRoutes();
+        $this->registerPropertySwitchRoutes();
+
+        // Resolve PropertyScope for the current user on every authenticated request.
+        add_filter( 'rest_pre_dispatch', function ( $result, \WP_REST_Server $server, WP_REST_Request $request ) {
+            $userId = get_current_user_id();
+            if ( $userId && str_starts_with( $request->get_route(), '/' . self::NAMESPACE . '/admin' ) ) {
+                $scope = $this->container->get( PropertyScope::class );
+                $scope->resolve( $userId );
+            }
+            return $result;
+        }, 10, 3 );
     }
 
     // ------------------------------------------------------------------
@@ -368,6 +380,61 @@ class RestController {
                     'sanitize_callback' => 'absint',
                 ],
             ],
+        ] );
+    }
+
+    // ------------------------------------------------------------------
+    // Property switch (super admin only)
+    // ------------------------------------------------------------------
+
+    private function registerPropertySwitchRoutes(): void {
+        $super_admin_permission = fn() => current_user_can( 'nzl_super_admin' );
+
+        // POST /admin/property/switch — switch active property.
+        register_rest_route( self::NAMESPACE, '/admin/property/switch', [
+            'methods'             => 'POST',
+            'callback'            => function ( WP_REST_Request $r ) {
+                $propertyId = (int) $r->get_param( 'property_id' );
+                if ( $propertyId < 1 ) {
+                    return new WP_REST_Response( [
+                        'success' => false,
+                        'message' => __( 'Invalid property_id.', 'nozule' ),
+                    ], 400 );
+                }
+
+                $scope = $this->container->get( PropertyScope::class );
+                $scope->resolve( get_current_user_id() );
+                $scope->switchProperty( $propertyId );
+
+                return new WP_REST_Response( [
+                    'success'     => true,
+                    'property_id' => $propertyId,
+                ], 200 );
+            },
+            'permission_callback' => $super_admin_permission,
+            'args'                => [
+                'property_id' => [
+                    'required'          => true,
+                    'validate_callback' => fn( $v ) => is_numeric( $v ) && (int) $v > 0,
+                    'sanitize_callback' => 'absint',
+                ],
+            ],
+        ] );
+
+        // DELETE /admin/property/switch — clear property filter (view all).
+        register_rest_route( self::NAMESPACE, '/admin/property/switch', [
+            'methods'             => 'DELETE',
+            'callback'            => function ( WP_REST_Request $r ) {
+                $scope = $this->container->get( PropertyScope::class );
+                $scope->resolve( get_current_user_id() );
+                $scope->clearPropertyFilter();
+
+                return new WP_REST_Response( [
+                    'success'     => true,
+                    'property_id' => null,
+                ], 200 );
+            },
+            'permission_callback' => $super_admin_permission,
         ] );
     }
 

@@ -5,6 +5,7 @@ namespace Nozule\Modules\Guests;
 use Nozule\Core\BaseModule;
 use Nozule\Core\Database;
 use Nozule\Core\EventDispatcher;
+use Nozule\Core\PropertyScope;
 use Nozule\Modules\Guests\Controllers\GuestController;
 use Nozule\Modules\Guests\Repositories\GuestRepository;
 use Nozule\Modules\Guests\Services\GuestService;
@@ -57,7 +58,8 @@ class GuestsModule extends BaseModule {
             GuestController::class,
             fn() => new GuestController(
                 $this->container->get( GuestService::class ),
-                $this->container->get( GuestRepository::class )
+                $this->container->get( GuestRepository::class ),
+                $this->container->get( PropertyScope::class )
             )
         );
     }

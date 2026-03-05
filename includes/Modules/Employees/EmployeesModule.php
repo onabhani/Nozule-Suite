@@ -3,7 +3,9 @@
 namespace Nozule\Modules\Employees;
 
 use Nozule\Core\BaseModule;
+use Nozule\Core\PropertyScope;
 use Nozule\Modules\Employees\Controllers\EmployeeController;
+use Nozule\Modules\Employees\Repositories\EmployeeRepository;
 
 /**
  * Employee management module (NZL-042).
@@ -15,11 +17,23 @@ class EmployeesModule extends BaseModule {
 
     public function register(): void {
         $this->container->singleton(
+            EmployeeRepository::class,
+            fn() => new EmployeeRepository(
+                $this->container->get( \Nozule\Core\Database::class )
+            )
+        );
+
+        $this->container->singleton(
+            PropertyScope::class,
+            fn() => new PropertyScope(
+                $this->container->get( EmployeeRepository::class )
+            )
+        );
+
+        $this->container->singleton(
             EmployeeController::class,
             fn() => new EmployeeController(
-                new \Nozule\Modules\Employees\Repositories\EmployeeRepository(
-                    $this->container->get( \Nozule\Core\Database::class )
-                )
+                $this->container->get( EmployeeRepository::class )
             )
         );
 

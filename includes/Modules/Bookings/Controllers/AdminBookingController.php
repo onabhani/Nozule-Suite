@@ -2,6 +2,7 @@
 
 namespace Nozule\Modules\Bookings\Controllers;
 
+use Nozule\Core\PropertyScope;
 use Nozule\Modules\Bookings\Exceptions\InvalidStateException;
 use Nozule\Modules\Bookings\Exceptions\NoAvailabilityException;
 use Nozule\Modules\Bookings\Models\Booking;
@@ -22,6 +23,7 @@ class AdminBookingController {
 	private BookingRepository $bookingRepository;
 	private PaymentRepository $paymentRepository;
 	private BookingValidator $validator;
+	private PropertyScope $propertyScope;
 
 	private const NAMESPACE = 'nozule/v1';
 
@@ -29,12 +31,14 @@ class AdminBookingController {
 		BookingService $service,
 		BookingRepository $bookingRepository,
 		PaymentRepository $paymentRepository,
-		BookingValidator $validator
+		BookingValidator $validator,
+		PropertyScope $propertyScope
 	) {
 		$this->service           = $service;
 		$this->bookingRepository = $bookingRepository;
 		$this->paymentRepository = $paymentRepository;
 		$this->validator         = $validator;
+		$this->propertyScope     = $propertyScope;
 	}
 
 	/**
@@ -164,7 +168,8 @@ class AdminBookingController {
 	 * List bookings with filters, search, and pagination.
 	 */
 	public function index( \WP_REST_Request $request ): \WP_REST_Response {
-		$result = $this->bookingRepository->list( [
+		$repo   = $this->bookingRepository->scopeToProperty( $this->propertyScope->getActivePropertyId() );
+		$result = $repo->list( [
 			'status'    => $request->get_param( 'status' ) ?? '',
 			'source'    => $request->get_param( 'source' ) ?? '',
 			'date_from' => $request->get_param( 'date_from' ) ?? '',
@@ -199,6 +204,10 @@ class AdminBookingController {
 				'success' => false,
 				'message' => __( 'Booking not found.', 'nozule' ),
 			], 404 );
+		}
+
+		if ( ! $this->propertyScope->canAccessAllProperties() && ( $booking->property_id ?? null ) !== $this->propertyScope->getActivePropertyId() ) {
+			return new \WP_REST_Response( [ 'success' => false, 'message' => __( 'Forbidden', 'nozule' ) ], 403 );
 		}
 
 		return new \WP_REST_Response( [
@@ -253,6 +262,10 @@ class AdminBookingController {
 				'success' => false,
 				'message' => __( 'Booking not found.', 'nozule' ),
 			], 404 );
+		}
+
+		if ( ! $this->propertyScope->canAccessAllProperties() && ( $booking->property_id ?? null ) !== $this->propertyScope->getActivePropertyId() ) {
+			return new \WP_REST_Response( [ 'success' => false, 'message' => __( 'Forbidden', 'nozule' ) ], 403 );
 		}
 
 		$data = $request->get_params();

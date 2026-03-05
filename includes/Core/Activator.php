@@ -76,6 +76,9 @@ class Activator {
 
         require_once NZL_PLUGIN_DIR . 'migrations/015_create_employees_table.php';
         nzl_migration_015_create_employees_table();
+
+        require_once NZL_PLUGIN_DIR . 'migrations/016_add_property_scope.php';
+        nzl_migration_016_add_property_scope();
     }
 
     /**
@@ -108,11 +111,31 @@ class Activator {
      */
     private static function createRoles(): void {
         // Remove first to ensure clean display names (fixes locale mismatch).
+        remove_role( 'nzl_super_admin' );
         remove_role( 'nzl_manager' );
         remove_role( 'nzl_reception' );
         remove_role( 'nzl_housekeeper' );
         remove_role( 'nzl_finance' );
         remove_role( 'nzl_concierge' );
+
+        // Super Admin — cross-property access with manage_options.
+        add_role( 'nzl_super_admin', 'Super Admin', [
+            'read'                    => true,
+            'upload_files'            => true,
+            'manage_options'          => true,
+            'nzl_super_admin'         => true,
+            'nzl_admin'               => true,
+            'nzl_manage_rooms'        => true,
+            'nzl_manage_rates'        => true,
+            'nzl_manage_inventory'    => true,
+            'nzl_manage_bookings'     => true,
+            'nzl_manage_guests'       => true,
+            'nzl_view_reports'        => true,
+            'nzl_view_calendar'       => true,
+            'nzl_manage_channels'     => true,
+            'nzl_manage_settings'     => true,
+            'nzl_manage_employees'    => true,
+        ] );
 
         // Hotel Manager role — full admin access.
         add_role( 'nzl_manager', 'Hotel Manager', [

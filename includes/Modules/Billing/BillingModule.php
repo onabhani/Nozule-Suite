@@ -115,7 +115,9 @@ class BillingModule extends BaseModule {
 
 		$this->container->singleton( FolioController::class, function ( Container $c ) {
 			return new FolioController(
-				$c->get( FolioService::class )
+				$c->get( FolioService::class ),
+				$c->get( FolioRepository::class ),
+				$c->get( \Nozule\Core\PropertyScope::class )
 			);
 		} );
 	}

@@ -53,24 +53,23 @@ class GuestRepository extends BaseRepository {
         $like   = '%' . $this->db->wpdb()->esc_like( $query ) . '%';
         $offset = ( $page - 1 ) * $per_page;
 
-        $where = "WHERE first_name LIKE %s OR last_name LIKE %s OR email LIKE %s OR phone LIKE %s";
+        $where  = 'WHERE (first_name LIKE %s OR last_name LIKE %s OR email LIKE %s OR phone LIKE %s)';
+        $params = [ $like, $like, $like, $like ];
 
+        $scoped_where = $this->applyPropertyScope( $where, $params );
+
+        $count_params = $params;
         $total = (int) $this->db->getVar(
-            "SELECT COUNT(*) FROM {$table} {$where}",
-            $like,
-            $like,
-            $like,
-            $like
+            "SELECT COUNT(*) FROM {$table} {$scoped_where}",
+            ...$count_params
         );
 
+        $params[] = $per_page;
+        $params[] = $offset;
+
         $rows = $this->db->getResults(
-            "SELECT * FROM {$table} {$where} ORDER BY last_name ASC, first_name ASC LIMIT %d OFFSET %d",
-            $like,
-            $like,
-            $like,
-            $like,
-            $per_page,
-            $offset
+            "SELECT * FROM {$table} {$scoped_where} ORDER BY last_name ASC, first_name ASC LIMIT %d OFFSET %d",
+            ...$params
         );
 
         return [
@@ -88,10 +87,12 @@ class GuestRepository extends BaseRepository {
      */
     public function getTopGuests( int $limit = 10 ): array {
         $table = $this->tableName();
-        $rows  = $this->db->getResults(
-            "SELECT * FROM {$table} WHERE total_bookings > 0 ORDER BY total_bookings DESC, total_spent DESC LIMIT %d",
-            $limit
-        );
+        $args  = [];
+        $sql   = "SELECT * FROM {$table} WHERE total_bookings > 0";
+        $sql   = $this->applyPropertyScope( $sql, $args );
+        $sql  .= ' ORDER BY total_bookings DESC, total_spent DESC LIMIT %d';
+        $args[] = $limit;
+        $rows  = $this->db->getResults( $sql, ...$args );
 
         return Guest::fromRows( $rows );
     }
@@ -104,10 +105,12 @@ class GuestRepository extends BaseRepository {
      */
     public function getRecentGuests( int $limit = 10 ): array {
         $table = $this->tableName();
-        $rows  = $this->db->getResults(
-            "SELECT * FROM {$table} ORDER BY created_at DESC LIMIT %d",
-            $limit
-        );
+        $args  = [];
+        $sql   = "SELECT * FROM {$table} WHERE 1=1";
+        $sql   = $this->applyPropertyScope( $sql, $args );
+        $sql  .= ' ORDER BY created_at DESC LIMIT %d';
+        $args[] = $limit;
+        $rows  = $this->db->getResults( $sql, ...$args );
 
         return Guest::fromRows( $rows );
     }
@@ -262,10 +265,16 @@ class GuestRepository extends BaseRepository {
         $where    = '';
         $params   = [];
 
+        // Property scope.
+        if ( $this->propertyFilter !== null ) {
+            $where    = 'WHERE property_id = %d';
+            $params[] = $this->propertyFilter;
+        }
+
         // Build search clause.
         if ( ! empty( $args['search'] ) ) {
             $like     = '%' . $this->db->wpdb()->esc_like( $args['search'] ) . '%';
-            $where    = 'WHERE first_name LIKE %s OR last_name LIKE %s OR email LIKE %s OR phone LIKE %s';
+            $where   .= ( $where ? ' AND' : 'WHERE' ) . ' (first_name LIKE %s OR last_name LIKE %s OR email LIKE %s OR phone LIKE %s)';
             $params[] = $like;
             $params[] = $like;
             $params[] = $like;

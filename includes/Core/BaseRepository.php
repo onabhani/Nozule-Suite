@@ -15,6 +15,9 @@ abstract class BaseRepository {
     /** Model class name. */
     protected string $model;
 
+    /** When set, queries are scoped to this property. */
+    protected ?int $propertyFilter = null;
+
     public function __construct( Database $db ) {
         $this->db = $db;
     }
@@ -24,6 +27,31 @@ abstract class BaseRepository {
      */
     protected function tableName(): string {
         return $this->db->table( $this->table );
+    }
+
+    /**
+     * Return a clone of this repository scoped to a single property.
+     */
+    public function scopeToProperty( ?int $propertyId ): static {
+        $clone                 = clone $this;
+        $clone->propertyFilter = $propertyId;
+        return $clone;
+    }
+
+    /**
+     * Append a property_id filter to an existing SQL fragment.
+     *
+     * @param string   $sql    SQL string ending with a WHERE clause (or ready for AND).
+     * @param array    $args   Bind-parameter array (modified by reference).
+     * @param string   $column Column name to filter on.
+     * @return string  The (possibly extended) SQL string.
+     */
+    protected function applyPropertyScope( string $sql, array &$args, string $column = 'property_id' ): string {
+        if ( $this->propertyFilter !== null ) {
+            $sql   .= " AND {$column} = %d";
+            $args[] = $this->propertyFilter;
+        }
+        return $sql;
     }
 
     /**
