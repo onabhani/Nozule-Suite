@@ -123,13 +123,13 @@ if ( ! defined( 'ABSPATH' ) ) exit;
                         <?php esc_html_e( 'Role', 'nozule' ); ?>
                     </h4>
                     <div class="nzl-form-group">
-                        <template x-if="isSelf()">
+                        <template x-if="isSelfRestricted()">
                             <div>
                                 <p style="font-size:0.875rem; color:#94a3b8; margin:0;"><?php esc_html_e( 'You cannot change your own role.', 'nozule' ); ?></p>
                                 <input type="hidden" x-model="form.role">
                             </div>
                         </template>
-                        <template x-if="!isSelf()">
+                        <template x-if="!isSelfRestricted()">
                             <select x-model="form.role" class="nzl-input" @change="applyRolePreset()">
                                 <option value="nzl_manager"><?php esc_html_e( 'Hotel Manager', 'nozule' ); ?></option>
                                 <option value="nzl_reception"><?php esc_html_e( 'Hotel Reception', 'nozule' ); ?></option>
@@ -144,10 +144,10 @@ if ( ! defined( 'ABSPATH' ) ) exit;
                     <h4 style="font-size:0.875rem; font-weight:600; color:#475569; text-transform:uppercase; letter-spacing:0.05em; margin:1.5rem 0 0.75rem; padding-bottom:0.5rem; border-bottom:1px solid #e2e8f0;">
                         <?php esc_html_e( 'Permissions', 'nozule' ); ?>
                     </h4>
-                    <template x-if="isSelf()">
+                    <template x-if="isSelfRestricted()">
                         <p style="font-size:0.875rem; color:#94a3b8;"><?php esc_html_e( 'You cannot change your own permissions.', 'nozule' ); ?></p>
                     </template>
-                    <template x-if="!isSelf()">
+                    <template x-if="!isSelfRestricted()">
                         <div style="display:grid; grid-template-columns:repeat(auto-fill, minmax(200px, 1fr)); gap:0.5rem;">
                             <template x-for="cap in allCapabilities" :key="cap.key">
                                 <label style="display:flex; align-items:center; gap:0.4rem; cursor:pointer; font-size:0.875rem; padding:0.35rem 0;">
