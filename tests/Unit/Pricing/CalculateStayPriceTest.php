@@ -86,16 +86,18 @@ class CalculateStayPriceTest extends TestCase {
 	/**
 	 * Set up common mock expectations for a basic pricing calculation.
 	 */
-	private function setupBasicMocks( RatePlan $ratePlan, RoomType $roomType ): void {
+	private function setupBasicMocks( RatePlan $ratePlan, RoomType $roomType, array $seasonalRates = [] ): void {
 		// Rate plan resolution (uses default).
 		$this->ratePlanRepo->shouldReceive( 'getDefaultForRoomType' )
 			->andReturn( $ratePlan );
 
-		// No seasonal rates.
+		// Seasonal rates.
 		$this->seasonalRepo->shouldReceive( 'getForDateRange' )
-			->andReturn( [] );
-		$this->seasonalRepo->shouldReceive( 'getActiveForDate' )
-			->andReturn( [] );
+			->andReturn( $seasonalRates );
+		if ( empty( $seasonalRates ) ) {
+			$this->seasonalRepo->shouldReceive( 'getActiveForDate' )
+				->andReturn( [] );
+		}
 
 		// No inventory price overrides — fall back to room type base_price.
 		$this->inventoryRepo->shouldReceive( 'getForDate' )
@@ -164,9 +166,6 @@ class CalculateStayPriceTest extends TestCase {
 		$ratePlan = $this->makeRatePlan();
 		$roomType = $this->makeRoomType( [ 'base_price' => 200.0 ] );
 
-		$this->ratePlanRepo->shouldReceive( 'getDefaultForRoomType' )
-			->andReturn( $ratePlan );
-
 		// 20% seasonal increase — applies to all 3 nights.
 		$seasonalRate = new SeasonalRate( [
 			'id'             => 1,
@@ -179,37 +178,7 @@ class CalculateStayPriceTest extends TestCase {
 			'end_date'       => '2026-04-30',
 		] );
 
-		$this->seasonalRepo->shouldReceive( 'getForDateRange' )
-			->andReturn( [ $seasonalRate ] );
-
-		$this->inventoryRepo->shouldReceive( 'getForDate' )
-			->andReturn( null );
-
-		$this->roomTypeRepo->shouldReceive( 'find' )
-			->with( 1 )
-			->andReturn( $roomType );
-
-		$this->settings->shouldReceive( 'get' )
-			->with( 'pricing.service_fee_rate', 0 )->andReturn( 0 );
-		$this->settings->shouldReceive( 'get' )
-			->with( 'pricing.tax_rate', 0 )->andReturn( 0 );
-		$this->settings->shouldReceive( 'get' )
-			->with( 'currency.default', 'USD' )->andReturn( 'SAR' );
-		$this->settings->shouldReceive( 'get' )
-			->with( 'currency.exchange_rate', 1.0 )->andReturn( 1.0 );
-		$this->settings->shouldReceive( 'get' )
-			->with( 'pricing.extra_adult_charge', 0 )->andReturn( 0 );
-		$this->settings->shouldReceive( 'get' )
-			->with( 'pricing.extra_child_charge', 0 )->andReturn( 0 );
-
-		$this->events->shouldReceive( 'filter' )
-			->withArgs( fn( string $name ) => $name === 'pricing/discount' )
-			->andReturnUsing( fn( $name, $discount ) => $discount );
-		$this->events->shouldReceive( 'filter' )
-			->withArgs( fn( string $name ) => $name === 'pricing/nightly_rate' )
-			->andReturnUsing( fn( $name, $price ) => $price );
-		$this->events->shouldReceive( 'dispatch' )
-			->withArgs( fn( string $name ) => $name === 'pricing/calculated' );
+		$this->setupBasicMocks( $ratePlan, $roomType, [ $seasonalRate ] );
 
 		// 200 base + 20% seasonal = 240/night × 3 nights = 720.
 		$result = $this->service->calculateStayPrice( 1, '2026-04-01', '2026-04-04', 2 );

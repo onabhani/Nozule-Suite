@@ -136,7 +136,9 @@ class CancelBookingTest extends TestCase {
 		$this->bookingRepo->shouldReceive( 'beginTransaction' )->once();
 		$this->bookingRepo->shouldReceive( 'commit' )->once();
 
-		$this->availabilityService->shouldReceive( 'restoreInventory' )->once();
+		$this->availabilityService->shouldReceive( 'restoreInventory' )
+			->once()
+			->with( 1, '2026-04-01', '2026-04-04' );
 
 		$this->bookingRepo->shouldReceive( 'update' )
 			->once()
@@ -146,8 +148,15 @@ class CancelBookingTest extends TestCase {
 					&& $data['cancelled_by'] === 5;
 			} ) );
 
-		$this->bookingRepo->shouldReceive( 'createLog' )->once();
-		$this->notificationService->shouldReceive( 'queue' )->once();
+		$this->bookingRepo->shouldReceive( 'createLog' )
+			->once()
+			->with( Mockery::on( fn( $log ) =>
+				$log['booking_id'] === 100
+				&& $log['action'] === BookingLog::ACTION_CANCELLED
+			) );
+		$this->notificationService->shouldReceive( 'queue' )
+			->once()
+			->with( Mockery::type( Booking::class ), 'booking_cancelled' );
 
 		$result = $this->service->cancelBooking( 100, 'Changed plans', 5 );
 

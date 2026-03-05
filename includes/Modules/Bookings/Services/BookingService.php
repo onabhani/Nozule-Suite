@@ -208,11 +208,13 @@ class BookingService {
 			'ip_address' => self::getClientIP(),
 		] );
 
+		$booking = $this->bookingRepository->findOrFail( $bookingId );
+
 		$this->notificationService->queue( $booking, 'booking_confirmed' );
 
 		do_action( 'nozule/booking/confirmed', $bookingId );
 
-		return $this->bookingRepository->findOrFail( $bookingId );
+		return $booking;
 	}
 
 	/**
@@ -271,11 +273,13 @@ class BookingService {
 			throw $e;
 		}
 
+		$booking = $this->bookingRepository->findOrFail( $bookingId );
+
 		$this->notificationService->queue( $booking, 'booking_cancelled' );
 
 		do_action( 'nozule/booking/cancelled', $bookingId, $reason );
 
-		return $this->bookingRepository->findOrFail( $bookingId );
+		return $booking;
 	}
 
 	/**
@@ -322,11 +326,13 @@ class BookingService {
 			'ip_address' => self::getClientIP(),
 		] );
 
+		$booking = $this->bookingRepository->findOrFail( $bookingId );
+
 		$this->notificationService->queue( $booking, 'booking_checked_in' );
 
 		do_action( 'nozule/booking/checked_in', $bookingId, $roomId );
 
-		return $this->bookingRepository->findOrFail( $bookingId );
+		return $booking;
 	}
 
 	/**
@@ -368,11 +374,13 @@ class BookingService {
 			'ip_address' => self::getClientIP(),
 		] );
 
+		$booking = $this->bookingRepository->findOrFail( $bookingId );
+
 		$this->notificationService->queue( $booking, 'booking_checked_out' );
 
 		do_action( 'nozule/booking/checked_out', $bookingId );
 
-		return $this->bookingRepository->findOrFail( $bookingId );
+		return $booking;
 	}
 
 	// ── Dashboard Queries ───────────────────────────────────────────

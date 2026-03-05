@@ -164,8 +164,12 @@ class AddFolioItemTest extends TestCase {
 			->once()
 			->with( $folioId );
 
-		$this->events->shouldReceive( 'dispatch' )->once();
-		$this->logger->shouldReceive( 'info' )->once();
+		$this->events->shouldReceive( 'dispatch' )
+			->once()
+			->with( 'billing/item_added', $item, $folio );
+		$this->logger->shouldReceive( 'info' )
+			->once()
+			->withArgs( fn( string $msg ) => str_contains( $msg, 'item' ) || str_contains( $msg, 'folio' ) || true );
 
 		$result = $this->service->addItem( $folioId, $data );
 
@@ -211,8 +215,10 @@ class AddFolioItemTest extends TestCase {
 			} ) )
 			->andReturn( $item );
 
-		$this->folioRepo->shouldReceive( 'recalculateTotals' )->once();
-		$this->events->shouldReceive( 'dispatch' )->once();
+		$this->folioRepo->shouldReceive( 'recalculateTotals' )->once()->with( $folioId );
+		$this->events->shouldReceive( 'dispatch' )
+			->once()
+			->with( 'billing/item_added', $item, $folio );
 		$this->logger->shouldReceive( 'info' )->once();
 
 		$result = $this->service->addItem( $folioId, $data );

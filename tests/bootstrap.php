@@ -53,11 +53,12 @@ if ( ! function_exists( 'get_current_user_id' ) ) {
 }
 
 if ( ! function_exists( 'current_time' ) ) {
-	function current_time( $type = 'mysql' ) {
-		if ( $type === 'mysql' ) {
-			return gmdate( 'Y-m-d H:i:s' );
+	function current_time( $type = 'mysql', $gmt = false ) {
+		if ( $type === 'timestamp' || $type === 'U' ) {
+			return $gmt ? time() : time() + (int) ( date( 'Z' ) );
 		}
-		return gmdate( $type );
+		$format = ( $type === 'mysql' ) ? 'Y-m-d H:i:s' : $type;
+		return $gmt ? gmdate( $format ) : date( $format );
 	}
 }
 

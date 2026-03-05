@@ -186,7 +186,10 @@ class CreateBookingTest extends TestCase {
 		// Nothing else should be called.
 		$this->bookingRepo->shouldNotReceive( 'beginTransaction' );
 		$this->bookingRepo->shouldNotReceive( 'create' );
+		$this->bookingRepo->shouldNotReceive( 'commit' );
 		$this->availabilityService->shouldNotReceive( 'deductInventory' );
+		$this->guestService->shouldNotReceive( 'incrementBookingCount' );
+		$this->notificationService->shouldNotReceive( 'queue' );
 
 		$this->expectException( NoAvailabilityException::class );
 

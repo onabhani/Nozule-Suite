@@ -58,12 +58,16 @@ class DeductInventoryTest extends TestCase {
 
 		$this->inventoryRepo->shouldReceive( 'commit' )->once();
 
-		// Cache invalidation.
+		// Cache invalidation — tag plus specific per-date keys.
 		$this->cache->shouldReceive( 'invalidateTag' )
 			->once()
 			->with( 'availability' );
 		$this->cache->shouldReceive( 'delete' )
-			->times( 3 ); // one per night
+			->once()->with( 'availability_2026-04-01' );
+		$this->cache->shouldReceive( 'delete' )
+			->once()->with( 'availability_2026-04-02' );
+		$this->cache->shouldReceive( 'delete' )
+			->once()->with( 'availability_2026-04-03' );
 
 		// Event dispatched.
 		$this->events->shouldReceive( 'dispatch' )
