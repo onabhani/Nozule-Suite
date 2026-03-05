@@ -2,6 +2,7 @@
 
 namespace Nozule\Modules\Branding\Controllers;
 
+use Nozule\Core\ResponseHelper;
 use Nozule\Modules\Branding\Models\Brand;
 use Nozule\Modules\Branding\Services\BrandService;
 use WP_REST_Request;
@@ -103,10 +104,7 @@ class BrandController {
 			$brands
 		);
 
-		return new WP_REST_Response( [
-			'success' => true,
-			'data'    => $items,
-		], 200 );
+		return ResponseHelper::success( $items );
 	}
 
 	/**
@@ -117,16 +115,10 @@ class BrandController {
 		$brand = $this->service->getBrand( $id );
 
 		if ( ! $brand ) {
-			return new WP_REST_Response( [
-				'success' => false,
-				'message' => __( 'Brand not found.', 'nozule' ),
-			], 404 );
+			return ResponseHelper::notFound( __( 'Brand not found.', 'nozule' ) );
 		}
 
-		return new WP_REST_Response( [
-			'success' => true,
-			'data'    => $brand->toArray(),
-		], 200 );
+		return ResponseHelper::success( $brand->toArray() );
 	}
 
 	/**
@@ -138,18 +130,10 @@ class BrandController {
 		$result = $this->service->createBrand( $data );
 
 		if ( $result instanceof Brand ) {
-			return new WP_REST_Response( [
-				'success' => true,
-				'message' => __( 'Brand created successfully.', 'nozule' ),
-				'data'    => $result->toArray(),
-			], 201 );
+			return ResponseHelper::created( $result->toArray(), __( 'Brand created successfully.', 'nozule' ) );
 		}
 
-		return new WP_REST_Response( [
-			'success' => false,
-			'message' => __( 'Validation failed.', 'nozule' ),
-			'errors'  => $result,
-		], 422 );
+		return ResponseHelper::error( __( 'Validation failed.', 'nozule' ), 422, $result );
 	}
 
 	/**
@@ -162,26 +146,14 @@ class BrandController {
 		$result = $this->service->updateBrand( $id, $data );
 
 		if ( $result instanceof Brand ) {
-			return new WP_REST_Response( [
-				'success' => true,
-				'message' => __( 'Brand updated successfully.', 'nozule' ),
-				'data'    => $result->toArray(),
-			], 200 );
+			return ResponseHelper::success( $result->toArray(), __( 'Brand updated successfully.', 'nozule' ) );
 		}
 
 		if ( isset( $result['id'] ) ) {
-			return new WP_REST_Response( [
-				'success' => false,
-				'message' => $result['id'][0],
-				'errors'  => $result,
-			], 404 );
+			return ResponseHelper::error( $result['id'][0], 404, $result );
 		}
 
-		return new WP_REST_Response( [
-			'success' => false,
-			'message' => __( 'Validation failed.', 'nozule' ),
-			'errors'  => $result,
-		], 422 );
+		return ResponseHelper::error( __( 'Validation failed.', 'nozule' ), 422, $result );
 	}
 
 	/**
@@ -192,19 +164,12 @@ class BrandController {
 		$result = $this->service->deleteBrand( $id );
 
 		if ( $result === true ) {
-			return new WP_REST_Response( [
-				'success' => true,
-				'message' => __( 'Brand deleted successfully.', 'nozule' ),
-			], 200 );
+			return ResponseHelper::success( null, __( 'Brand deleted successfully.', 'nozule' ) );
 		}
 
 		$statusCode = isset( $result['id'] ) ? 404 : 422;
 
-		return new WP_REST_Response( [
-			'success' => false,
-			'message' => __( 'Failed to delete brand.', 'nozule' ),
-			'errors'  => $result,
-		], $statusCode );
+		return ResponseHelper::error( __( 'Failed to delete brand.', 'nozule' ), $statusCode, $result );
 	}
 
 	/**
@@ -215,20 +180,12 @@ class BrandController {
 		$result = $this->service->setDefault( $id );
 
 		if ( $result instanceof Brand ) {
-			return new WP_REST_Response( [
-				'success' => true,
-				'message' => __( 'Brand set as default successfully.', 'nozule' ),
-				'data'    => $result->toArray(),
-			], 200 );
+			return ResponseHelper::success( $result->toArray(), __( 'Brand set as default successfully.', 'nozule' ) );
 		}
 
 		$statusCode = isset( $result['id'] ) ? 404 : 422;
 
-		return new WP_REST_Response( [
-			'success' => false,
-			'message' => __( 'Failed to set default brand.', 'nozule' ),
-			'errors'  => $result,
-		], $statusCode );
+		return ResponseHelper::error( __( 'Failed to set default brand.', 'nozule' ), $statusCode, $result );
 	}
 
 	/**
@@ -246,12 +203,9 @@ class BrandController {
 
 		$css = $this->service->generateCSSVariables( $brandConfig );
 
-		return new WP_REST_Response( [
-			'success' => true,
-			'data'    => [
-				'css' => ':root { ' . $css . ' }',
-			],
-		], 200 );
+		return ResponseHelper::success( [
+			'css' => ':root { ' . $css . ' }',
+		] );
 	}
 
 	/**

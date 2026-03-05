@@ -4,6 +4,7 @@ namespace Nozule\Modules\Bookings\Controllers;
 
 use Nozule\Modules\Bookings\Models\Booking;
 use Nozule\Modules\Bookings\Repositories\BookingRepository;
+use Nozule\Core\ResponseHelper;
 
 /**
  * REST controller for the calendar/timeline view.
@@ -68,17 +69,11 @@ class CalendarController {
 
 		// Basic date validation.
 		if ( ! strtotime( $start ) || ! strtotime( $end ) ) {
-			return new \WP_REST_Response( [
-				'success' => false,
-				'message' => __( 'Invalid date format. Use Y-m-d.', 'nozule' ),
-			], 400 );
+			return ResponseHelper::error( __( 'Invalid date format. Use Y-m-d.', 'nozule' ), 400 );
 		}
 
 		if ( strtotime( $end ) < strtotime( $start ) ) {
-			return new \WP_REST_Response( [
-				'success' => false,
-				'message' => __( 'End date must be after start date.', 'nozule' ),
-			], 400 );
+			return ResponseHelper::error( __( 'End date must be after start date.', 'nozule' ), 400 );
 		}
 
 		$bookings = $this->bookingRepository->getForCalendar( $start, $end );
@@ -101,14 +96,10 @@ class CalendarController {
 			];
 		}, $bookings );
 
-		return new \WP_REST_Response( [
-			'success' => true,
-			'data'    => $events,
-			'meta'    => [
+		return ResponseHelper::success( $events, null, [
 				'start' => $start,
 				'end'   => $end,
 				'count' => count( $events ),
-			],
-		], 200 );
+			] );
 	}
 }

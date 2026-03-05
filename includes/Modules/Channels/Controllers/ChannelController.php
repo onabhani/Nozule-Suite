@@ -2,6 +2,7 @@
 
 namespace Nozule\Modules\Channels\Controllers;
 
+use Nozule\Core\ResponseHelper;
 use Nozule\Modules\Channels\Services\ChannelService;
 use Nozule\Modules\Channels\Repositories\ChannelMappingRepository;
 use Nozule\Modules\Channels\Validators\ChannelMappingValidator;
@@ -124,7 +125,7 @@ class ChannelController {
         $result   = $this->repository->list( $args );
         $channels = $this->service->getAvailableChannels();
 
-        return new \WP_REST_Response( [
+        return ResponseHelper::success( [
             'available_channels' => $channels,
             'mappings'           => array_map(
                 fn( $m ) => $m->toArray(),
@@ -132,7 +133,7 @@ class ChannelController {
             ),
             'total'              => $result['total'],
             'pages'              => $result['pages'],
-        ], 200 );
+        ] );
     }
 
     /**
@@ -144,24 +145,16 @@ class ChannelController {
         $data = $this->extractMappingData( $request );
 
         if ( ! $this->validator->validateCreate( $data ) ) {
-            return new \WP_REST_Response( [
-                'message' => __( 'Validation failed.', 'nozule' ),
-                'errors'  => $this->validator->getErrors(),
-            ], 422 );
+            return ResponseHelper::error( __( 'Validation failed.', 'nozule' ), 422, $this->validator->getErrors() );
         }
 
         $mapping = $this->repository->create( $data );
 
         if ( ! $mapping ) {
-            return new \WP_REST_Response( [
-                'message' => __( 'Failed to create channel mapping.', 'nozule' ),
-            ], 500 );
+            return ResponseHelper::error( __( 'Failed to create channel mapping.', 'nozule' ), 500 );
         }
 
-        return new \WP_REST_Response( [
-            'message' => __( 'Channel mapping created.', 'nozule' ),
-            'mapping' => $mapping->toArray(),
-        ], 201 );
+        return ResponseHelper::created( ['mapping' => $mapping->toArray()], __( 'Channel mapping created.', 'nozule' ) );
     }
 
     /**
@@ -174,14 +167,10 @@ class ChannelController {
         $mapping = $this->repository->find( $id );
 
         if ( ! $mapping ) {
-            return new \WP_REST_Response( [
-                'message' => __( 'Channel mapping not found.', 'nozule' ),
-            ], 404 );
+            return ResponseHelper::notFound( __( 'Channel mapping not found.', 'nozule' ) );
         }
 
-        return new \WP_REST_Response( [
-            'mapping' => $mapping->toArray(),
-        ], 200 );
+        return ResponseHelper::success( ['mapping' => $mapping->toArray()] );
     }
 
     /**
@@ -194,34 +183,24 @@ class ChannelController {
         $mapping = $this->repository->find( $id );
 
         if ( ! $mapping ) {
-            return new \WP_REST_Response( [
-                'message' => __( 'Channel mapping not found.', 'nozule' ),
-            ], 404 );
+            return ResponseHelper::notFound( __( 'Channel mapping not found.', 'nozule' ) );
         }
 
         $data = $this->extractMappingData( $request );
 
         if ( ! $this->validator->validateUpdate( $data, $id ) ) {
-            return new \WP_REST_Response( [
-                'message' => __( 'Validation failed.', 'nozule' ),
-                'errors'  => $this->validator->getErrors(),
-            ], 422 );
+            return ResponseHelper::error( __( 'Validation failed.', 'nozule' ), 422, $this->validator->getErrors() );
         }
 
         $updated = $this->repository->update( $id, $data );
 
         if ( ! $updated ) {
-            return new \WP_REST_Response( [
-                'message' => __( 'Failed to update channel mapping.', 'nozule' ),
-            ], 500 );
+            return ResponseHelper::error( __( 'Failed to update channel mapping.', 'nozule' ), 500 );
         }
 
         $mapping = $this->repository->find( $id );
 
-        return new \WP_REST_Response( [
-            'message' => __( 'Channel mapping updated.', 'nozule' ),
-            'mapping' => $mapping->toArray(),
-        ], 200 );
+        return ResponseHelper::success( ['mapping' => $mapping->toArray()], __( 'Channel mapping updated.', 'nozule' ) );
     }
 
     /**

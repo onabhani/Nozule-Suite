@@ -6,6 +6,7 @@ use Nozule\Modules\Bookings\Models\Booking;
 use Nozule\Modules\Bookings\Repositories\BookingRepository;
 use Nozule\Modules\Bookings\Services\BookingService;
 use Nozule\Modules\Rooms\Repositories\RoomRepository;
+use Nozule\Core\ResponseHelper;
 
 /**
  * REST controller for the admin dashboard.
@@ -94,17 +95,14 @@ class DashboardController {
 			? round( ( $inHouseCount / $totalRooms ) * 100, 1 )
 			: 0.0;
 
-		return new \WP_REST_Response( [
-			'success' => true,
-			'data'    => [
+		return ResponseHelper::success( [
 				'today_arrivals'   => count( $arrivals ),
 				'today_departures' => count( $departures ),
 				'in_house'         => $inHouseCount,
 				'total_rooms'      => $totalRooms,
 				'occupancy_rate'   => $occupancy,
 				'date'             => current_time( 'Y-m-d' ),
-			],
-		], 200 );
+			] );
 	}
 
 	/**
@@ -115,10 +113,7 @@ class DashboardController {
 	public function arrivals( \WP_REST_Request $request ): \WP_REST_Response {
 		$arrivals = $this->service->getTodayArrivals();
 
-		return new \WP_REST_Response( [
-			'success' => true,
-			'data'    => array_map( fn( Booking $b ) => $b->toArray(), $arrivals ),
-		], 200 );
+		return ResponseHelper::success( array_map( fn( Booking $b ) => $b->toArray(), $arrivals ) );
 	}
 
 	/**
@@ -129,10 +124,7 @@ class DashboardController {
 	public function departures( \WP_REST_Request $request ): \WP_REST_Response {
 		$departures = $this->service->getTodayDepartures();
 
-		return new \WP_REST_Response( [
-			'success' => true,
-			'data'    => array_map( fn( Booking $b ) => $b->toArray(), $departures ),
-		], 200 );
+		return ResponseHelper::success( array_map( fn( Booking $b ) => $b->toArray(), $departures ) );
 	}
 
 	/**
@@ -143,9 +135,6 @@ class DashboardController {
 	public function inHouse( \WP_REST_Request $request ): \WP_REST_Response {
 		$inHouse = $this->service->getInHouseGuests();
 
-		return new \WP_REST_Response( [
-			'success' => true,
-			'data'    => array_map( fn( Booking $b ) => $b->toArray(), $inHouse ),
-		], 200 );
+		return ResponseHelper::success( array_map( fn( Booking $b ) => $b->toArray(), $inHouse ) );
 	}
 }

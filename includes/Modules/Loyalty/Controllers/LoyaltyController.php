@@ -2,6 +2,7 @@
 
 namespace Nozule\Modules\Loyalty\Controllers;
 
+use Nozule\Core\ResponseHelper;
 use Nozule\Modules\Loyalty\Models\LoyaltyReward;
 use Nozule\Modules\Loyalty\Models\LoyaltyTier;
 use Nozule\Modules\Loyalty\Models\LoyaltyTransaction;
@@ -158,18 +159,15 @@ class LoyaltyController {
 		$page   = (int) ( $request->get_param( 'page' ) ?? 1 );
 		$result = $this->repository->getMembers( $filters, $page );
 
-		return new WP_REST_Response( [
-			'success' => true,
-			'data'    => [
-				'items'      => $result['members'],
-				'pagination' => [
-					'page'        => $page,
-					'per_page'    => (int) ( $filters['per_page'] ),
-					'total'       => $result['total'],
-					'total_pages' => $result['pages'],
-				],
+		return ResponseHelper::success( [
+			'items'      => $result['members'],
+			'pagination' => [
+				'page'        => $page,
+				'per_page'    => (int) ( $filters['per_page'] ),
+				'total'       => $result['total'],
+				'total_pages' => $result['pages'],
 			],
-		], 200 );
+		] );
 	}
 
 	/**
@@ -180,10 +178,7 @@ class LoyaltyController {
 		$member = $this->repository->getMember( $id );
 
 		if ( ! $member ) {
-			return new WP_REST_Response( [
-				'success' => false,
-				'message' => __( 'Loyalty member not found.', 'nozule' ),
-			], 404 );
+			return ResponseHelper::notFound( __( 'Loyalty member not found.', 'nozule' ) );
 		}
 
 		$transactions = $this->repository->getTransactions( $id, 1, 50 );
@@ -194,10 +189,7 @@ class LoyaltyController {
 			$transactions
 		);
 
-		return new WP_REST_Response( [
-			'success' => true,
-			'data'    => $member,
-		], 200 );
+		return ResponseHelper::success( $member );
 	}
 
 	/**
@@ -207,25 +199,15 @@ class LoyaltyController {
 		$guestId = (int) $request->get_param( 'guest_id' );
 
 		if ( ! $guestId ) {
-			return new WP_REST_Response( [
-				'success' => false,
-				'message' => __( 'Guest ID is required.', 'nozule' ),
-			], 400 );
+			return ResponseHelper::error( __( 'Guest ID is required.', 'nozule' ), 400 );
 		}
 
 		try {
 			$member = $this->service->enrollGuest( $guestId );
 
-			return new WP_REST_Response( [
-				'success' => true,
-				'message' => __( 'Guest enrolled successfully.', 'nozule' ),
-				'data'    => $member->toArray(),
-			], 201 );
+			return ResponseHelper::created( $member->toArray(), __( 'Guest enrolled successfully.', 'nozule' ) );
 		} catch ( \RuntimeException $e ) {
-			return new WP_REST_Response( [
-				'success' => false,
-				'message' => $e->getMessage(),
-			], 400 );
+			return ResponseHelper::error( $e->getMessage(), 400 );
 		}
 	}
 
@@ -238,10 +220,7 @@ class LoyaltyController {
 		$description = sanitize_text_field( $request->get_param( 'description' ) ?? '' );
 
 		if ( ! $points ) {
-			return new WP_REST_Response( [
-				'success' => false,
-				'message' => __( 'Points value is required and cannot be zero.', 'nozule' ),
-			], 400 );
+			return ResponseHelper::error( __( 'Points value is required and cannot be zero.', 'nozule' ), 400 );
 		}
 
 		if ( empty( $description ) ) {
@@ -251,16 +230,9 @@ class LoyaltyController {
 		try {
 			$transaction = $this->service->adjustPoints( $memberId, $points, $description );
 
-			return new WP_REST_Response( [
-				'success' => true,
-				'message' => __( 'Points adjusted successfully.', 'nozule' ),
-				'data'    => $transaction->toArray(),
-			], 200 );
+			return ResponseHelper::success( $transaction->toArray(), __( 'Points adjusted successfully.', 'nozule' ) );
 		} catch ( \RuntimeException $e ) {
-			return new WP_REST_Response( [
-				'success' => false,
-				'message' => $e->getMessage(),
-			], 400 );
+			return ResponseHelper::error( $e->getMessage(), 400 );
 		}
 	}
 
@@ -274,23 +246,16 @@ class LoyaltyController {
 		try {
 			$result = $this->service->redeemReward( $memberId, $rewardId );
 
-			return new WP_REST_Response( [
-				'success' => true,
-				'message' => sprintf(
-					/* translators: %s: Reward name */
-					__( 'Reward "%s" redeemed successfully.', 'nozule' ),
-					$result['reward']->name
-				),
-				'data' => [
-					'transaction' => $result['transaction']->toArray(),
-					'reward'      => $result['reward']->toArray(),
-				],
-			], 200 );
+			return ResponseHelper::success( [
+				'transaction' => $result['transaction']->toArray(),
+				'reward'      => $result['reward']->toArray(),
+			], sprintf(
+				/* translators: %s: Reward name */
+				__( 'Reward "%s" redeemed successfully.', 'nozule' ),
+				$result['reward']->name
+			) );
 		} catch ( \RuntimeException $e ) {
-			return new WP_REST_Response( [
-				'success' => false,
-				'message' => $e->getMessage(),
-			], 400 );
+			return ResponseHelper::error( $e->getMessage(), 400 );
 		}
 	}
 
@@ -304,15 +269,12 @@ class LoyaltyController {
 	public function listTiers( WP_REST_Request $request ): WP_REST_Response {
 		$tiers = $this->repository->getTiers();
 
-		return new WP_REST_Response( [
-			'success' => true,
-			'data'    => array_map(
-				function ( LoyaltyTier $tier ) {
-					return $tier->toArray();
-				},
-				$tiers
-			),
-		], 200 );
+		return ResponseHelper::success( array_map(
+			function ( LoyaltyTier $tier ) {
+				return $tier->toArray();
+			},
+			$tiers
+		) );
 	}
 
 	/**
@@ -331,10 +293,7 @@ class LoyaltyController {
 		];
 
 		if ( empty( $data['name'] ) ) {
-			return new WP_REST_Response( [
-				'success' => false,
-				'message' => __( 'Tier name is required.', 'nozule' ),
-			], 400 );
+			return ResponseHelper::error( __( 'Tier name is required.', 'nozule' ), 400 );
 		}
 
 		$id = $request->get_param( 'id' );
@@ -345,19 +304,12 @@ class LoyaltyController {
 		$tier = $this->repository->saveTier( $data );
 
 		if ( ! $tier ) {
-			return new WP_REST_Response( [
-				'success' => false,
-				'message' => __( 'Failed to save tier.', 'nozule' ),
-			], 500 );
+			return ResponseHelper::error( __( 'Failed to save tier.', 'nozule' ), 500 );
 		}
 
-		return new WP_REST_Response( [
-			'success' => true,
-			'message' => $id
-				? __( 'Tier updated successfully.', 'nozule' )
-				: __( 'Tier created successfully.', 'nozule' ),
-			'data'    => $tier->toArray(),
-		], $id ? 200 : 201 );
+		return $id
+			? ResponseHelper::success( $tier->toArray(), __( 'Tier updated successfully.', 'nozule' ) )
+			: ResponseHelper::created( $tier->toArray(), __( 'Tier created successfully.', 'nozule' ) );
 	}
 
 	/**

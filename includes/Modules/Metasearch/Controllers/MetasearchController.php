@@ -2,6 +2,7 @@
 
 namespace Nozule\Modules\Metasearch\Controllers;
 
+use Nozule\Core\ResponseHelper;
 use Nozule\Modules\Metasearch\Services\GoogleHotelAdsService;
 
 /**
@@ -91,9 +92,7 @@ class MetasearchController {
 	 * Returns all GHA / metasearch configuration values.
 	 */
 	public function getSettings( \WP_REST_Request $request ): \WP_REST_Response {
-		return new \WP_REST_Response( [
-			'settings' => $this->service->getSettings(),
-		], 200 );
+		return ResponseHelper::success( [ 'settings' => $this->service->getSettings() ] );
 	}
 
 	/**
@@ -105,18 +104,13 @@ class MetasearchController {
 		$body = $request->get_json_params();
 
 		if ( empty( $body ) || ! is_array( $body ) ) {
-			return new \WP_REST_Response( [
-				'message' => __( 'Request body must be a JSON object.', 'nozule' ),
-			], 400 );
+			return ResponseHelper::error( __( 'Request body must be a JSON object.', 'nozule' ), 400 );
 		}
 
 		$sanitized = $this->sanitizeSettings( $body );
 		$this->service->updateSettings( $sanitized );
 
-		return new \WP_REST_Response( [
-			'message'  => __( 'Metasearch settings updated.', 'nozule' ),
-			'settings' => $this->service->getSettings(),
-		], 200 );
+		return ResponseHelper::success( [ 'settings' => $this->service->getSettings() ], __( 'Metasearch settings updated.', 'nozule' ) );
 	}
 
 	/**
@@ -127,16 +121,12 @@ class MetasearchController {
 	 */
 	public function feedPreview( \WP_REST_Request $request ): \WP_REST_Response {
 		if ( ! $this->service->isEnabled() ) {
-			return new \WP_REST_Response( [
-				'message' => __( 'Google Hotel Ads integration is not enabled.', 'nozule' ),
-			], 400 );
+			return ResponseHelper::error( __( 'Google Hotel Ads integration is not enabled.', 'nozule' ), 400 );
 		}
 
 		$xml = $this->service->generatePriceFeedXml( 10 );
 
-		return new \WP_REST_Response( [
-			'xml' => $xml,
-		], 200 );
+		return ResponseHelper::success( [ 'xml' => $xml ] );
 	}
 
 	/**
@@ -147,29 +137,19 @@ class MetasearchController {
 	 */
 	public function testFeed( \WP_REST_Request $request ): \WP_REST_Response {
 		if ( ! $this->service->isEnabled() ) {
-			return new \WP_REST_Response( [
-				'message' => __( 'Google Hotel Ads integration is not enabled.', 'nozule' ),
-				'success' => false,
-			], 400 );
+			return ResponseHelper::error( __( 'Google Hotel Ads integration is not enabled.', 'nozule' ), 400 );
 		}
 
 		try {
 			$stats = $this->service->getFeedStats();
 
-			return new \WP_REST_Response( [
-				'message' => __( 'Feed generation test passed.', 'nozule' ),
-				'success' => true,
-				'stats'   => $stats,
-			], 200 );
+			return ResponseHelper::success( [ 'stats' => $stats ], __( 'Feed generation test passed.', 'nozule' ) );
 		} catch ( \Throwable $e ) {
-			return new \WP_REST_Response( [
-				'message' => sprintf(
-					/* translators: %s: error message */
-					__( 'Feed generation failed: %s', 'nozule' ),
-					$e->getMessage()
-				),
-				'success' => false,
-			], 500 );
+			return ResponseHelper::error( sprintf(
+				/* translators: %s: error message */
+				__( 'Feed generation failed: %s', 'nozule' ),
+				$e->getMessage()
+			), 500 );
 		}
 	}
 
@@ -185,9 +165,7 @@ class MetasearchController {
 	 */
 	public function publicFeed( \WP_REST_Request $request ): \WP_REST_Response {
 		if ( ! $this->service->isEnabled() ) {
-			return new \WP_REST_Response( [
-				'message' => __( 'Feed not available.', 'nozule' ),
-			], 503 );
+			return ResponseHelper::error( __( 'Feed not available.', 'nozule' ), 503 );
 		}
 
 		$xml = $this->service->generatePriceFeedXml();

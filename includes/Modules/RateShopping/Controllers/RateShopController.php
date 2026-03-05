@@ -2,6 +2,7 @@
 
 namespace Nozule\Modules\RateShopping\Controllers;
 
+use Nozule\Core\ResponseHelper;
 use Nozule\Modules\RateShopping\Models\Competitor;
 use Nozule\Modules\RateShopping\Models\RateResult;
 use Nozule\Modules\RateShopping\Services\RateShopService;
@@ -131,10 +132,7 @@ class RateShopController {
 			return $c->toArray();
 		}, $competitors );
 
-		return new WP_REST_Response( [
-			'success' => true,
-			'data'    => $items,
-		], 200 );
+		return ResponseHelper::success( $items );
 	}
 
 	/**
@@ -168,20 +166,15 @@ class RateShopController {
 		}
 
 		if ( $result instanceof Competitor ) {
-			return new WP_REST_Response( [
-				'success' => true,
-				'message' => $id
-					? __( 'Competitor updated successfully.', 'nozule' )
-					: __( 'Competitor created successfully.', 'nozule' ),
-				'data'    => $result->toArray(),
-			], $id ? 200 : 201 );
+			$message = $id
+				? __( 'Competitor updated successfully.', 'nozule' )
+				: __( 'Competitor created successfully.', 'nozule' );
+			return $id
+				? ResponseHelper::success( $result->toArray(), $message )
+				: ResponseHelper::created( $result->toArray(), $message );
 		}
 
-		return new WP_REST_Response( [
-			'success' => false,
-			'message' => __( 'Validation failed.', 'nozule' ),
-			'errors'  => $result,
-		], 422 );
+		return ResponseHelper::error( __( 'Validation failed.', 'nozule' ), 422, $result );
 	}
 
 	/**
@@ -193,19 +186,12 @@ class RateShopController {
 		$result = $this->service->deleteCompetitor( $id );
 
 		if ( $result === true ) {
-			return new WP_REST_Response( [
-				'success' => true,
-				'message' => __( 'Competitor deleted successfully.', 'nozule' ),
-			], 200 );
+			return ResponseHelper::success( null, __( 'Competitor deleted successfully.', 'nozule' ) );
 		}
 
 		$statusCode = isset( $result['id'] ) ? 404 : 422;
 
-		return new WP_REST_Response( [
-			'success' => false,
-			'message' => __( 'Failed to delete competitor.', 'nozule' ),
-			'errors'  => $result,
-		], $statusCode );
+		return ResponseHelper::error( __( 'Failed to delete competitor.', 'nozule' ), $statusCode, $result );
 	}
 
 	/**
@@ -228,10 +214,7 @@ class RateShopController {
 			return $r->toArray();
 		}, $results );
 
-		return new WP_REST_Response( [
-			'success' => true,
-			'data'    => $items,
-		], 200 );
+		return ResponseHelper::success( $items );
 	}
 
 	/**
@@ -256,18 +239,10 @@ class RateShopController {
 		);
 
 		if ( $result instanceof RateResult ) {
-			return new WP_REST_Response( [
-				'success' => true,
-				'message' => __( 'Rate recorded successfully.', 'nozule' ),
-				'data'    => $result->toArray(),
-			], 201 );
+			return ResponseHelper::created( $result->toArray(), __( 'Rate recorded successfully.', 'nozule' ) );
 		}
 
-		return new WP_REST_Response( [
-			'success' => false,
-			'message' => __( 'Failed to record rate.', 'nozule' ),
-			'errors'  => $result,
-		], 422 );
+		return ResponseHelper::error( __( 'Failed to record rate.', 'nozule' ), 422, $result );
 	}
 
 	/**
@@ -298,18 +273,19 @@ class RateShopController {
 
 		$allSucceeded = empty( $errors );
 
-		return new WP_REST_Response( [
-			'success'    => $allSucceeded,
-			'message'    => $allSucceeded
-				? __( 'All rates recorded successfully.', 'nozule' )
-				: sprintf(
-					__( '%d of %d rates recorded. Some entries had errors.', 'nozule' ),
-					count( $results ),
-					count( $entries )
-				),
-			'data'       => $results,
-			'errors'     => $errors,
-		], $allSucceeded ? 201 : 207 );
+		if ( $allSucceeded ) {
+			return ResponseHelper::created( $results, __( 'All rates recorded successfully.', 'nozule' ) );
+		}
+
+		return ResponseHelper::error(
+			sprintf(
+				__( '%d of %d rates recorded. Some entries had errors.', 'nozule' ),
+				count( $results ),
+				count( $entries )
+			),
+			207,
+			$errors
+		);
 	}
 
 	/**

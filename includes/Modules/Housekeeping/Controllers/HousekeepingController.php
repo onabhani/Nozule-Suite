@@ -3,6 +3,7 @@
 namespace Nozule\Modules\Housekeeping\Controllers;
 
 use Nozule\Core\HotelRoles;
+use Nozule\Core\ResponseHelper;
 use Nozule\Modules\Housekeeping\Models\HousekeepingTask;
 use Nozule\Modules\Housekeeping\Services\HousekeepingService;
 use WP_REST_Request;
@@ -133,11 +134,7 @@ class HousekeepingController {
 			$tasks
 		);
 
-		return new WP_REST_Response( [
-			'success' => true,
-			'data'    => $data,
-			'total'   => count( $data ),
-		], 200 );
+		return ResponseHelper::success( $data, null, [ 'total' => count( $data ) ] );
 	}
 
 	/**
@@ -148,16 +145,10 @@ class HousekeepingController {
 		$task = $this->housekeepingService->findTask( $id );
 
 		if ( ! $task ) {
-			return new WP_REST_Response( [
-				'success' => false,
-				'message' => __( 'Housekeeping task not found.', 'nozule' ),
-			], 404 );
+			return ResponseHelper::notFound( __( 'Housekeeping task not found.', 'nozule' ) );
 		}
 
-		return new WP_REST_Response( [
-			'success' => true,
-			'data'    => $task->toArray(),
-		], 200 );
+		return ResponseHelper::success( $task->toArray() );
 	}
 
 	/**
@@ -169,18 +160,10 @@ class HousekeepingController {
 		$result = $this->housekeepingService->createTask( $data );
 
 		if ( $result instanceof HousekeepingTask ) {
-			return new WP_REST_Response( [
-				'success' => true,
-				'message' => __( 'Housekeeping task created successfully.', 'nozule' ),
-				'data'    => $result->toArray(),
-			], 201 );
+			return ResponseHelper::created( $result->toArray(), __( 'Housekeeping task created successfully.', 'nozule' ) );
 		}
 
-		return new WP_REST_Response( [
-			'success' => false,
-			'message' => __( 'Validation failed.', 'nozule' ),
-			'errors'  => $result,
-		], 422 );
+		return ResponseHelper::error( __( 'Validation failed.', 'nozule' ), 422, $result );
 	}
 
 	/**
@@ -193,26 +176,14 @@ class HousekeepingController {
 		$result = $this->housekeepingService->updateTask( $id, $data );
 
 		if ( $result instanceof HousekeepingTask ) {
-			return new WP_REST_Response( [
-				'success' => true,
-				'message' => __( 'Housekeeping task updated successfully.', 'nozule' ),
-				'data'    => $result->toArray(),
-			], 200 );
+			return ResponseHelper::success( $result->toArray(), __( 'Housekeeping task updated successfully.', 'nozule' ) );
 		}
 
 		if ( isset( $result['id'] ) ) {
-			return new WP_REST_Response( [
-				'success' => false,
-				'message' => $result['id'][0],
-				'errors'  => $result,
-			], 404 );
+			return ResponseHelper::error( $result['id'][0], 404, $result );
 		}
 
-		return new WP_REST_Response( [
-			'success' => false,
-			'message' => __( 'Validation failed.', 'nozule' ),
-			'errors'  => $result,
-		], 422 );
+		return ResponseHelper::error( __( 'Validation failed.', 'nozule' ), 422, $result );
 	}
 
 	/**
@@ -223,27 +194,16 @@ class HousekeepingController {
 		$status = sanitize_text_field( $request->get_param( 'status' ) ?? '' );
 
 		if ( ! $status ) {
-			return new WP_REST_Response( [
-				'success' => false,
-				'message' => __( 'Status is required.', 'nozule' ),
-			], 422 );
+			return ResponseHelper::error( __( 'Status is required.', 'nozule' ), 422 );
 		}
 
 		$result = $this->housekeepingService->updateTaskStatus( $id, $status );
 
 		if ( $result instanceof HousekeepingTask ) {
-			return new WP_REST_Response( [
-				'success' => true,
-				'message' => __( 'Task status updated.', 'nozule' ),
-				'data'    => $result->toArray(),
-			], 200 );
+			return ResponseHelper::success( $result->toArray(), __( 'Task status updated.', 'nozule' ) );
 		}
 
-		return new WP_REST_Response( [
-			'success' => false,
-			'message' => __( 'Failed to update task status.', 'nozule' ),
-			'errors'  => $result,
-		], 422 );
+		return ResponseHelper::error( __( 'Failed to update task status.', 'nozule' ), 422, $result );
 	}
 
 	/**
@@ -254,27 +214,16 @@ class HousekeepingController {
 		$userId = absint( $request->get_param( 'assigned_to' ) ?? 0 );
 
 		if ( ! $userId ) {
-			return new WP_REST_Response( [
-				'success' => false,
-				'message' => __( 'assigned_to (user ID) is required.', 'nozule' ),
-			], 422 );
+			return ResponseHelper::error( __( 'assigned_to (user ID) is required.', 'nozule' ), 422 );
 		}
 
 		$result = $this->housekeepingService->assignTask( $id, $userId );
 
 		if ( $result instanceof HousekeepingTask ) {
-			return new WP_REST_Response( [
-				'success' => true,
-				'message' => __( 'Task assigned successfully.', 'nozule' ),
-				'data'    => $result->toArray(),
-			], 200 );
+			return ResponseHelper::success( $result->toArray(), __( 'Task assigned successfully.', 'nozule' ) );
 		}
 
-		return new WP_REST_Response( [
-			'success' => false,
-			'message' => __( 'Failed to assign task.', 'nozule' ),
-			'errors'  => $result,
-		], 422 );
+		return ResponseHelper::error( __( 'Failed to assign task.', 'nozule' ), 422, $result );
 	}
 
 	/**
@@ -283,10 +232,7 @@ class HousekeepingController {
 	public function stats( WP_REST_Request $request ): WP_REST_Response {
 		$counts = $this->housekeepingService->getStatusCounts();
 
-		return new WP_REST_Response( [
-			'success' => true,
-			'data'    => $counts,
-		], 200 );
+		return ResponseHelper::success( $counts );
 	}
 
 	/**
@@ -319,10 +265,7 @@ class HousekeepingController {
 			];
 		}, $users );
 
-		return new WP_REST_Response( [
-			'success' => true,
-			'data'    => array_values( $data ),
-		], 200 );
+		return ResponseHelper::success( array_values( $data ) );
 	}
 
 	/**

@@ -7,6 +7,7 @@ use Nozule\Modules\Messaging\Models\EmailTemplate;
 use Nozule\Modules\Messaging\Repositories\EmailLogRepository;
 use Nozule\Modules\Messaging\Repositories\EmailTemplateRepository;
 use Nozule\Modules\Messaging\Services\EmailService;
+use Nozule\Core\ResponseHelper;
 
 /**
  * REST controller for email template and email log management.
@@ -130,14 +131,14 @@ class EmailTemplateController {
 			'page'          => (int) ( $request->get_param( 'page' ) ?? 1 ),
 		] );
 
-		return new \WP_REST_Response( [
-			'success' => true,
-			'data'    => array_map( fn( EmailTemplate $t ) => $t->toArray(), $result['items'] ),
-			'meta'    => [
+		return ResponseHelper::success(
+			array_map( fn( EmailTemplate $t ) => $t->toArray(), $result['items'] ),
+			null,
+			[
 				'total' => $result['total'],
 				'pages' => $result['pages'],
-			],
-		], 200 );
+			]
+		);
 	}
 
 	/**
@@ -149,34 +150,22 @@ class EmailTemplateController {
 		$data = $this->sanitizeTemplateInput( $request->get_params() );
 
 		if ( empty( $data['name'] ) || empty( $data['slug'] ) || empty( $data['subject'] ) || empty( $data['body'] ) ) {
-			return new \WP_REST_Response( [
-				'success' => false,
-				'message' => __( 'Name, slug, subject, and body are required.', 'nozule' ),
-			], 400 );
+			return ResponseHelper::error( __( 'Name, slug, subject, and body are required.', 'nozule' ), 400 );
 		}
 
 		// Check for duplicate slug.
 		$existing = $this->templateRepo->findBySlug( $data['slug'] );
 		if ( $existing ) {
-			return new \WP_REST_Response( [
-				'success' => false,
-				'message' => __( 'A template with this slug already exists.', 'nozule' ),
-			], 409 );
+			return ResponseHelper::error( __( 'A template with this slug already exists.', 'nozule' ), 409 );
 		}
 
 		$template = $this->templateRepo->create( $data );
 
 		if ( ! $template ) {
-			return new \WP_REST_Response( [
-				'success' => false,
-				'message' => __( 'Failed to create email template.', 'nozule' ),
-			], 500 );
+			return ResponseHelper::error( __( 'Failed to create email template.', 'nozule' ), 500 );
 		}
 
-		return new \WP_REST_Response( [
-			'success' => true,
-			'data'    => $template->toArray(),
-		], 201 );
+		return ResponseHelper::created( $template->toArray() );
 	}
 
 	/**
@@ -188,16 +177,10 @@ class EmailTemplateController {
 		$template = $this->templateRepo->find( (int) $request->get_param( 'id' ) );
 
 		if ( ! $template ) {
-			return new \WP_REST_Response( [
-				'success' => false,
-				'message' => __( 'Email template not found.', 'nozule' ),
-			], 404 );
+			return ResponseHelper::notFound( __( 'Email template not found.', 'nozule' ) );
 		}
 
-		return new \WP_REST_Response( [
-			'success' => true,
-			'data'    => $template->toArray(),
-		], 200 );
+		return ResponseHelper::success( $template->toArray() );
 	}
 
 	/**
@@ -210,10 +193,7 @@ class EmailTemplateController {
 		$template = $this->templateRepo->find( $id );
 
 		if ( ! $template ) {
-			return new \WP_REST_Response( [
-				'success' => false,
-				'message' => __( 'Email template not found.', 'nozule' ),
-			], 404 );
+			return ResponseHelper::notFound( __( 'Email template not found.', 'nozule' ) );
 		}
 
 		$data = $this->sanitizeTemplateInput( $request->get_params() );
@@ -223,26 +203,17 @@ class EmailTemplateController {
 		if ( isset( $data['slug'] ) && $data['slug'] !== $template->slug ) {
 			$existing = $this->templateRepo->findBySlug( $data['slug'] );
 			if ( $existing ) {
-				return new \WP_REST_Response( [
-					'success' => false,
-					'message' => __( 'A template with this slug already exists.', 'nozule' ),
-				], 409 );
+				return ResponseHelper::error( __( 'A template with this slug already exists.', 'nozule' ), 409 );
 			}
 		}
 
 		$success = $this->templateRepo->update( $id, $data );
 
 		if ( ! $success ) {
-			return new \WP_REST_Response( [
-				'success' => false,
-				'message' => __( 'Failed to update email template.', 'nozule' ),
-			], 500 );
+			return ResponseHelper::error( __( 'Failed to update email template.', 'nozule' ), 500 );
 		}
 
-		return new \WP_REST_Response( [
-			'success' => true,
-			'data'    => $this->templateRepo->findOrFail( $id )->toArray(),
-		], 200 );
+		return ResponseHelper::success( $this->templateRepo->findOrFail( $id )->toArray() );
 	}
 
 	/**
@@ -255,25 +226,16 @@ class EmailTemplateController {
 		$template = $this->templateRepo->find( $id );
 
 		if ( ! $template ) {
-			return new \WP_REST_Response( [
-				'success' => false,
-				'message' => __( 'Email template not found.', 'nozule' ),
-			], 404 );
+			return ResponseHelper::notFound( __( 'Email template not found.', 'nozule' ) );
 		}
 
 		$deleted = $this->templateRepo->delete( $id );
 
 		if ( ! $deleted ) {
-			return new \WP_REST_Response( [
-				'success' => false,
-				'message' => __( 'Failed to delete email template.', 'nozule' ),
-			], 500 );
+			return ResponseHelper::error( __( 'Failed to delete email template.', 'nozule' ), 500 );
 		}
 
-		return new \WP_REST_Response( [
-			'success' => true,
-			'message' => __( 'Email template deleted.', 'nozule' ),
-		], 200 );
+		return ResponseHelper::success( null, __( 'Email template deleted.', 'nozule' ) );
 	}
 
 	/**
@@ -286,10 +248,7 @@ class EmailTemplateController {
 		$template = $this->templateRepo->find( $id );
 
 		if ( ! $template ) {
-			return new \WP_REST_Response( [
-				'success' => false,
-				'message' => __( 'Email template not found.', 'nozule' ),
-			], 404 );
+			return ResponseHelper::notFound( __( 'Email template not found.', 'nozule' ) );
 		}
 
 		// Use provided variables or build sample data.
@@ -311,13 +270,10 @@ class EmailTemplateController {
 		$renderedSubject = $this->service->renderTemplate( $subject, $variables );
 		$renderedBody    = $this->service->renderTemplate( $body, $variables );
 
-		return new \WP_REST_Response( [
-			'success' => true,
-			'data'    => [
-				'subject' => $renderedSubject,
-				'body'    => $renderedBody,
-			],
-		], 200 );
+		return ResponseHelper::success( [
+			'subject' => $renderedSubject,
+			'body'    => $renderedBody,
+		] );
 	}
 
 	/**
@@ -330,40 +286,28 @@ class EmailTemplateController {
 		$template = $this->templateRepo->find( $id );
 
 		if ( ! $template ) {
-			return new \WP_REST_Response( [
-				'success' => false,
-				'message' => __( 'Email template not found.', 'nozule' ),
-			], 404 );
+			return ResponseHelper::notFound( __( 'Email template not found.', 'nozule' ) );
 		}
 
 		$currentUser = wp_get_current_user();
 		$toEmail     = $currentUser->user_email;
 
 		if ( empty( $toEmail ) ) {
-			return new \WP_REST_Response( [
-				'success' => false,
-				'message' => __( 'Your user account does not have an email address.', 'nozule' ),
-			], 400 );
+			return ResponseHelper::error( __( 'Your user account does not have an email address.', 'nozule' ), 400 );
 		}
 
 		$variables = $this->getSampleVariables();
 		$sent      = $this->service->sendTemplate( $template->id, $variables, $toEmail );
 
 		if ( ! $sent ) {
-			return new \WP_REST_Response( [
-				'success' => false,
-				'message' => __( 'Failed to send test email.', 'nozule' ),
-			], 500 );
+			return ResponseHelper::error( __( 'Failed to send test email.', 'nozule' ), 500 );
 		}
 
-		return new \WP_REST_Response( [
-			'success' => true,
-			'message' => sprintf(
-				/* translators: %s: recipient email address */
-				__( 'Test email sent to %s.', 'nozule' ),
-				$toEmail
-			),
-		], 200 );
+		return ResponseHelper::success( null, sprintf(
+			/* translators: %s: recipient email address */
+			__( 'Test email sent to %s.', 'nozule' ),
+			$toEmail
+		) );
 	}
 
 	// ── Email Log Endpoint ──────────────────────────────────────────
@@ -383,14 +327,14 @@ class EmailTemplateController {
 			'page'     => (int) ( $request->get_param( 'page' ) ?? 1 ),
 		] );
 
-		return new \WP_REST_Response( [
-			'success' => true,
-			'data'    => array_map( fn( EmailLog $log ) => $log->toArray(), $result['items'] ),
-			'meta'    => [
+		return ResponseHelper::success(
+			array_map( fn( EmailLog $log ) => $log->toArray(), $result['items'] ),
+			null,
+			[
 				'total' => $result['total'],
 				'pages' => $result['pages'],
-			],
-		], 200 );
+			]
+		);
 	}
 
 	// ── Helpers ─────────────────────────────────────────────────────
