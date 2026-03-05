@@ -234,9 +234,9 @@ class WhatsAppService {
 			'room_number'    => $room->room_number ?? '',
 			'total_amount'   => $booking->total_amount ?? '0.00',
 			'currency'       => $booking->currency ?? $this->settings->get( 'currency.default', 'USD' ),
-			'hotel_name'     => $this->settings->get( 'hotel.name', get_bloginfo( 'name' ) ),
+			'hotel_name'     => $this->settings->get( 'hotel.name' ),
 			'hotel_phone'    => $this->settings->get( 'hotel.phone', '' ),
-			'hotel_email'    => $this->settings->get( 'hotel.email', get_option( 'admin_email' ) ),
+			'hotel_email'    => $this->settings->get( 'hotel.email' ),
 			'locale'         => $guest->language ?? 'ar',
 		];
 	}

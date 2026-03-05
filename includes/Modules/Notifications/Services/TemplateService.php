@@ -114,7 +114,7 @@ class TemplateService {
 		$vars = array_merge( $this->getHotelVars(), $vars );
 
 		// Add utility variables.
-		$vars['current_date'] = wp_date( get_option( 'date_format', 'Y-m-d' ) );
+		$vars['current_date'] = wp_date( $this->settings->get( 'display.date_format', 'Y-m-d' ) );
 		$vars['current_year'] = wp_date( 'Y' );
 
 		// Calculate balance_due if not provided.
@@ -288,8 +288,8 @@ class TemplateService {
 	 */
 	private function getHotelVars(): array {
 		return [
-			'hotel_name'    => $this->settings->get( 'hotel.name', get_bloginfo( 'name' ) ),
-			'hotel_email'   => $this->settings->get( 'hotel.email', get_option( 'admin_email' ) ),
+			'hotel_name'    => $this->settings->get( 'hotel.name' ),
+			'hotel_email'   => $this->settings->get( 'hotel.email' ),
 			'hotel_phone'   => $this->settings->get( 'hotel.phone', '' ),
 			'hotel_address' => $this->settings->get( 'hotel.address', '' ),
 		];
@@ -306,7 +306,7 @@ class TemplateService {
 			return '';
 		}
 
-		$hotel_name = esc_html( $this->settings->get( 'hotel.name', get_bloginfo( 'name' ) ) );
+		$hotel_name = esc_html( $this->settings->get( 'hotel.name' ) );
 		$body       = nl2br( esc_html( $text ) );
 
 		return <<<HTML
