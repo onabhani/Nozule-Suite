@@ -14,11 +14,11 @@ use Nozule\Modules\Employees\Repositories\EmployeeRepository;
 class SyncEmployeesCommand {
 
 	private const SYNC_ROLES = [
-		'nzl_admin',
-		'nzl_staff',
 		'nzl_manager',
 		'nzl_reception',
-		'nzl_housekeeping',
+		'nzl_housekeeper',
+		'nzl_finance',
+		'nzl_concierge',
 	];
 
 	/**

@@ -20,7 +20,7 @@
 
 ## 1. Architecture Overview
 
-```
+```text
 Frontend:  Alpine.js 3.x + Tailwind CSS (both CDN, no build step)
 API:       WordPress REST API (205 routes under /wp-json/nozule/v1)
 Backend:   PHP 8.0+ with PSR-4 autoloading, custom DI container
@@ -54,7 +54,7 @@ External:  Booking.com (OTA XML), Odoo (JSON-RPC), WhatsApp (Meta Graph API)
 
 The `Database` class (`includes/Core/Database.php:10-117`) wraps the global `$wpdb` instance. Every repository builds raw SQL strings with `{$table}` interpolation:
 
-```
+```text
 includes/Core/Database.php:12-14          — Constructor pulls global $wpdb
 includes/Core/BaseRepository.php:34       — "SELECT * FROM {$table} WHERE id = %d"
 includes/Core/BaseRepository.php:41       — "SELECT * FROM {$table} ORDER BY ..."
@@ -63,7 +63,7 @@ includes/Core/BaseRepository.php:91-107   — Manual condition building for coun
 ```
 
 Concrete repositories compound this:
-```
+```text
 includes/Modules/Rooms/Repositories/RoomRepository.php:26-28         — Raw SQL per method
 includes/Modules/Rooms/Repositories/InventoryRepository.php:79-100   — Complex subquery SQL
 includes/Modules/Bookings/Repositories/BookingRepository.php:244-333 — Manual pagination SQL
@@ -89,7 +89,7 @@ public function dispatch(string $event, ...$args): void {
 ```
 
 Domain events are fired from core business logic:
-```
+```text
 includes/Modules/Bookings/Services/BookingService.php:175    — do_action('nozule/booking/created')
 includes/Modules/Bookings/Services/BookingService.php:221    — do_action('nozule/booking/confirmed')
 includes/Modules/Bookings/Services/BookingService.php:289    — do_action('nozule/booking/cancelled')
@@ -100,7 +100,7 @@ includes/Modules/Bookings/Services/BookingService.php:545    — do_action('nozu
 ```
 
 12+ modules subscribe to these events via `add_action()`:
-```
+```text
 includes/Modules/Notifications/NotificationsModule.php:70-83     — 6 booking event listeners
 includes/Modules/Integrations/Services/IntegrationService.php:35-44 — 7+ event listeners
 includes/Modules/Housekeeping/HousekeepingModule.php:95          — checked_out listener
@@ -121,7 +121,7 @@ includes/Modules/Review/ReviewModule.php:71                      — checked_out
 **Severity: HIGH** | **Files affected: 39 controllers** | **Effort: 1-2 weeks**
 
 All API routes are registered through WordPress REST API:
-```
+```text
 includes/API/RestController.php          — 25 core routes
 includes/API/SSEController.php           — 1 SSE route
 + 37 module controllers                  — 179 additional routes
@@ -137,7 +137,7 @@ register_rest_route('nzl/v1', '/admin/bookings', [
 ```
 
 Controller methods receive `WP_REST_Request` and return `WP_REST_Response`:
-```
+```text
 All 39 controllers accept WP_REST_Request as parameter
 All 39 controllers return WP_REST_Response or WP_Error
 ```
@@ -156,7 +156,7 @@ All 39 controllers return WP_REST_Response or WP_Error
 - `nzl_manager`, `nzl_reception`, `nzl_housekeeper`, `nzl_finance`, `nzl_concierge`
 
 15+ custom capabilities checked across 98 instances:
-```
+```text
 current_user_can('nzl_admin')              — Admin-level access
 current_user_can('nzl_staff')              — Staff-level access
 current_user_can('nzl_manage_rooms')       — Room management
@@ -170,7 +170,7 @@ current_user_can('nzl_manage_pos')         — POS access
 ```
 
 Additional auth dependencies:
-```
+```text
 includes/Modules/Bookings/Services/BookingService.php:132,152,334,384,541 — get_current_user_id()
 includes/Admin/StaffIsolation.php:20-41  — 7 WordPress admin hooks for multi-property isolation
 ```
@@ -213,14 +213,14 @@ WordPress functions used directly in services (not just bootstrap code):
 **Severity: MEDIUM** | **Files affected: 36 templates + 38 JS files** | **Effort: 2-4 weeks (for React rewrite)**
 
 Templates use Alpine.js directives within WordPress PHP templates:
-```
+```text
 templates/admin/*.php  — 25 files with x-data, x-for, x-if, x-text directives
 templates/public/*.php — 4 files for booking widget, room cards, etc.
 templates/emails/*.php — 2 email templates
 ```
 
 Each template pairs with an Alpine.js component:
-```
+```text
 assets/js/admin/*.js     — 26 admin Alpine.js components
 assets/js/components/*.js — 5 public Alpine.js components
 ```
@@ -237,7 +237,7 @@ All JS talks to `/wp-json/nozule/v1` with WordPress nonces for auth.
 
 **Severity: LOW** | **Files affected: 5** | **Effort: 2 days**
 
-```
+```text
 includes/Core/Activator.php:212  — nzl_daily_maintenance (daily)
 includes/Core/Activator.php:216  — nzl_send_reminders (hourly)
 includes/Core/Plugin.php         — nzl_daily_maintenance, nzl_send_reminders handlers
@@ -254,7 +254,7 @@ includes/Modules/Channels/ChannelSyncModule.php:134-147 — pull/push cron jobs
 
 **Severity: MEDIUM** | **Risk: credential exposure on DB compromise**
 
-```
+```text
 includes/Modules/Integrations/Services/OdooConnector.php:39   — Odoo API key in settings table
 includes/Modules/Channels/Services/BookingComApiClient.php:24-26 — Password in class property
 includes/Modules/WhatsApp/Services/WhatsAppService.php         — WhatsApp access token in settings
@@ -270,7 +270,7 @@ All credentials stored as plaintext in `nzl_settings` table. A SQL injection or 
 
 **Severity: LOW** | **Risk: minimal (sanitized, but not ideal)**
 
-```
+```text
 includes/Admin/StaffIsolation.php:138 — $_GET['page'] with sanitize_text_field()
 ```
 
@@ -294,7 +294,7 @@ The public `POST /bookings` endpoint (`includes/API/RestController.php`) has no 
 
 **Severity: LOW** | **Risk: missed events under concurrent load**
 
-```
+```text
 includes/API/SSEController.php:137,149,158 — get_transient/set_transient for event queue
 ```
 
@@ -310,7 +310,7 @@ WordPress transients are not atomic. Under concurrent SSE connections, events ca
 
 **Severity: HIGH** | **Impact: daily cron can be slow with many pending bookings**
 
-```
+```text
 includes/Modules/Bookings/Services/BookingService.php:437-485
 ```
 
@@ -335,7 +335,7 @@ foreach ($candidates as $booking) {
 
 **Severity: HIGH** | **Impact: slow OTA sync under many room type × rate plan combinations**
 
-```
+```text
 includes/Modules/Channels/Services/ChannelSyncService.php:128-149
 ```
 
@@ -373,7 +373,7 @@ Not cached but should be:
 
 **Severity: LOW** | **Impact: 30+ HTTP requests per admin page load**
 
-```
+```text
 includes/Admin/AdminAssets.php — Enqueues 30+ separate JS/CSS files
 ```
 
@@ -387,7 +387,7 @@ Each admin page loads: Tailwind CSS (CDN) + admin.css + RTL CSS + api.js + utils
 
 **Severity: MEDIUM** | **Impact: slow queries as data grows**
 
-```
+```text
 migrations/001_create_tables.php
 ```
 
@@ -456,7 +456,7 @@ These fixes improve the current system AND reduce migration friction:
 
 Create interfaces that both WordPress and Laravel can implement:
 
-```
+```text
 DatabaseInterface        → wraps query execution
 EventDispatcherInterface → wraps event dispatch/listen
 TimeProviderInterface    → wraps current_time() / Carbon
@@ -493,7 +493,7 @@ This is optional but reduces risk during migration by allowing parallel running.
 ### Phase 3: Migrate Frontend (React) — 3-4 weeks
 
 The API response shapes are the migration bridge. Document them from current JS files:
-```
+```text
 assets/js/admin/*.js   — 26 files define the data contract
 assets/js/core/api.js  — API client shows all endpoint patterns
 ```

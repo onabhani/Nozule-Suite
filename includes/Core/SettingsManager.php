@@ -159,7 +159,11 @@ class SettingsManager {
      */
     private function maybeEncrypt( string $key, $value ): string {
         if ( in_array( $key, self::SENSITIVE_KEYS, true ) ) {
-            return CredentialVault::encrypt( [ 'value' => $value ] );
+            try {
+                return CredentialVault::encrypt( [ 'value' => $value ] );
+            } catch ( \RuntimeException $e ) {
+                error_log( 'SettingsManager: CredentialVault encrypt failed for ' . $key . ': ' . $e->getMessage() );
+            }
         }
 
         return is_array( $value ) || is_object( $value ) ? wp_json_encode( $value ) : (string) $value;

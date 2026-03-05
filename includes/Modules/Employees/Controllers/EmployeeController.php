@@ -185,6 +185,7 @@ class EmployeeController {
         ] );
 
         if ( ! $employee ) {
+            wp_delete_user( $wp_user_id );
             return new WP_REST_Response( [
                 'success' => false,
                 'message' => __( 'Failed to create employee record.', 'nozule' ),
@@ -275,12 +276,8 @@ class EmployeeController {
             }
         }
 
-        // Update nzl_employees row.
-        if ( ! empty( $emp_data ) ) {
-            $this->repo->update( $id, $emp_data );
-        }
-
-        // Propagate password / email / display_name changes to WP user for auth.
+        // Propagate password / email / display_name changes to WP user first,
+        // so nzl_employees only updates if the WP side succeeds.
         $wp_update = [ 'ID' => (int) $employee->wp_user_id ];
         $needs_wp  = false;
 
@@ -310,6 +307,11 @@ class EmployeeController {
             }
         }
 
+        // Update nzl_employees row (after WP user update succeeded).
+        if ( ! empty( $emp_data ) ) {
+            $this->repo->update( $id, $emp_data );
+        }
+
         // Sync WP role + capabilities so auth checks keep working.
         if ( $employee->wp_user_id ) {
             $wp_user = get_userdata( (int) $employee->wp_user_id );
@@ -324,6 +326,13 @@ class EmployeeController {
         }
 
         $updated = $this->repo->find( $id );
+
+        if ( ! $updated ) {
+            return new WP_REST_Response( [
+                'success' => false,
+                'message' => __( 'Employee not found after update.', 'nozule' ),
+            ], 404 );
+        }
 
         return new WP_REST_Response( [
             'success' => true,

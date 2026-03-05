@@ -2,39 +2,105 @@
 /**
  * Migration 014 — Encrypt existing plaintext credentials at rest.
  *
- * STATUS: STUB — no DB changes are executed yet.
+ * Converts legacy plaintext credential rows to encrypted format using
+ * CredentialVault. Already-encrypted rows are skipped (idempotent).
  *
- * This migration must be created and run BEFORE go-live, after real
- * credentials have been entered for the first pilot hotel.
+ * Tables / keys handled:
+ *   nzl_whatsapp_settings: access_token, phone_number_id, business_id
+ *   nzl_settings:          integrations.odoo_api_key, integrations.odoo_url, integrations.odoo_db
  *
- * What it will do (when implemented):
- *  1. Read every row in nzl_whatsapp_settings where setting_key is one of
- *     'access_token', 'phone_number_id', or 'business_id'.
- *  2. For each row whose value is NOT already encrypted
- *     (CredentialVault::isEncrypted() returns false), re-write the value
- *     via CredentialVault::encrypt(['value' => $plaintext]).
- *  3. Repeat the same for equivalent Odoo credential keys in nzl_settings
- *     (odoo_url, odoo_api_key, odoo_db).
- *
- * New writes are already encrypted by WhatsAppService and OdooService,
- * so this migration only converts legacy plaintext rows that were stored
- * before the encrypt-on-write logic was deployed.
- *
- * Timing guidance:
- *  - Do NOT run on fresh installs (no plaintext rows exist).
- *  - Run once on the pilot hotel's site after connecting WhatsApp/Odoo
- *    for real, before the site is exposed to production traffic.
- *  - Safe to re-run: the isEncrypted() guard makes it idempotent.
+ * Safe to re-run: isEncrypted() guard makes this idempotent.
  *
  * @see includes/Core/CredentialVault.php
- * @see includes/Modules/WhatsApp/Services/WhatsAppService.php
- * @see includes/Modules/Settings/Services/OdooService.php
  */
 
 if ( ! defined( 'ABSPATH' ) ) {
-    exit;
+	exit;
 }
 
 function nzl_migration_014_encrypt_existing_credentials(): void {
-    // TODO: Implement before go-live. See docblock above for specification.
+	global $wpdb;
+
+	$prefix = $wpdb->prefix . 'nzl_';
+
+	// ── 1. WhatsApp settings ───────────────────────────────────────
+	$wa_table      = $prefix . 'whatsapp_settings';
+	$wa_table_exists = $wpdb->get_var( $wpdb->prepare( 'SHOW TABLES LIKE %s', $wa_table ) ) === $wa_table;
+
+	if ( $wa_table_exists ) {
+		$wa_keys = [ 'access_token', 'phone_number_id', 'business_id' ];
+
+		foreach ( $wa_keys as $key ) {
+			$row = $wpdb->get_row( $wpdb->prepare(
+				"SELECT id, setting_value FROM {$wa_table} WHERE setting_key = %s",
+				$key
+			) );
+
+			if ( ! $row || $row->setting_value === '' || $row->setting_value === null ) {
+				continue;
+			}
+
+			if ( \Nozule\Core\CredentialVault::isEncrypted( $row->setting_value ) ) {
+				continue;
+			}
+
+			try {
+				$encrypted = \Nozule\Core\CredentialVault::encrypt( [ 'value' => $row->setting_value ] );
+			} catch ( \RuntimeException $e ) {
+				error_log( 'Migration 014: Failed to encrypt whatsapp_settings.' . $key . ': ' . $e->getMessage() );
+				continue;
+			}
+
+			$wpdb->update(
+				$wa_table,
+				[ 'setting_value' => $encrypted, 'updated_at' => current_time( 'mysql' ) ],
+				[ 'id' => $row->id ],
+				[ '%s', '%s' ],
+				[ '%d' ]
+			);
+		}
+	}
+
+	// ── 2. General settings (Odoo credentials) ─────────────────────
+	$settings_table = $prefix . 'settings';
+	$settings_table_exists = $wpdb->get_var( $wpdb->prepare( 'SHOW TABLES LIKE %s', $settings_table ) ) === $settings_table;
+
+	if ( $settings_table_exists ) {
+		$odoo_keys = [
+			[ 'group' => 'integrations', 'key' => 'odoo_api_key' ],
+			[ 'group' => 'integrations', 'key' => 'odoo_url' ],
+			[ 'group' => 'integrations', 'key' => 'odoo_db' ],
+		];
+
+		foreach ( $odoo_keys as $entry ) {
+			$row = $wpdb->get_row( $wpdb->prepare(
+				"SELECT id, option_value FROM {$settings_table} WHERE option_group = %s AND option_key = %s",
+				$entry['group'],
+				$entry['key']
+			) );
+
+			if ( ! $row || $row->option_value === '' || $row->option_value === null ) {
+				continue;
+			}
+
+			if ( \Nozule\Core\CredentialVault::isEncrypted( $row->option_value ) ) {
+				continue;
+			}
+
+			try {
+				$encrypted = \Nozule\Core\CredentialVault::encrypt( [ 'value' => $row->option_value ] );
+			} catch ( \RuntimeException $e ) {
+				error_log( 'Migration 014: Failed to encrypt settings.' . $entry['group'] . '.' . $entry['key'] . ': ' . $e->getMessage() );
+				continue;
+			}
+
+			$wpdb->update(
+				$settings_table,
+				[ 'option_value' => $encrypted ],
+				[ 'id' => $row->id ],
+				[ '%s' ],
+				[ '%d' ]
+			);
+		}
+	}
 }

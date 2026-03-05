@@ -24,13 +24,12 @@ function nzl_migration_015_create_employees_table(): void {
         display_name VARCHAR(100) NOT NULL,
         phone VARCHAR(20) NULL,
         role VARCHAR(50) NOT NULL,
-        capabilities JSON NOT NULL DEFAULT (JSON_OBJECT()),
+        capabilities JSON DEFAULT NULL,
         is_active TINYINT(1) NOT NULL DEFAULT 1,
         created_at DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
         updated_at DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
         INDEX idx_role (role),
-        INDEX idx_wp_user_id (wp_user_id),
-        INDEX idx_email (email)
+        INDEX idx_wp_user_id (wp_user_id)
     ) ENGINE=InnoDB {$charset};";
 
     require_once ABSPATH . 'wp-admin/includes/upgrade.php';

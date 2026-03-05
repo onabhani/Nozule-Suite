@@ -5,14 +5,22 @@ namespace Nozule\Core;
 /**
  * Shared encryption utility for API credentials stored at rest.
  *
- * Algorithm : AES-256-CBC
+ * Algorithm : AES-256-GCM (authenticated encryption)
  * Key       : SHA-256 hash of WordPress AUTH_KEY
- * IV        : 16 random bytes, prepended to the ciphertext
- * Encoding  : base64( IV . ciphertext )
+ * IV        : 12 random bytes
+ * Tag       : 16-byte GCM authentication tag
+ * Encoding  : base64( IV . tag . ciphertext )
+ *
+ * Decrypt is backward-compatible with legacy AES-256-CBC payloads
+ * (16-byte IV, no tag) so existing data keeps working until
+ * migration 014 re-encrypts all rows.
  */
 class CredentialVault {
 
-	private const CIPHER = 'aes-256-cbc';
+	private const CIPHER     = 'aes-256-gcm';
+	private const LEGACY_CBC = 'aes-256-cbc';
+	private const GCM_IV_LEN = 12;
+	private const GCM_TAG_LEN = 16;
 
 	/**
 	 * WordPress ships wp-config-sample.php with this placeholder value.
@@ -24,32 +32,42 @@ class CredentialVault {
 	 * Encrypt an associative array of credentials for storage.
 	 *
 	 * @param array $data Key-value pairs to encrypt.
-	 * @return string Base64-encoded IV + ciphertext.
+	 * @return string Base64-encoded IV + tag + ciphertext.
 	 *
 	 * @throws \RuntimeException If AUTH_KEY is missing or still the default placeholder.
 	 */
 	public static function encrypt( array $data ): string {
-		$key       = self::deriveKey();
-		$json      = wp_json_encode( $data );
-		$iv_length = openssl_cipher_iv_length( self::CIPHER );
-		$iv        = openssl_random_pseudo_bytes( $iv_length );
+		$key  = self::deriveKey();
+		$json = wp_json_encode( $data );
+		$iv   = openssl_random_pseudo_bytes( self::GCM_IV_LEN );
+		$tag  = '';
 
-		$encrypted = openssl_encrypt( $json, self::CIPHER, $key, OPENSSL_RAW_DATA, $iv );
+		$encrypted = openssl_encrypt(
+			$json,
+			self::CIPHER,
+			$key,
+			OPENSSL_RAW_DATA,
+			$iv,
+			$tag,
+			'',
+			self::GCM_TAG_LEN
+		);
 
 		if ( $encrypted === false ) {
 			throw new \RuntimeException( 'CredentialVault: openssl_encrypt failed.' );
 		}
 
-		return base64_encode( $iv . $encrypted );
+		return base64_encode( $iv . $tag . $encrypted );
 	}
 
 	/**
 	 * Decrypt a stored ciphertext back to an associative array.
 	 *
-	 * Supports a legacy migration path: if the value is not valid base64
-	 * it is treated as plain JSON and decoded directly.
+	 * Supports two legacy paths:
+	 *  1. AES-256-CBC payloads (16-byte IV, no tag) — auto-detected by size.
+	 *  2. Plain JSON strings — decoded directly.
 	 *
-	 * @param string $ciphertext Base64-encoded IV + ciphertext, or legacy plain JSON.
+	 * @param string $ciphertext Base64-encoded payload, or legacy plain JSON.
 	 * @return array Associative array of credential key-value pairs.
 	 *
 	 * @throws \RuntimeException If AUTH_KEY is missing or still the default placeholder.
@@ -69,30 +87,55 @@ class CredentialVault {
 			return is_array( $plain ) ? $plain : [];
 		}
 
-		$iv_length = openssl_cipher_iv_length( self::CIPHER );
-		if ( strlen( $decoded ) < $iv_length ) {
-			return [];
+		$totalLen = strlen( $decoded );
+
+		// Try GCM first: IV(12) + tag(16) + ciphertext.
+		if ( $totalLen >= self::GCM_IV_LEN + self::GCM_TAG_LEN ) {
+			$iv  = substr( $decoded, 0, self::GCM_IV_LEN );
+			$tag = substr( $decoded, self::GCM_IV_LEN, self::GCM_TAG_LEN );
+			$enc = substr( $decoded, self::GCM_IV_LEN + self::GCM_TAG_LEN );
+
+			$decrypted = openssl_decrypt(
+				$enc,
+				self::CIPHER,
+				$key,
+				OPENSSL_RAW_DATA,
+				$iv,
+				$tag
+			);
+
+			if ( $decrypted !== false ) {
+				$result = json_decode( $decrypted, true );
+				if ( is_array( $result ) ) {
+					return $result;
+				}
+			}
 		}
 
-		$iv        = substr( $decoded, 0, $iv_length );
-		$encrypted = substr( $decoded, $iv_length );
+		// Fallback: legacy AES-256-CBC (16-byte IV, no tag).
+		$cbc_iv_len = openssl_cipher_iv_length( self::LEGACY_CBC );
+		if ( $totalLen >= $cbc_iv_len ) {
+			$iv  = substr( $decoded, 0, $cbc_iv_len );
+			$enc = substr( $decoded, $cbc_iv_len );
 
-		$decrypted = openssl_decrypt( $encrypted, self::CIPHER, $key, OPENSSL_RAW_DATA, $iv );
+			$decrypted = openssl_decrypt( $enc, self::LEGACY_CBC, $key, OPENSSL_RAW_DATA, $iv );
 
-		if ( $decrypted === false ) {
-			return [];
+			if ( $decrypted !== false ) {
+				$result = json_decode( $decrypted, true );
+				if ( is_array( $result ) ) {
+					return $result;
+				}
+			}
 		}
 
-		$result = json_decode( $decrypted, true );
-
-		return is_array( $result ) ? $result : [];
+		return [];
 	}
 
 	/**
 	 * Check whether a stored value is already encrypted.
 	 *
-	 * Returns true if the value is valid base64, contains at least an IV,
-	 * and decrypts successfully with the current key.
+	 * Returns true if the value is valid base64 and decrypts successfully
+	 * with the current key (GCM or legacy CBC).
 	 *
 	 * @param string $value The stored credential string to test.
 	 * @return bool
@@ -107,28 +150,45 @@ class CredentialVault {
 			return false;
 		}
 
-		$iv_length = openssl_cipher_iv_length( self::CIPHER );
-		if ( strlen( $decoded ) < $iv_length ) {
-			return false;
-		}
-
-		$iv        = substr( $decoded, 0, $iv_length );
-		$encrypted = substr( $decoded, $iv_length );
+		$totalLen = strlen( $decoded );
 
 		try {
-			$key       = self::deriveKey();
-			$decrypted = openssl_decrypt( $encrypted, self::CIPHER, $key, OPENSSL_RAW_DATA, $iv );
+			$key = self::deriveKey();
 		} catch ( \RuntimeException $e ) {
 			return false;
 		}
 
-		if ( $decrypted === false ) {
-			return false;
+		// Try GCM.
+		if ( $totalLen >= self::GCM_IV_LEN + self::GCM_TAG_LEN ) {
+			$iv  = substr( $decoded, 0, self::GCM_IV_LEN );
+			$tag = substr( $decoded, self::GCM_IV_LEN, self::GCM_TAG_LEN );
+			$enc = substr( $decoded, self::GCM_IV_LEN + self::GCM_TAG_LEN );
+
+			$decrypted = openssl_decrypt( $enc, self::CIPHER, $key, OPENSSL_RAW_DATA, $iv, $tag );
+			if ( $decrypted !== false ) {
+				$parsed = json_decode( $decrypted, true );
+				if ( is_array( $parsed ) ) {
+					return true;
+				}
+			}
 		}
 
-		$parsed = json_decode( $decrypted, true );
+		// Try legacy CBC.
+		$cbc_iv_len = openssl_cipher_iv_length( self::LEGACY_CBC );
+		if ( $totalLen >= $cbc_iv_len ) {
+			$iv  = substr( $decoded, 0, $cbc_iv_len );
+			$enc = substr( $decoded, $cbc_iv_len );
 
-		return is_array( $parsed );
+			$decrypted = openssl_decrypt( $enc, self::LEGACY_CBC, $key, OPENSSL_RAW_DATA, $iv );
+			if ( $decrypted !== false ) {
+				$parsed = json_decode( $decrypted, true );
+				if ( is_array( $parsed ) ) {
+					return true;
+				}
+			}
+		}
+
+		return false;
 	}
 
 	/**

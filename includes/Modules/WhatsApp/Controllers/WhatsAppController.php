@@ -400,7 +400,10 @@ class WhatsAppController {
 		foreach ( $allowedKeys as $key ) {
 			if ( isset( $params[ $key ] ) ) {
 				// Skip masked placeholders so we never overwrite a real credential.
-				if ( $params[ $key ] === '••••••••' ) {
+				// Matches: bullet mask '••••••••', short asterisk mask '****',
+				// all-mask strings, or the getSettings() format (4 chars + asterisks + 4 chars).
+				$val = $params[ $key ];
+				if ( preg_match( '/^[*•]+$/', $val ) || preg_match( '/^.{4}\*{2,}.{4}$/', $val ) ) {
 					continue;
 				}
 				$data[ $key ] = $params[ $key ];

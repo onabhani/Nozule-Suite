@@ -44,7 +44,12 @@ class Employee extends BaseModel {
 			$data['is_active'] = (bool) $data['is_active'];
 		}
 		if ( isset( $data['capabilities'] ) && ! is_array( $data['capabilities'] ) ) {
-			$data['capabilities'] = [];
+			if ( is_string( $data['capabilities'] ) ) {
+				$decoded = json_decode( $data['capabilities'], true );
+				$data['capabilities'] = ( json_last_error() === JSON_ERROR_NONE && is_array( $decoded ) ) ? $decoded : [];
+			} else {
+				$data['capabilities'] = [];
+			}
 		}
 
 		return $data;

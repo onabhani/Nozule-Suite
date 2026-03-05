@@ -25,9 +25,16 @@ class TestVaultCommand {
 		$plaintext = $payload['value'];
 
 		// 1. Encrypt.
-		\WP_CLI::log( 'Encrypting payload: ' . wp_json_encode( $payload ) );
-		$ciphertext = CredentialVault::encrypt( $payload );
-		\WP_CLI::log( 'Ciphertext: ' . $ciphertext );
+		\WP_CLI::log( 'Encrypting payload (' . strlen( $plaintext ) . ' bytes)...' );
+
+		try {
+			$ciphertext = CredentialVault::encrypt( $payload );
+		} catch ( \Throwable $e ) {
+			\WP_CLI::error( 'CredentialVault encrypt error: ' . $e->getMessage() );
+			return;
+		}
+
+		\WP_CLI::log( 'Ciphertext length: ' . strlen( $ciphertext ) . ' bytes (base64)' );
 
 		// 2. isEncrypted on ciphertext → expect true.
 		$encCheck = CredentialVault::isEncrypted( $ciphertext );
@@ -40,9 +47,15 @@ class TestVaultCommand {
 			. ' — ' . ( ! $plainCheck ? 'PASS' : 'FAIL' ) );
 
 		// 4. Decrypt and assert round-trip.
-		$decrypted = CredentialVault::decrypt( $ciphertext );
-		$match     = isset( $decrypted['value'] ) && $decrypted['value'] === $plaintext;
-		\WP_CLI::log( 'Decrypted value: ' . ( $decrypted['value'] ?? '(null)' ) );
+		try {
+			$decrypted = CredentialVault::decrypt( $ciphertext );
+		} catch ( \Throwable $e ) {
+			\WP_CLI::error( 'CredentialVault decrypt error: ' . $e->getMessage() );
+			return;
+		}
+
+		$match = isset( $decrypted['value'] ) && $decrypted['value'] === $plaintext;
+		\WP_CLI::log( 'Decrypted length: ' . strlen( $decrypted['value'] ?? '' ) . ' bytes' );
 		\WP_CLI::log( 'Round-trip match: ' . ( $match ? 'PASS' : 'FAIL' ) );
 
 		// Summary.

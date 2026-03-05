@@ -286,7 +286,14 @@ class WhatsAppService {
 
 			// Encrypt sensitive credential values before storage.
 			if ( in_array( $key, self::SENSITIVE_WA_KEYS, true ) ) {
-				$storeValue = CredentialVault::encrypt( [ 'value' => $value ] );
+				try {
+					$storeValue = CredentialVault::encrypt( [ 'value' => $value ] );
+				} catch ( \RuntimeException $e ) {
+					$this->logger->error( 'CredentialVault encrypt failed for key: ' . $key, [
+						'error' => $e->getMessage(),
+					] );
+					$storeValue = sanitize_text_field( $value );
+				}
 			} else {
 				$storeValue = sanitize_text_field( $value );
 			}
