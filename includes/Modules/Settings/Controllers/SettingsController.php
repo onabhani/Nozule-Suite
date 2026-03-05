@@ -121,7 +121,7 @@ class SettingsController {
             $data = $this->settings->getAll();
         }
 
-        return new \WP_REST_Response( $data, 200 );
+        return new \WP_REST_Response( $this->scrubSensitiveKeys( $data ), 200 );
     }
 
     /**
@@ -195,7 +195,7 @@ class SettingsController {
                 count( $updated )
             ),
             'updated'  => $updated,
-            'settings' => $this->settings->getAll(),
+            'settings' => $this->scrubSensitiveKeys( $this->settings->getAll() ),
         ];
 
         if ( ! empty( $errors ) ) {
@@ -276,6 +276,27 @@ class SettingsController {
             'country'      => $country,
             'taxes_seeded' => $taxesSeeded,
         ], 200 );
+    }
+
+    /**
+     * Replace sensitive values with a masked placeholder so they
+     * are never exposed over the REST API.
+     *
+     * Accepts the grouped array returned by SettingsManager::getAll()
+     * or a single-group wrapper like ['integrations' => [...]].
+     *
+     * @param array<string, array<string, mixed>> $settings Grouped settings.
+     * @return array<string, array<string, mixed>>
+     */
+    private function scrubSensitiveKeys( array $settings ): array {
+        foreach ( SettingsManager::SENSITIVE_KEYS as $fullKey ) {
+            [ $group, $key ] = explode( '.', $fullKey, 2 );
+            if ( isset( $settings[ $group ][ $key ] ) ) {
+                $settings[ $group ][ $key ] = '••••••••';
+            }
+        }
+
+        return $settings;
     }
 
     /**

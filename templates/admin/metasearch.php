@@ -49,7 +49,7 @@ if ( ! defined( 'ABSPATH' ) ) exit;
                 </div>
                 <div class="nzl-form-group">
                     <label><?php esc_html_e( 'Partner Key', 'nozule' ); ?></label>
-                    <input type="text" x-model="settingsForm.partner_key" class="nzl-input" dir="ltr">
+                    <input type="password" x-model="settingsForm.partner_key" class="nzl-input" dir="ltr">
                 </div>
             </div>
 

@@ -70,6 +70,12 @@ class Activator {
 
         require_once NZL_PLUGIN_DIR . 'migrations/011_add_property_id_columns.php';
         nzl_migration_011_add_property_id_columns();
+
+        require_once NZL_PLUGIN_DIR . 'migrations/012_add_missing_indexes.php';
+        nzl_migration_012_add_missing_indexes();
+
+        require_once NZL_PLUGIN_DIR . 'migrations/015_create_employees_table.php';
+        nzl_migration_015_create_employees_table();
     }
 
     /**

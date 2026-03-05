@@ -2,6 +2,7 @@
 
 namespace Nozule\Modules\WhatsApp\Services;
 
+use Nozule\Core\CredentialVault;
 use Nozule\Core\Database;
 use Nozule\Core\Logger;
 use Nozule\Core\SettingsManager;
@@ -17,6 +18,13 @@ use Nozule\Modules\WhatsApp\Repositories\WhatsAppTemplateRepository;
  * Meta Graph API, with automatic logging of every send attempt.
  */
 class WhatsAppService {
+
+	/**
+	 * WhatsApp setting keys that are encrypted at rest via CredentialVault.
+	 *
+	 * @var string[]
+	 */
+	private const SENSITIVE_WA_KEYS = [ 'access_token', 'phone_number_id', 'business_id' ];
 
 	private WhatsAppTemplateRepository $templateRepo;
 	private WhatsAppLogRepository $logRepo;
@@ -247,7 +255,15 @@ class WhatsAppService {
 		$settings = [];
 		if ( is_array( $rows ) ) {
 			foreach ( $rows as $row ) {
-				$settings[ $row->setting_key ] = $row->setting_value;
+				$val = $row->setting_value;
+
+				// Decrypt sensitive keys transparently (legacy plaintext passes through).
+				if ( in_array( $row->setting_key, self::SENSITIVE_WA_KEYS, true ) && CredentialVault::isEncrypted( $val ) ) {
+					$payload = CredentialVault::decrypt( $val );
+					$val     = $payload['value'] ?? '';
+				}
+
+				$settings[ $row->setting_key ] = $val;
 			}
 		}
 
@@ -268,6 +284,20 @@ class WhatsAppService {
 				continue;
 			}
 
+			// Encrypt sensitive credential values before storage.
+			if ( in_array( $key, self::SENSITIVE_WA_KEYS, true ) ) {
+				try {
+					$storeValue = CredentialVault::encrypt( [ 'value' => $value ] );
+				} catch ( \RuntimeException $e ) {
+					$this->logger->error( 'CredentialVault encrypt failed for key: ' . $key, [
+						'error' => $e->getMessage(),
+					] );
+					$storeValue = sanitize_text_field( $value );
+				}
+			} else {
+				$storeValue = sanitize_text_field( $value );
+			}
+
 			$existing = $this->db->getRow(
 				"SELECT id FROM {$table} WHERE setting_key = %s",
 				$key
@@ -277,7 +307,7 @@ class WhatsAppService {
 				$this->db->update(
 					'whatsapp_settings',
 					[
-						'setting_value' => sanitize_text_field( $value ),
+						'setting_value' => $storeValue,
 						'updated_at'    => current_time( 'mysql' ),
 					],
 					[ 'id' => $existing->id ]
@@ -285,7 +315,7 @@ class WhatsAppService {
 			} else {
 				$this->db->insert( 'whatsapp_settings', [
 					'setting_key'   => $key,
-					'setting_value' => sanitize_text_field( $value ),
+					'setting_value' => $storeValue,
 				] );
 			}
 		}
