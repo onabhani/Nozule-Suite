@@ -29,6 +29,10 @@ function nzl_migration_002_seed_data(): void {
         [ 'general', 'timezone', wp_timezone_string() ],
         [ 'general', 'operating_country', '' ],
 
+        // Hotel (canonical keys used by email/notification/template services)
+        [ 'hotel', 'name', get_bloginfo( 'name' ) ],
+        [ 'hotel', 'email', get_option( 'admin_email', '' ) ],
+
         // Currency
         [ 'currency', 'default', 'USD' ],
         [ 'currency', 'symbol', '$' ],
@@ -56,6 +60,7 @@ function nzl_migration_002_seed_data(): void {
         [ 'pricing', 'infant_max_age', '2' ],
 
         // Notifications
+        [ 'notifications', 'from_email', get_option( 'admin_email', '' ) ],
         [ 'notifications', 'email_enabled', '1' ],
         [ 'notifications', 'sms_enabled', '0' ],
         [ 'notifications', 'whatsapp_enabled', '0' ],

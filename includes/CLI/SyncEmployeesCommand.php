@@ -3,6 +3,7 @@
 namespace Nozule\CLI;
 
 use Nozule\Core\Database;
+use Nozule\Core\HotelRoles;
 use Nozule\Modules\Employees\Repositories\EmployeeRepository;
 
 /**
@@ -13,12 +14,16 @@ use Nozule\Modules\Employees\Repositories\EmployeeRepository;
  */
 class SyncEmployeesCommand {
 
-	private const SYNC_ROLES = [
+	/**
+	 * Roles ordered by privilege (highest first).
+	 * Used to resolve which role wins when a user holds multiple.
+	 */
+	private const ROLE_PRIORITY = [
 		'nzl_manager',
 		'nzl_reception',
-		'nzl_housekeeper',
 		'nzl_finance',
 		'nzl_concierge',
+		'nzl_housekeeper',
 	];
 
 	/**
@@ -34,7 +39,7 @@ class SyncEmployeesCommand {
 		$repo = new EmployeeRepository( new Database() );
 
 		$users = get_users( [
-			'role__in' => self::SYNC_ROLES,
+			'role__in' => HotelRoles::getSlugs(),
 		] );
 
 		if ( empty( $users ) ) {
@@ -53,14 +58,8 @@ class SyncEmployeesCommand {
 				continue;
 			}
 
-			// Determine the first nzl_ role.
-			$role = '';
-			foreach ( $user->roles as $r ) {
-				if ( str_starts_with( $r, 'nzl_' ) ) {
-					$role = $r;
-					break;
-				}
-			}
+			// Pick the highest-privilege nzl_ role the user holds.
+			$role = $this->resolveHighestRole( $user->roles );
 
 			if ( $role === '' ) {
 				++$skipped;
@@ -85,5 +84,20 @@ class SyncEmployeesCommand {
 		}
 
 		\WP_CLI::success( "Done. Inserted: {$inserted}, Skipped: {$skipped}" );
+	}
+
+	/**
+	 * Return the highest-privilege nzl_ role from a list of user roles.
+	 *
+	 * @param string[] $userRoles WordPress roles assigned to the user.
+	 * @return string The highest-privilege role slug, or empty string.
+	 */
+	private function resolveHighestRole( array $userRoles ): string {
+		foreach ( self::ROLE_PRIORITY as $candidate ) {
+			if ( in_array( $candidate, $userRoles, true ) ) {
+				return $candidate;
+			}
+		}
+		return '';
 	}
 }

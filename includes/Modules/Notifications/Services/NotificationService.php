@@ -283,8 +283,8 @@ class NotificationService {
 		$headers = [];
 
 		// Determine the sender.
-		$from_name  = $this->settings->get( 'hotel.name', get_bloginfo( 'name' ) );
-		$from_email = $this->settings->get( 'notifications.from_email', get_option( 'admin_email' ) );
+		$from_name  = $this->settings->get( 'hotel.name' );
+		$from_email = $this->settings->get( 'notifications.from_email' );
 
 		$headers[] = sprintf( 'From: %s <%s>', $from_name, $from_email );
 
@@ -306,7 +306,7 @@ class NotificationService {
 		// Optional BCC for admin copy.
 		$bcc_admin = $this->settings->get( 'notifications.bcc_admin', false );
 		if ( $bcc_admin ) {
-			$admin_email = $this->settings->get( 'hotel.email', get_option( 'admin_email' ) );
+			$admin_email = $this->settings->get( 'hotel.email' );
 			if ( $admin_email !== $to ) {
 				$headers[] = sprintf( 'Bcc: %s', $admin_email );
 			}
@@ -645,7 +645,7 @@ class NotificationService {
 		$check_out = $booking->check_out ?? '';
 
 		// Format dates for display.
-		$date_format    = get_option( 'date_format', 'Y-m-d' );
+		$date_format    = $this->settings->get( 'display.date_format', 'Y-m-d' );
 		$check_in_fmt   = $check_in ? wp_date( $date_format, strtotime( $check_in ) ) : '';
 		$check_out_fmt  = $check_out ? wp_date( $date_format, strtotime( $check_out ) ) : '';
 
