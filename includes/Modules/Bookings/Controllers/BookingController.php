@@ -5,7 +5,7 @@ namespace Nozule\Modules\Bookings\Controllers;
 use Nozule\Modules\Bookings\Exceptions\NoAvailabilityException;
 use Nozule\Modules\Bookings\Repositories\BookingRepository;
 use Nozule\Modules\Bookings\Services\BookingService;
-use NZL\Core\RateLimiter;
+use Nozule\Core\RateLimiter;
 
 /**
  * REST controller for public-facing booking operations.

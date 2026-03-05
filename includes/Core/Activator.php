@@ -249,6 +249,13 @@ class Activator {
             wp_schedule_event( time(), 'daily', 'nzl_cleanup_rate_limit_transients' );
         }
 
+    }
+
+    /**
+     * Register cron callbacks that must be attached on every request
+     * so WP-Cron can find them when the scheduled event fires.
+     */
+    public static function registerRuntimeHooks(): void {
         add_action( 'nzl_cleanup_rate_limit_transients', static function () {
             global $wpdb;
             $wpdb->query(

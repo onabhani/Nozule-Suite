@@ -82,6 +82,9 @@ add_action( 'plugins_loaded', function () {
     nozule_manager()->boot();
 }, 10 );
 
+// Attach cron callbacks on every request so WP-Cron can find them.
+\Nozule\Core\Activator::registerRuntimeHooks();
+
 // Run pending migrations on version upgrade (after textdomain is available).
 add_action( 'init', function () {
     ob_start();

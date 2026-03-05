@@ -4,7 +4,7 @@ namespace Nozule\Modules\Promotions\Controllers;
 
 use Nozule\Modules\Promotions\Models\PromoCode;
 use Nozule\Modules\Promotions\Services\PromoCodeService;
-use NZL\Core\RateLimiter;
+use Nozule\Core\RateLimiter;
 use WP_REST_Request;
 use WP_REST_Response;
 use WP_REST_Server;
