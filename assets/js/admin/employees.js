@@ -15,6 +15,7 @@ document.addEventListener('alpine:init', function () {
 
             showModal: false,
             editingId: null,
+            editingWpUserId: 0,
             form: {},
 
             isArabic: (window.NozuleAdmin && NozuleAdmin.locale || '').indexOf('ar') === 0,
