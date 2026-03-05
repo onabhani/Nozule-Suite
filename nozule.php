@@ -1,7 +1,7 @@
 <?php
 /**
  * Plugin Name:       Nozule
- * Plugin URI:        https://github.com/onabhani/Rawaq-Suite
+ * Plugin URI:        https://github.com/onabhani/Nozule-Suite
  * Description:       A comprehensive hotel booking management system for WordPress. Manage rooms, bookings, guests, pricing, channels, and reports.
  * Version:           1.8.2
  * Author:            hdqah.com
@@ -12,7 +12,7 @@
  * Domain Path:       /languages
  * Requires at least: 6.0
  * Requires PHP:      8.0
- * GitHub Plugin URI: onabhani/Rawaq-Suite
+ * GitHub Plugin URI: onabhani/Nozule-Suite
  * Primary Branch:    main
  */
 
