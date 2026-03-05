@@ -12,6 +12,11 @@ use WP_REST_Server;
 /**
  * REST controller for employee (hotel staff) management.
  *
+ * All employee data reads go through EmployeeRepository (nzl_employees).
+ * WordPress user functions are only used for authentication concerns
+ * (creating WP logins, changing passwords/emails, deleting WP users)
+ * and are isolated in private wp*() wrapper methods at the bottom.
+ *
  * Routes:
  *   GET    /nozule/v1/admin/employees              List employees
  *   POST   /nozule/v1/admin/employees              Create employee (WP user + nzl_* role)
@@ -85,6 +90,10 @@ class EmployeeController {
         ] );
     }
 
+    // ------------------------------------------------------------------
+    //  Route handlers
+    // ------------------------------------------------------------------
+
     /**
      * List all active employees from nzl_employees.
      */
@@ -137,14 +146,14 @@ class EmployeeController {
             ], 400 );
         }
 
-        if ( username_exists( $username ) ) {
+        if ( $this->wpUsernameExists( $username ) ) {
             return new WP_REST_Response( [
                 'success' => false,
                 'message' => __( 'Username already exists.', 'nozule' ),
             ], 400 );
         }
 
-        if ( email_exists( $email ) ) {
+        if ( $this->wpEmailExists( $email ) ) {
             return new WP_REST_Response( [
                 'success' => false,
                 'message' => __( 'Email already exists.', 'nozule' ),
@@ -152,7 +161,7 @@ class EmployeeController {
         }
 
         // Create WP user for authentication.
-        $wp_user_id = wp_insert_user( [
+        $wp_user_id = $this->wpCreateUser( [
             'user_login'   => $username,
             'user_email'   => $email,
             'user_pass'    => $password,
@@ -168,7 +177,7 @@ class EmployeeController {
         }
 
         // Apply WP capabilities for permission checks.
-        $this->applyWpCapabilities( $wp_user_id, $request->get_param( 'capabilities' ) );
+        $this->wpSyncCapabilities( $wp_user_id, $request->get_param( 'capabilities' ) );
 
         // Resolve capabilities array for the employee row.
         $caps = $this->resolveCapabilities( $request->get_param( 'capabilities' ) );
@@ -185,7 +194,7 @@ class EmployeeController {
         ] );
 
         if ( ! $employee ) {
-            wp_delete_user( $wp_user_id );
+            $this->wpDeleteUser( $wp_user_id );
             return new WP_REST_Response( [
                 'success' => false,
                 'message' => __( 'Failed to create employee record.', 'nozule' ),
@@ -240,14 +249,25 @@ class EmployeeController {
 
         $email = $request->get_param( 'email' );
         if ( $email !== null ) {
-            $email    = sanitize_email( $email );
-            $existing = email_exists( $email );
-            if ( $existing && $existing !== (int) $employee->wp_user_id ) {
+            $email = sanitize_email( $email );
+
+            // Check repo first, then WP for uniqueness.
+            $existing_emp = $this->repo->findByEmail( $email );
+            if ( $existing_emp && (int) $existing_emp->id !== $id ) {
                 return new WP_REST_Response( [
                     'success' => false,
                     'message' => __( 'Email already exists.', 'nozule' ),
                 ], 400 );
             }
+
+            $wp_owner = $this->wpEmailExists( $email );
+            if ( $wp_owner && $wp_owner !== (int) $employee->wp_user_id ) {
+                return new WP_REST_Response( [
+                    'success' => false,
+                    'message' => __( 'Email already exists.', 'nozule' ),
+                ], 400 );
+            }
+
             $emp_data['email'] = $email;
         }
 
@@ -276,8 +296,8 @@ class EmployeeController {
             }
         }
 
-        // Propagate password / email / display_name changes to WP user first,
-        // so nzl_employees only updates if the WP side succeeds.
+        // Propagate password / email changes to WP user for auth.
+        // display_name lives only in nzl_employees (source of truth).
         $wp_update = [ 'ID' => (int) $employee->wp_user_id ];
         $needs_wp  = false;
 
@@ -292,13 +312,8 @@ class EmployeeController {
             $needs_wp = true;
         }
 
-        if ( isset( $emp_data['display_name'] ) ) {
-            $wp_update['display_name'] = $emp_data['display_name'];
-            $needs_wp = true;
-        }
-
         if ( $needs_wp ) {
-            $result = wp_update_user( $wp_update );
+            $result = $this->wpUpdateUser( $wp_update );
             if ( is_wp_error( $result ) ) {
                 return new WP_REST_Response( [
                     'success' => false,
@@ -314,14 +329,11 @@ class EmployeeController {
 
         // Sync WP role + capabilities so auth checks keep working.
         if ( $employee->wp_user_id ) {
-            $wp_user = get_userdata( (int) $employee->wp_user_id );
-            if ( $wp_user ) {
-                if ( isset( $emp_data['role'] ) ) {
-                    $wp_user->set_role( $emp_data['role'] );
-                }
-                if ( ! ( $is_self && ! current_user_can( 'manage_options' ) ) ) {
-                    $this->applyWpCapabilities( (int) $employee->wp_user_id, $request->get_param( 'capabilities' ) );
-                }
+            if ( isset( $emp_data['role'] ) ) {
+                $this->wpSyncRole( (int) $employee->wp_user_id, $emp_data['role'] );
+            }
+            if ( ! ( $is_self && ! current_user_can( 'manage_options' ) ) ) {
+                $this->wpSyncCapabilities( (int) $employee->wp_user_id, $request->get_param( 'capabilities' ) );
             }
         }
 
@@ -344,8 +356,8 @@ class EmployeeController {
     /**
      * Deactivate an employee.
      *
-     * Soft-deletes the nzl_employees row (is_active = 0) and strips the
-     * WP user's nzl_* role so they can no longer log in as staff.
+     * Soft-deletes the nzl_employees row (is_active = 0) and removes
+     * the WP user so they can no longer authenticate.
      */
     public function deactivate( WP_REST_Request $request ): WP_REST_Response {
         $id       = (int) $request->get_param( 'id' );
@@ -369,15 +381,9 @@ class EmployeeController {
         // Soft-delete in nzl_employees.
         $this->repo->update( $id, [ 'is_active' => 0 ] );
 
-        // Strip nzl capabilities and demote WP user to subscriber.
+        // Remove WP user so they can no longer authenticate.
         if ( $employee->wp_user_id ) {
-            $wp_user = get_userdata( (int) $employee->wp_user_id );
-            if ( $wp_user ) {
-                foreach ( self::ALL_CAPABILITIES as $cap ) {
-                    $wp_user->remove_cap( $cap );
-                }
-                $wp_user->set_role( 'subscriber' );
-            }
+            $this->wpDeleteUser( (int) $employee->wp_user_id );
         }
 
         return new WP_REST_Response( [
@@ -422,6 +428,10 @@ class EmployeeController {
         return current_user_can( 'manage_options' ) || current_user_can( 'nzl_manage_employees' );
     }
 
+    // ------------------------------------------------------------------
+    //  Formatting helpers
+    // ------------------------------------------------------------------
+
     /**
      * Format an Employee model for the API response.
      */
@@ -442,12 +452,85 @@ class EmployeeController {
     }
 
     /**
-     * Apply capabilities to the WP user so permission checks keep working.
+     * Resolve a raw capabilities param into a filtered array of valid keys.
+     *
+     * @param mixed $capabilities Raw capabilities from request.
+     * @return string[]
+     */
+    private function resolveCapabilities( $capabilities ): array {
+        if ( ! is_array( $capabilities ) ) {
+            return [];
+        }
+
+        return array_values( array_intersect( $capabilities, self::ALL_CAPABILITIES ) );
+    }
+
+    // ------------------------------------------------------------------
+    //  WordPress user wrappers — all WP user function calls live here.
+    //  These exist solely for authentication; nzl_employees is the
+    //  source of truth for employee data.
+    // ------------------------------------------------------------------
+
+    /**
+     * Check whether a WordPress username already exists.
+     */
+    private function wpUsernameExists( string $username ): bool {
+        return (bool) username_exists( $username );
+    }
+
+    /**
+     * Check whether an email is already registered in WordPress.
+     *
+     * @return int|false WP user ID if found, false otherwise.
+     */
+    private function wpEmailExists( string $email ): int|false {
+        return email_exists( $email );
+    }
+
+    /**
+     * Create a WordPress user for authentication.
+     *
+     * @return int|\WP_Error WP user ID on success.
+     */
+    private function wpCreateUser( array $data ): int|\WP_Error {
+        return wp_insert_user( $data );
+    }
+
+    /**
+     * Update a WordPress user (password / email only).
+     *
+     * @return int|\WP_Error WP user ID on success.
+     */
+    private function wpUpdateUser( array $data ): int|\WP_Error {
+        return wp_update_user( $data );
+    }
+
+    /**
+     * Delete a WordPress user.
+     */
+    private function wpDeleteUser( int $wp_user_id ): bool {
+        return (bool) wp_delete_user( $wp_user_id );
+    }
+
+    /**
+     * Set a WP user's role so auth-level checks keep working.
+     */
+    private function wpSyncRole( int $wp_user_id, string $role ): void {
+        $user = get_userdata( $wp_user_id );
+        if ( $user ) {
+            $user->set_role( $role );
+        }
+    }
+
+    /**
+     * Sync nzl_* capabilities on the WP user for permission checks.
+     *
+     * Grants capabilities present in $capabilities and revokes all others.
      *
      * @param int        $wp_user_id  WordPress user ID.
      * @param array|null $capabilities Array of capability keys to grant.
      */
-    private function applyWpCapabilities( int $wp_user_id, $capabilities ): void {
+    private function wpSyncCapabilities( int $wp_user_id, $capabilities ): void {
         if ( ! is_array( $capabilities ) ) {
             return;
         }
@@ -464,19 +547,5 @@ class EmployeeController {
                 $user->remove_cap( $cap );
             }
         }
-    }
-
-    /**
-     * Resolve a raw capabilities param into a filtered array of valid keys.
-     *
-     * @param mixed $capabilities Raw capabilities from request.
-     * @return string[]
-     */
-    private function resolveCapabilities( $capabilities ): array {
-        if ( ! is_array( $capabilities ) ) {
-            return [];
-        }
-
-        return array_values( array_intersect( $capabilities, self::ALL_CAPABILITIES ) );
     }
 }
