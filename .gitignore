@@ -33,3 +33,6 @@ composer.lock
 
 # npm
 package-lock.json
+
+# PHPUnit
+.phpunit.cache/
