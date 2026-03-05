@@ -16,7 +16,11 @@ class EmployeesModule extends BaseModule {
     public function register(): void {
         $this->container->singleton(
             EmployeeController::class,
-            fn() => new EmployeeController()
+            fn() => new EmployeeController(
+                new \Nozule\Modules\Employees\Repositories\EmployeeRepository(
+                    $this->container->get( \Nozule\Core\Database::class )
+                )
+            )
         );
 
         add_action( 'rest_api_init', [ $this, 'registerRestRoutes' ] );
