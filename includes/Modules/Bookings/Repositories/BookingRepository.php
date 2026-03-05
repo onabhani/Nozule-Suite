@@ -41,10 +41,11 @@ class BookingRepository extends BaseRepository {
 	 */
 	public function getByStatus( string $status ): array {
 		$table = $this->tableName();
-		$rows  = $this->db->getResults(
-			"SELECT * FROM {$table} WHERE status = %s ORDER BY check_in ASC",
-			$status
-		);
+		$args  = [ $status ];
+		$sql   = "SELECT * FROM {$table} WHERE status = %s";
+		$sql   = $this->applyPropertyScope( $sql, $args );
+		$sql  .= ' ORDER BY check_in ASC';
+		$rows  = $this->db->getResults( $sql, ...$args );
 
 		return Booking::fromRows( $rows );
 	}
@@ -103,15 +104,14 @@ class BookingRepository extends BaseRepository {
 	 */
 	public function getForCalendar( string $startDate, string $endDate ): array {
 		$table = $this->tableName();
-		$rows  = $this->db->getResults(
-			"SELECT * FROM {$table}
+		$args  = [ $endDate, $startDate ];
+		$sql   = "SELECT * FROM {$table}
 			 WHERE check_in < %s
 			   AND check_out > %s
-			   AND status IN ('confirmed', 'checked_in', 'pending')
-			 ORDER BY check_in ASC",
-			$endDate,
-			$startDate
-		);
+			   AND status IN ('confirmed', 'checked_in', 'pending')";
+		$sql   = $this->applyPropertyScope( $sql, $args );
+		$sql  .= ' ORDER BY check_in ASC';
+		$rows  = $this->db->getResults( $sql, ...$args );
 
 		return Booking::fromRows( $rows );
 	}
@@ -261,6 +261,12 @@ class BookingRepository extends BaseRepository {
 		$conditions = [];
 		$params     = [];
 
+		// Property scope.
+		if ( $this->propertyFilter !== null ) {
+			$conditions[] = 'b.property_id = %d';
+			$params[]     = $this->propertyFilter;
+		}
+
 		// Status filter.
 		if ( ! empty( $args['status'] ) ) {
 			$conditions[] = 'b.status = %s';
@@ -342,14 +348,14 @@ class BookingRepository extends BaseRepository {
 	public function getTodayArrivals(): array {
 		$table = $this->tableName();
 		$today = current_time( 'Y-m-d' );
+		$args  = [ $today ];
 
-		$rows = $this->db->getResults(
-			"SELECT * FROM {$table}
+		$sql  = "SELECT * FROM {$table}
 			 WHERE check_in = %s
-			   AND status IN ('confirmed', 'pending')
-			 ORDER BY created_at ASC",
-			$today
-		);
+			   AND status IN ('confirmed', 'pending')";
+		$sql  = $this->applyPropertyScope( $sql, $args );
+		$sql .= ' ORDER BY created_at ASC';
+		$rows = $this->db->getResults( $sql, ...$args );
 
 		return Booking::fromRows( $rows );
 	}
@@ -362,14 +368,14 @@ class BookingRepository extends BaseRepository {
 	public function getTodayDepartures(): array {
 		$table = $this->tableName();
 		$today = current_time( 'Y-m-d' );
+		$args  = [ $today ];
 
-		$rows = $this->db->getResults(
-			"SELECT * FROM {$table}
+		$sql  = "SELECT * FROM {$table}
 			 WHERE check_out = %s
-			   AND status = 'checked_in'
-			 ORDER BY created_at ASC",
-			$today
-		);
+			   AND status = 'checked_in'";
+		$sql  = $this->applyPropertyScope( $sql, $args );
+		$sql .= ' ORDER BY created_at ASC';
+		$rows = $this->db->getResults( $sql, ...$args );
 
 		return Booking::fromRows( $rows );
 	}
@@ -381,12 +387,15 @@ class BookingRepository extends BaseRepository {
 	 */
 	public function getInHouseGuests(): array {
 		$table = $this->tableName();
+		$args  = [];
 
-		$rows = $this->db->getResults(
-			"SELECT * FROM {$table}
-			 WHERE status = 'checked_in'
-			 ORDER BY check_out ASC"
-		);
+		$sql  = "SELECT * FROM {$table} WHERE status = 'checked_in'";
+		$sql  = $this->applyPropertyScope( $sql, $args );
+		$sql .= ' ORDER BY check_out ASC';
+
+		$rows = empty( $args )
+			? $this->db->getResults( $sql )
+			: $this->db->getResults( $sql, ...$args );
 
 		return Booking::fromRows( $rows );
 	}
@@ -443,9 +452,14 @@ class BookingRepository extends BaseRepository {
 	 */
 	public function countInHouse(): int {
 		$table = $this->tableName();
+		$args  = [];
 
-		return (int) $this->db->getVar(
-			"SELECT COUNT(*) FROM {$table} WHERE status = 'checked_in'"
+		$sql = "SELECT COUNT(*) FROM {$table} WHERE status = 'checked_in'";
+		$sql = $this->applyPropertyScope( $sql, $args );
+
+		return (int) ( empty( $args )
+			? $this->db->getVar( $sql )
+			: $this->db->getVar( $sql, ...$args )
 		);
 	}
 }

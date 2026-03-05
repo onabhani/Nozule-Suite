@@ -66,10 +66,11 @@ class FolioRepository extends BaseRepository {
 	 */
 	public function getByStatus( string $status ): array {
 		$table = $this->tableName();
-		$rows  = $this->db->getResults(
-			"SELECT * FROM {$table} WHERE status = %s ORDER BY created_at DESC",
-			$status
-		);
+		$args  = [ $status ];
+		$sql   = "SELECT * FROM {$table} WHERE status = %s";
+		$sql   = $this->applyPropertyScope( $sql, $args );
+		$sql  .= ' ORDER BY created_at DESC';
+		$rows  = $this->db->getResults( $sql, ...$args );
 
 		return Folio::fromRows( $rows );
 	}
@@ -92,6 +93,11 @@ class FolioRepository extends BaseRepository {
 		$table      = $this->tableName();
 		$conditions = [];
 		$values     = [];
+
+		if ( $this->propertyFilter !== null ) {
+			$conditions[] = 'property_id = %d';
+			$values[]     = $this->propertyFilter;
+		}
 
 		if ( $status ) {
 			$conditions[] = 'status = %s';
