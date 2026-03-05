@@ -227,8 +227,9 @@ class EmployeeController {
 
         // Prevent users from editing their own role or capabilities
         // (only WordPress administrators may do so).
-        $is_self = ( (int) $employee->wp_user_id === get_current_user_id() );
-        if ( $is_self && ! $this->canSelfEdit( $is_self ) ) {
+        $is_self  = ( (int) $employee->wp_user_id === get_current_user_id() );
+        $is_admin = current_user_can( 'manage_options' );
+        if ( $is_self && ! $is_admin ) {
             $requested_caps = $request->get_param( 'capabilities' );
             $requested_role = $request->get_param( 'role' );
             if ( $requested_caps !== null || ( $requested_role !== null && $requested_role !== '' ) ) {
@@ -278,7 +279,7 @@ class EmployeeController {
 
         // Role change.
         $role = sanitize_text_field( $request->get_param( 'role' ) ?? '' );
-        if ( $role && ! ( $is_self && ! $this->canSelfEdit( $is_self ) ) ) {
+        if ( $role && ! ( $is_self && ! $is_admin ) ) {
             if ( ! in_array( $role, HotelRoles::getSlugs(), true ) ) {
                 return new WP_REST_Response( [
                     'success' => false,
@@ -289,7 +290,7 @@ class EmployeeController {
         }
 
         // Capabilities.
-        if ( ! ( $is_self && ! $this->canSelfEdit( $is_self ) ) ) {
+        if ( ! ( $is_self && ! $is_admin ) ) {
             $raw_caps = $request->get_param( 'capabilities' );
             if ( is_array( $raw_caps ) ) {
                 $emp_data['capabilities'] = wp_json_encode( $this->resolveCapabilities( $raw_caps ) );
@@ -332,7 +333,7 @@ class EmployeeController {
             if ( isset( $emp_data['role'] ) ) {
                 $this->wpSyncRole( (int) $employee->wp_user_id, $emp_data['role'] );
             }
-            if ( ! ( $is_self && ! $this->canSelfEdit( $is_self ) ) ) {
+            if ( ! ( $is_self && ! $is_admin ) ) {
                 $this->wpSyncCapabilities( (int) $employee->wp_user_id, $request->get_param( 'capabilities' ) );
             }
         }
@@ -419,14 +420,6 @@ class EmployeeController {
             'success' => true,
             'data'    => $caps,
         ], 200 );
-    }
-
-    /**
-     * Whether the current user is editing themselves but has elevated privileges.
-     */
-    private function canSelfEdit( bool $is_self ): bool {
-        return $is_self
-            && ( current_user_can( 'manage_options' ) || current_user_can( 'nzl_super_admin' ) );
     }
 
     /**
