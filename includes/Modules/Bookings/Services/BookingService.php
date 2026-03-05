@@ -160,11 +160,7 @@ class BookingService {
 		}
 
 		// 9. Queue notification (outside transaction -- non-critical).
-		$this->notificationService->queue( 'booking_created', [
-			'booking_id'     => $booking->id,
-			'booking_number' => $booking->booking_number,
-			'guest_id'       => $guestId,
-		] );
+		$this->notificationService->queue( $booking, 'booking_created' );
 
 		/**
 		 * Fires after a booking has been successfully created.
@@ -212,11 +208,7 @@ class BookingService {
 			'ip_address' => self::getClientIP(),
 		] );
 
-		$this->notificationService->queue( 'booking_confirmed', [
-			'booking_id'     => $bookingId,
-			'booking_number' => $booking->booking_number,
-			'guest_id'       => $booking->guest_id,
-		] );
+		$this->notificationService->queue( $booking, 'booking_confirmed' );
 
 		do_action( 'nozule/booking/confirmed', $bookingId );
 
@@ -279,12 +271,7 @@ class BookingService {
 			throw $e;
 		}
 
-		$this->notificationService->queue( 'booking_cancelled', [
-			'booking_id'     => $bookingId,
-			'booking_number' => $booking->booking_number,
-			'guest_id'       => $booking->guest_id,
-			'reason'         => $reason,
-		] );
+		$this->notificationService->queue( $booking, 'booking_cancelled' );
 
 		do_action( 'nozule/booking/cancelled', $bookingId, $reason );
 
@@ -335,11 +322,7 @@ class BookingService {
 			'ip_address' => self::getClientIP(),
 		] );
 
-		$this->notificationService->queue( 'booking_checked_in', [
-			'booking_id'     => $bookingId,
-			'booking_number' => $booking->booking_number,
-			'guest_id'       => $booking->guest_id,
-		] );
+		$this->notificationService->queue( $booking, 'booking_checked_in' );
 
 		do_action( 'nozule/booking/checked_in', $bookingId, $roomId );
 
@@ -385,11 +368,7 @@ class BookingService {
 			'ip_address' => self::getClientIP(),
 		] );
 
-		$this->notificationService->queue( 'booking_checked_out', [
-			'booking_id'     => $bookingId,
-			'booking_number' => $booking->booking_number,
-			'guest_id'       => $booking->guest_id,
-		] );
+		$this->notificationService->queue( $booking, 'booking_checked_out' );
 
 		do_action( 'nozule/booking/checked_out', $bookingId );
 
@@ -463,11 +442,7 @@ class BookingService {
 
 				$this->bookingRepository->commit();
 
-				$this->notificationService->queue( 'booking_no_show', [
-					'booking_id'     => $booking->id,
-					'booking_number' => $booking->booking_number,
-					'guest_id'       => $booking->guest_id,
-				] );
+				$this->notificationService->queue( $booking, 'booking_no_show' );
 
 				do_action( 'nozule/booking/no_show', $booking->id );
 

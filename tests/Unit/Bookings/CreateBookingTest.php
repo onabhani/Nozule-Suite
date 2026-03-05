@@ -16,7 +16,6 @@ use Nozule\Modules\Guests\Services\GuestService;
 use Nozule\Modules\Notifications\Services\NotificationService;
 use Nozule\Modules\Pricing\Services\PricingService;
 use Nozule\Modules\Rooms\Services\AvailabilityService;
-use Nozule\Tests\Stubs\NotificationServiceStub;
 use PHPUnit\Framework\TestCase;
 
 class CreateBookingTest extends TestCase {
@@ -28,7 +27,7 @@ class CreateBookingTest extends TestCase {
 	private GuestService $guestService;
 	private AvailabilityService $availabilityService;
 	private PricingService $pricingService;
-	private $notificationService;
+	private NotificationService $notificationService;
 	private SettingsManager $settings;
 	private BookingService $service;
 
@@ -43,9 +42,7 @@ class CreateBookingTest extends TestCase {
 		$this->pricingService      = Mockery::mock( PricingService::class );
 		$this->settings            = Mockery::mock( SettingsManager::class );
 
-		// Use stub with widened parameter types to avoid TypeError
-		// (production code passes string where method expects object).
-		$this->notificationService = Mockery::mock( NotificationServiceStub::class );
+		$this->notificationService = Mockery::mock( NotificationService::class );
 
 		$this->service = new BookingService(
 			$this->bookingRepo,
@@ -152,10 +149,10 @@ class CreateBookingTest extends TestCase {
 			->once()
 			->with( Mockery::on( fn( $log ) => $log['action'] === BookingLog::ACTION_CREATED ) );
 
-		// 11. Notification queued.
+		// 11. Notification queued with booking object.
 		$this->notificationService->shouldReceive( 'queue' )
 			->once()
-			->with( 'booking_created', Mockery::type( 'array' ) );
+			->with( Mockery::type( Booking::class ), 'booking_created' );
 
 		$result = $this->service->createBooking( $data );
 
