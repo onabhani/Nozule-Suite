@@ -139,7 +139,9 @@ class PropertyController {
 		}
 
 		if ( isset( $result['id'] ) ) {
-			return ResponseHelper::error( $result['id'][0], 404, $result );
+			$message = is_array( $result['id'] ) && isset( $result['id'][0] ) ? $result['id'][0] : __( 'Property not found.', 'nozule' );
+
+			return ResponseHelper::error( $message, 404, $result );
 		}
 
 		return ResponseHelper::error( __( 'Validation failed.', 'nozule' ), 422, $result );

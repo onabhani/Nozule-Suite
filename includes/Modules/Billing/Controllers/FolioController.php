@@ -205,7 +205,10 @@ class FolioController {
 		}
 
 		if ( isset( $result['folio_id'] ) ) {
-			return ResponseHelper::error( $result['folio_id'][0], isset( $result['folio_id'] ) && strpos( $result['folio_id'][0], 'not found' ) !== false ? 404 : 422, $result );
+			$message    = is_array( $result['folio_id'] ) && isset( $result['folio_id'][0] ) ? $result['folio_id'][0] : __( 'Invalid folio.', 'nozule' );
+			$statusCode = isset( $result['http_status'] ) ? (int) $result['http_status'] : ( isset( $result['id'] ) ? 404 : 422 );
+
+			return ResponseHelper::error( $message, $statusCode, $result );
 		}
 
 		return ResponseHelper::error( __( 'Validation failed.', 'nozule' ), 422, $result );

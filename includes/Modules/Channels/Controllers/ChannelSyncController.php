@@ -244,7 +244,12 @@ class ChannelSyncController {
 		$duplicate = $this->connectionRepo->getByChannelName( $channelName );
 		if ( $duplicate ) {
 			// Update the existing one instead.
-			$this->connectionRepo->update( $duplicate->id, $data );
+			$updated = $this->connectionRepo->update( $duplicate->id, $data );
+
+			if ( ! $updated ) {
+				return ResponseHelper::error( __( 'Failed to update connection.', 'nozule' ), 500 );
+			}
+
 			$connection = $this->connectionRepo->find( $duplicate->id );
 			$arr = $connection->toArray();
 			unset( $arr['credentials'] );

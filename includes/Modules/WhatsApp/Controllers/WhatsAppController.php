@@ -134,10 +134,15 @@ class WhatsAppController {
 			'page'          => (int) ( $request->get_param( 'page' ) ?? 1 ),
 		] );
 
-		return ResponseHelper::success( array_map( fn( WhatsAppTemplate $t ) => $t->toArray(), $result['items'] ), null, [
-				'total' => $result['total'],
-				'pages' => $result['pages'],
-			] );
+		$page    = (int) ( $request->get_param( 'page' ) ?? 1 );
+		$perPage = (int) ( $request->get_param( 'per_page' ) ?? 20 );
+
+		return ResponseHelper::paginated(
+			array_map( fn( WhatsAppTemplate $t ) => $t->toArray(), $result['items'] ),
+			$result['total'],
+			$page,
+			$perPage
+		);
 	}
 
 	/**
@@ -292,10 +297,15 @@ class WhatsAppController {
 			'page'     => (int) ( $request->get_param( 'page' ) ?? 1 ),
 		] );
 
-		return ResponseHelper::success( array_map( fn( WhatsAppLog $log ) => $log->toArray(), $result['items'] ), null, [
-				'total' => $result['total'],
-				'pages' => $result['pages'],
-			] );
+		$page    = (int) ( $request->get_param( 'page' ) ?? 1 );
+		$perPage = (int) ( $request->get_param( 'per_page' ) ?? 20 );
+
+		return ResponseHelper::paginated(
+			array_map( fn( WhatsAppLog $log ) => $log->toArray(), $result['items'] ),
+			$result['total'],
+			$page,
+			$perPage
+		);
 	}
 
 	// ── Settings Endpoints ──────────────────────────────────────────

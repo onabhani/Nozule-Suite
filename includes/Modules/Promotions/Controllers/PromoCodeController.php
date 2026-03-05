@@ -101,15 +101,10 @@ class PromoCodeController {
 			$result['items']
 		);
 
-		return ResponseHelper::success( [
-				'items'      => $items,
-				'pagination' => [
-					'page'        => (int) ( $request->get_param( 'page' ) ?? 1 ),
-					'per_page'    => (int) ( $request->get_param( 'per_page' ) ?? 20 ),
-					'total'       => $result['total'],
-					'total_pages' => $result['pages'],
-				],
-			] );
+		$page    = (int) ( $request->get_param( 'page' ) ?? 1 );
+		$perPage = (int) ( $request->get_param( 'per_page' ) ?? 20 );
+
+		return ResponseHelper::paginated( $items, $result['total'], $page, $perPage );
 	}
 
 	/**

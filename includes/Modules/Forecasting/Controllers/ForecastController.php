@@ -154,6 +154,8 @@ class ForecastController {
 				$result['forecasts_generated']
 			) );
 		} catch ( \Throwable $e ) {
+			error_log( sprintf( '[Nozule] Forecast generation failed: %s in %s:%d', $e->getMessage(), $e->getFile(), $e->getLine() ) );
+
 			return ResponseHelper::error( __( 'Failed to generate forecasts.', 'nozule' ), 500 );
 		}
 	}

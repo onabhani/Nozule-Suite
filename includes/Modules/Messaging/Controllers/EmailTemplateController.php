@@ -131,13 +131,14 @@ class EmailTemplateController {
 			'page'          => (int) ( $request->get_param( 'page' ) ?? 1 ),
 		] );
 
-		return ResponseHelper::success(
+		$page    = (int) ( $request->get_param( 'page' ) ?? 1 );
+		$perPage = (int) ( $request->get_param( 'per_page' ) ?? 20 );
+
+		return ResponseHelper::paginated(
 			array_map( fn( EmailTemplate $t ) => $t->toArray(), $result['items'] ),
-			null,
-			[
-				'total' => $result['total'],
-				'pages' => $result['pages'],
-			]
+			$result['total'],
+			$page,
+			$perPage
 		);
 	}
 
@@ -327,13 +328,14 @@ class EmailTemplateController {
 			'page'     => (int) ( $request->get_param( 'page' ) ?? 1 ),
 		] );
 
-		return ResponseHelper::success(
+		$page    = (int) ( $request->get_param( 'page' ) ?? 1 );
+		$perPage = (int) ( $request->get_param( 'per_page' ) ?? 20 );
+
+		return ResponseHelper::paginated(
 			array_map( fn( EmailLog $log ) => $log->toArray(), $result['items'] ),
-			null,
-			[
-				'total' => $result['total'],
-				'pages' => $result['pages'],
-			]
+			$result['total'],
+			$page,
+			$perPage
 		);
 	}
 

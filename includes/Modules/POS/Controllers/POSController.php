@@ -357,7 +357,7 @@ class POSController {
 			return $order->toArray();
 		}, $result['items'] );
 
-		return ResponseHelper::paginated( $items, $result['total'], $result['page'], $perPage );
+		return ResponseHelper::paginated( $items, $result['total'], $result['page'] ?? $page, $perPage );
 	}
 
 	/**

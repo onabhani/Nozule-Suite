@@ -103,15 +103,10 @@ class GuestController {
             $result['guests']
         );
 
-        return ResponseHelper::success( [
-                'items'      => $guests,
-                'pagination' => [
-                    'page'        => (int) ( $request->get_param( 'page' ) ?? 1 ),
-                    'per_page'    => (int) ( $request->get_param( 'per_page' ) ?? 20 ),
-                    'total'       => $result['total'],
-                    'total_pages' => $result['pages'],
-                ],
-            ] );
+        $page    = (int) ( $request->get_param( 'page' ) ?? 1 );
+        $perPage = (int) ( $request->get_param( 'per_page' ) ?? 20 );
+
+        return ResponseHelper::paginated( $guests, $result['total'], $page, $perPage );
     }
 
     public function show( \WP_REST_Request $request ): \WP_REST_Response {
@@ -135,7 +130,10 @@ class GuestController {
             $result['guests']
         );
 
-        $response = ResponseHelper::success( $guests );
+        $page    = (int) ( $request->get_param( 'page' ) ?? 1 );
+        $perPage = (int) ( $request->get_param( 'per_page' ) ?? 20 );
+
+        $response = ResponseHelper::paginated( $guests, $result['total'], $page, $perPage );
         $response->header( 'X-WP-Total', (string) $result['total'] );
         $response->header( 'X-WP-TotalPages', (string) $result['pages'] );
 

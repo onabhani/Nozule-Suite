@@ -284,11 +284,13 @@ class ChannelController {
         try {
             $success = $this->service->testConnection( $id );
 
-            return ResponseHelper::success( null, $success
-                ? __( 'Connection test succeeded.', 'nozule' )
-                : __( 'Connection test failed.', 'nozule' ) );
+            if ( $success ) {
+                return ResponseHelper::success( null, __( 'Connection test succeeded.', 'nozule' ) );
+            }
+
+            return ResponseHelper::error( __( 'Connection test failed.', 'nozule' ), 502 );
         } catch ( \RuntimeException $e ) {
-            return ResponseHelper::notFound( $e->getMessage() );
+            return ResponseHelper::error( $e->getMessage(), 502 );
         }
     }
 

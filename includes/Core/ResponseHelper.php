@@ -20,19 +20,12 @@ class ResponseHelper {
 	 * @param array|null  $meta    Optional metadata (pagination, totals, etc.).
 	 */
 	public static function success( mixed $data = null, ?string $message = null, ?array $meta = null ): WP_REST_Response {
-		$body = [ 'success' => true ];
-
-		if ( $data !== null ) {
-			$body['data'] = $data;
-		}
-		if ( $message !== null ) {
-			$body['message'] = $message;
-		}
-		if ( $meta !== null ) {
-			$body['meta'] = $meta;
-		}
-
-		return new WP_REST_Response( $body, 200 );
+		return new WP_REST_Response( [
+			'success' => true,
+			'data'    => $data,
+			'message' => $message,
+			'meta'    => $meta ?? [],
+		], 200 );
 	}
 
 	/**
@@ -42,16 +35,12 @@ class ResponseHelper {
 	 * @param string|null $message Optional human-readable message.
 	 */
 	public static function created( mixed $data = null, ?string $message = null ): WP_REST_Response {
-		$body = [ 'success' => true ];
-
-		if ( $data !== null ) {
-			$body['data'] = $data;
-		}
-		if ( $message !== null ) {
-			$body['message'] = $message;
-		}
-
-		return new WP_REST_Response( $body, 201 );
+		return new WP_REST_Response( [
+			'success' => true,
+			'data'    => $data,
+			'message' => $message,
+			'meta'    => [],
+		], 201 );
 	}
 
 	/**
@@ -66,6 +55,7 @@ class ResponseHelper {
 		return new WP_REST_Response( [
 			'success' => true,
 			'data'    => $items,
+			'message' => null,
 			'meta'    => [
 				'total'    => $total,
 				'page'     => $page,
@@ -83,16 +73,12 @@ class ResponseHelper {
 	 * @param array|null $errors  Optional field-level errors.
 	 */
 	public static function error( string $message, int $status = 400, ?array $errors = null ): WP_REST_Response {
-		$body = [
+		return new WP_REST_Response( [
 			'success' => false,
+			'data'    => null,
 			'message' => $message,
-		];
-
-		if ( $errors !== null ) {
-			$body['errors'] = $errors;
-		}
-
-		return new WP_REST_Response( $body, $status );
+			'errors'  => $errors,
+		], $status );
 	}
 
 	/**

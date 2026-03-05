@@ -67,12 +67,21 @@ class CalendarController {
 		$start = $request->get_param( 'start' );
 		$end   = $request->get_param( 'end' );
 
-		// Basic date validation.
-		if ( ! strtotime( $start ) || ! strtotime( $end ) ) {
+		// Strict Y-m-d date validation.
+		$startDate = \DateTime::createFromFormat( 'Y-m-d', $start );
+		$endDate   = \DateTime::createFromFormat( 'Y-m-d', $end );
+
+		$startErrors = $startDate ? \DateTime::getLastErrors() : null;
+		$endErrors   = $endDate ? \DateTime::getLastErrors() : null;
+
+		$startValid = $startDate && ( ! $startErrors || ( $startErrors['warning_count'] === 0 && $startErrors['error_count'] === 0 ) );
+		$endValid   = $endDate && ( ! $endErrors || ( $endErrors['warning_count'] === 0 && $endErrors['error_count'] === 0 ) );
+
+		if ( ! $startValid || ! $endValid ) {
 			return ResponseHelper::error( __( 'Invalid date format. Use Y-m-d.', 'nozule' ), 400 );
 		}
 
-		if ( strtotime( $end ) < strtotime( $start ) ) {
+		if ( $endDate < $startDate ) {
 			return ResponseHelper::error( __( 'End date must be after start date.', 'nozule' ), 400 );
 		}
 

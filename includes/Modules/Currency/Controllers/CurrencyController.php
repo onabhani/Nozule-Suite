@@ -193,14 +193,20 @@ class CurrencyController {
 	 * Set a currency as the default.
 	 */
 	public function setDefault( WP_REST_Request $request ): WP_REST_Response {
-		$id     = (int) $request->get_param( 'id' );
+		$id       = (int) $request->get_param( 'id' );
+		$currency = $this->service->getCurrency( $id );
+
+		if ( ! $currency ) {
+			return ResponseHelper::notFound( __( 'Currency not found.', 'nozule' ) );
+		}
+
 		$result = $this->service->setDefaultCurrency( $id );
 
 		if ( $result ) {
 			return ResponseHelper::success( null, __( 'Default currency updated successfully.', 'nozule' ) );
 		}
 
-		return ResponseHelper::notFound( __( 'Failed to set default currency.', 'nozule' ) );
+		return ResponseHelper::error( __( 'Failed to set default currency.', 'nozule' ), 500 );
 	}
 
 	/**

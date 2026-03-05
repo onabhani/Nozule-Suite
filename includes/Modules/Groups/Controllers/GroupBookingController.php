@@ -142,10 +142,15 @@ class GroupBookingController {
 			'page'      => (int) ( $request->get_param( 'page' ) ?? 1 ),
 		] );
 
-		return ResponseHelper::success( array_map( fn( GroupBooking $g ) => $g->toArray(), $result['groups'] ), null, [
-				'total' => $result['total'],
-				'pages' => $result['pages'],
-			] );
+		$page    = (int) ( $request->get_param( 'page' ) ?? 1 );
+		$perPage = (int) ( $request->get_param( 'per_page' ) ?? 20 );
+
+		return ResponseHelper::paginated(
+			array_map( fn( GroupBooking $g ) => $g->toArray(), $result['groups'] ),
+			$result['total'],
+			$page,
+			$perPage
+		);
 	}
 
 	/**

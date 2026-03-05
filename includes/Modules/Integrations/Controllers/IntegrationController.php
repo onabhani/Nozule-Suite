@@ -75,11 +75,13 @@ class IntegrationController {
 				];
 		}
 
-		if ( $result['success'] ) {
+		if ( is_array( $result ) && ! empty( $result['success'] ) ) {
 			return ResponseHelper::success( $result );
 		}
 
-		return ResponseHelper::error( $result['message'] ?? __( 'Connection test failed.', 'nozule' ), 422 );
+		$message = is_array( $result ) && isset( $result['message'] ) ? $result['message'] : __( 'Connection test failed.', 'nozule' );
+
+		return ResponseHelper::error( $message, 422 );
 	}
 
 	/**

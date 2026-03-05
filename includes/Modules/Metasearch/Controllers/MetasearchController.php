@@ -145,11 +145,9 @@ class MetasearchController {
 
 			return ResponseHelper::success( [ 'stats' => $stats ], __( 'Feed generation test passed.', 'nozule' ) );
 		} catch ( \Throwable $e ) {
-			return ResponseHelper::error( sprintf(
-				/* translators: %s: error message */
-				__( 'Feed generation failed: %s', 'nozule' ),
-				$e->getMessage()
-			), 500 );
+			error_log( sprintf( '[Nozule] Feed generation failed: %s in %s:%d', $e->getMessage(), $e->getFile(), $e->getLine() ) );
+
+			return ResponseHelper::error( __( 'Feed generation failed.', 'nozule' ), 500 );
 		}
 	}
 

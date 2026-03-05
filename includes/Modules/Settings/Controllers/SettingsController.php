@@ -186,12 +186,6 @@ class SettingsController {
         // Invalidate settings cache.
         $this->cache->invalidateTag( 'settings' );
 
-        $message = sprintf(
-            /* translators: %d: number of updated settings */
-            __( '%d setting(s) updated successfully.', 'nozule' ),
-            count( $updated )
-        );
-
         $responseData = [
             'updated'  => $updated,
             'settings' => $this->scrubSensitiveKeys( $this->settings->getAll() ),
@@ -200,6 +194,21 @@ class SettingsController {
         if ( ! empty( $errors ) ) {
             $responseData['errors'] = $errors;
         }
+
+        // If nothing was updated and there were errors, report as failure.
+        if ( count( $updated ) === 0 && ! empty( $errors ) ) {
+            return ResponseHelper::error(
+                __( 'No settings were updated.', 'nozule' ),
+                422,
+                $errors
+            );
+        }
+
+        $message = sprintf(
+            /* translators: %d: number of updated settings */
+            __( '%d setting(s) updated successfully.', 'nozule' ),
+            count( $updated )
+        );
 
         return ResponseHelper::success( $responseData, $message );
     }
@@ -263,7 +272,7 @@ class SettingsController {
             'country'      => $country,
             'taxes_seeded' => $taxesSeeded,
         ], sprintf(
-            /* translators: %s: country name */
+            /* translators: %s: country/profile label, %d: number of taxes configured */
             __( 'Country profile "%s" applied. Currency, timezone, and %d tax(es) configured.', 'nozule' ),
             $profile['label'],
             $taxesSeeded
