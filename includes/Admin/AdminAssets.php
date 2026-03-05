@@ -196,6 +196,7 @@ class AdminAssets {
             'operatingCountry' => $operatingCountry,
             'multiProperty'    => $multiProperty === '1' || $multiProperty === true,
             'userId'       => $current_user->ID,
+            'isAdmin'      => current_user_can( 'manage_options' ),
             'user'         => [
                 'id'           => $current_user->ID,
                 'display_name' => $current_user->display_name,

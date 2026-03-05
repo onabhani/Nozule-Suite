@@ -19,6 +19,7 @@ document.addEventListener('alpine:init', function () {
 
             isArabic: (window.NozuleAdmin && NozuleAdmin.locale || '').indexOf('ar') === 0,
             currentUserId: window.NozuleAdmin ? NozuleAdmin.userId : 0,
+            currentUserIsAdmin: window.NozuleAdmin ? !!NozuleAdmin.isAdmin : false,
 
             init: function () {
                 this.form = this.defaultForm();
@@ -73,7 +74,12 @@ document.addEventListener('alpine:init', function () {
             // ---- Self-edit check ----
 
             isSelf: function () {
-                return this.editingId && Number(this.editingId) === Number(this.currentUserId);
+                return this.editingId && Number(this.editingWpUserId) === Number(this.currentUserId);
+            },
+
+            /** Self-edit restriction: true when editing own account without admin privileges. */
+            isSelfRestricted: function () {
+                return this.isSelf() && !this.currentUserIsAdmin;
             },
 
             // ---- Data loading ----
@@ -110,6 +116,7 @@ document.addEventListener('alpine:init', function () {
             openModal: function (emp) {
                 if (emp) {
                     this.editingId = emp.id;
+                    this.editingWpUserId = emp.wp_user_id || 0;
                     this.form = {
                         display_name: emp.display_name || '',
                         email: emp.email || '',
@@ -120,6 +127,7 @@ document.addEventListener('alpine:init', function () {
                     };
                 } else {
                     this.editingId = null;
+                    this.editingWpUserId = 0;
                     this.form = this.defaultForm();
                     this.applyRolePreset();
                 }
@@ -135,8 +143,8 @@ document.addEventListener('alpine:init', function () {
                     email: self.form.email
                 };
 
-                // Send role/capabilities when not editing self or when creating.
-                if (!self.isSelf() || !self.editingId) {
+                // Send role/capabilities when not self-restricted or when creating.
+                if (!self.isSelfRestricted() || !self.editingId) {
                     data.role = self.form.role;
                     data.capabilities = self.form.capabilities;
                 }
