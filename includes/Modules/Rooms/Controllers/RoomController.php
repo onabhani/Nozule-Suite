@@ -2,6 +2,7 @@
 
 namespace Nozule\Modules\Rooms\Controllers;
 
+use Nozule\Core\ResponseHelper;
 use Nozule\Modules\Rooms\Models\Room;
 use Nozule\Modules\Rooms\Services\RoomService;
 use WP_REST_Request;
@@ -104,11 +105,7 @@ class RoomController {
 			$rooms
 		);
 
-		return new WP_REST_Response( [
-			'success' => true,
-			'data'    => $data,
-			'total'   => count( $data ),
-		], 200 );
+		return ResponseHelper::success( $data, null, [ 'total' => count( $data ) ] );
 	}
 
 	/**
@@ -119,16 +116,10 @@ class RoomController {
 		$room = $this->roomService->findRoom( $id );
 
 		if ( ! $room ) {
-			return new WP_REST_Response( [
-				'success' => false,
-				'message' => __( 'Room not found.', 'nozule' ),
-			], 404 );
+			return ResponseHelper::notFound( __( 'Room not found.', 'nozule' ) );
 		}
 
-		return new WP_REST_Response( [
-			'success' => true,
-			'data'    => $room->toArray(),
-		], 200 );
+		return ResponseHelper::success( $room->toArray() );
 	}
 
 	/**
@@ -140,18 +131,10 @@ class RoomController {
 		$result = $this->roomService->createRoom( $data );
 
 		if ( $result instanceof Room ) {
-			return new WP_REST_Response( [
-				'success' => true,
-				'message' => __( 'Room created successfully.', 'nozule' ),
-				'data'    => $result->toArray(),
-			], 201 );
+			return ResponseHelper::created( $result->toArray(), __( 'Room created successfully.', 'nozule' ) );
 		}
 
-		return new WP_REST_Response( [
-			'success' => false,
-			'message' => __( 'Validation failed.', 'nozule' ),
-			'errors'  => $result,
-		], 422 );
+		return ResponseHelper::error( __( 'Validation failed.', 'nozule' ), 422, $result );
 	}
 
 	/**
@@ -164,26 +147,14 @@ class RoomController {
 		$result = $this->roomService->updateRoom( $id, $data );
 
 		if ( $result instanceof Room ) {
-			return new WP_REST_Response( [
-				'success' => true,
-				'message' => __( 'Room updated successfully.', 'nozule' ),
-				'data'    => $result->toArray(),
-			], 200 );
+			return ResponseHelper::success( $result->toArray(), __( 'Room updated successfully.', 'nozule' ) );
 		}
 
 		if ( isset( $result['id'] ) ) {
-			return new WP_REST_Response( [
-				'success' => false,
-				'message' => $result['id'][0],
-				'errors'  => $result,
-			], 404 );
+			return ResponseHelper::error( $result['id'][0], 404, $result );
 		}
 
-		return new WP_REST_Response( [
-			'success' => false,
-			'message' => __( 'Validation failed.', 'nozule' ),
-			'errors'  => $result,
-		], 422 );
+		return ResponseHelper::error( __( 'Validation failed.', 'nozule' ), 422, $result );
 	}
 
 	/**
@@ -194,19 +165,12 @@ class RoomController {
 		$result = $this->roomService->deleteRoom( $id );
 
 		if ( $result === true ) {
-			return new WP_REST_Response( [
-				'success' => true,
-				'message' => __( 'Room deleted successfully.', 'nozule' ),
-			], 200 );
+			return ResponseHelper::success( null, __( 'Room deleted successfully.', 'nozule' ) );
 		}
 
 		$statusCode = isset( $result['id'] ) ? 404 : 422;
 
-		return new WP_REST_Response( [
-			'success' => false,
-			'message' => __( 'Failed to delete room.', 'nozule' ),
-			'errors'  => $result,
-		], $statusCode );
+		return ResponseHelper::error( __( 'Failed to delete room.', 'nozule' ), $statusCode, $result );
 	}
 
 	/**
@@ -217,27 +181,16 @@ class RoomController {
 		$status = sanitize_text_field( $request->get_param( 'status' ) ?? '' );
 
 		if ( ! $status ) {
-			return new WP_REST_Response( [
-				'success' => false,
-				'message' => __( 'Status is required.', 'nozule' ),
-			], 422 );
+			return ResponseHelper::error( __( 'Status is required.', 'nozule' ), 422 );
 		}
 
 		$result = $this->roomService->updateRoomStatus( $id, $status );
 
 		if ( $result instanceof Room ) {
-			return new WP_REST_Response( [
-				'success' => true,
-				'message' => __( 'Room status updated.', 'nozule' ),
-				'data'    => $result->toArray(),
-			], 200 );
+			return ResponseHelper::success( $result->toArray(), __( 'Room status updated.', 'nozule' ) );
 		}
 
-		return new WP_REST_Response( [
-			'success' => false,
-			'message' => __( 'Failed to update room status.', 'nozule' ),
-			'errors'  => $result,
-		], 422 );
+		return ResponseHelper::error( __( 'Failed to update room status.', 'nozule' ), 422, $result );
 	}
 
 	/**

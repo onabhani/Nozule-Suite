@@ -6,6 +6,7 @@ use Nozule\Modules\Bookings\Exceptions\NoAvailabilityException;
 use Nozule\Modules\Bookings\Repositories\BookingRepository;
 use Nozule\Modules\Bookings\Services\BookingService;
 use Nozule\Core\RateLimiter;
+use Nozule\Core\ResponseHelper;
 
 /**
  * REST controller for public-facing booking operations.
@@ -92,32 +93,20 @@ class BookingController {
 		try {
 			$booking = $this->service->createBooking( $request->get_params() );
 
-			return new \WP_REST_Response( [
-				'success' => true,
-				'data'    => [
+			return ResponseHelper::created( [
 					'booking_number' => $booking->booking_number,
 					'status'         => $booking->status,
 					'total_amount'   => $booking->total_amount,
 					'check_in'       => $booking->check_in,
 					'check_out'      => $booking->check_out,
 					'nights'         => $booking->nights,
-				],
-			], 201 );
+				] );
 		} catch ( \InvalidArgumentException $e ) {
-			return new \WP_REST_Response( [
-				'success' => false,
-				'message' => $e->getMessage(),
-			], 400 );
+			return ResponseHelper::error( $e->getMessage(), 400 );
 		} catch ( NoAvailabilityException $e ) {
-			return new \WP_REST_Response( [
-				'success' => false,
-				'message' => $e->getMessage(),
-			], 409 );
+			return ResponseHelper::error( $e->getMessage(), 409 );
 		} catch ( \Throwable $e ) {
-			return new \WP_REST_Response( [
-				'success' => false,
-				'message' => __( 'An unexpected error occurred. Please try again.', 'nozule' ),
-			], 500 );
+			return ResponseHelper::error( __( 'An unexpected error occurred. Please try again.', 'nozule' ), 500 );
 		}
 	}
 
@@ -135,25 +124,17 @@ class BookingController {
 		$booking = $this->repository->findByBookingNumber( $bookingNumber );
 
 		if ( ! $booking ) {
-			return new \WP_REST_Response( [
-				'success' => false,
-				'message' => __( 'Booking not found.', 'nozule' ),
-			], 404 );
+			return ResponseHelper::notFound( __( 'Booking not found.', 'nozule' ) );
 		}
 
 		// Verify guest email matches.
 		$guest = $this->getGuestForBooking( $booking );
 
 		if ( ! $guest || strtolower( $guest->email ) !== strtolower( $email ) ) {
-			return new \WP_REST_Response( [
-				'success' => false,
-				'message' => __( 'Booking not found.', 'nozule' ),
-			], 404 );
+			return ResponseHelper::notFound( __( 'Booking not found.', 'nozule' ) );
 		}
 
-		return new \WP_REST_Response( [
-			'success' => true,
-			'data'    => [
+		return ResponseHelper::success( [
 				'booking_number' => $booking->booking_number,
 				'status'         => $booking->status,
 				'check_in'       => $booking->check_in,
@@ -166,8 +147,7 @@ class BookingController {
 				'balance_due'    => $booking->balance_due,
 				'currency'       => $booking->currency,
 				'guest_name'     => $guest->full_name,
-			],
-		], 200 );
+			] );
 	}
 
 	/**
@@ -184,42 +164,27 @@ class BookingController {
 		$booking = $this->repository->findByBookingNumber( $bookingNumber );
 
 		if ( ! $booking ) {
-			return new \WP_REST_Response( [
-				'success' => false,
-				'message' => __( 'Booking not found.', 'nozule' ),
-			], 404 );
+			return ResponseHelper::notFound( __( 'Booking not found.', 'nozule' ) );
 		}
 
 		// Verify guest email.
 		$guest = $this->getGuestForBooking( $booking );
 
 		if ( ! $guest || strtolower( $guest->email ) !== strtolower( $email ) ) {
-			return new \WP_REST_Response( [
-				'success' => false,
-				'message' => __( 'Booking not found.', 'nozule' ),
-			], 404 );
+			return ResponseHelper::notFound( __( 'Booking not found.', 'nozule' ) );
 		}
 
 		try {
 			$updated = $this->service->cancelBooking( $booking->id, $reason );
 
-			return new \WP_REST_Response( [
-				'success' => true,
-				'data'    => [
+			return ResponseHelper::success( [
 					'booking_number' => $updated->booking_number,
 					'status'         => $updated->status,
-				],
-			], 200 );
+				] );
 		} catch ( \Nozule\Modules\Bookings\Exceptions\InvalidStateException $e ) {
-			return new \WP_REST_Response( [
-				'success' => false,
-				'message' => $e->getMessage(),
-			], 409 );
+			return ResponseHelper::error( $e->getMessage(), 409 );
 		} catch ( \Throwable $e ) {
-			return new \WP_REST_Response( [
-				'success' => false,
-				'message' => __( 'An unexpected error occurred. Please try again.', 'nozule' ),
-			], 500 );
+			return ResponseHelper::error( __( 'An unexpected error occurred. Please try again.', 'nozule' ), 500 );
 		}
 	}
 

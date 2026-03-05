@@ -2,6 +2,7 @@
 
 namespace Nozule\Modules\Currency\Controllers;
 
+use Nozule\Core\ResponseHelper;
 use Nozule\Modules\Currency\Models\Currency;
 use Nozule\Modules\Currency\Models\ExchangeRate;
 use Nozule\Modules\Currency\Services\CurrencyService;
@@ -120,11 +121,7 @@ class CurrencyController {
 			$currencies
 		);
 
-		return new WP_REST_Response( [
-			'success' => true,
-			'data'    => $data,
-			'total'   => count( $data ),
-		], 200 );
+		return ResponseHelper::success( $data, null, [ 'total' => count( $data ) ] );
 	}
 
 	/**
@@ -136,18 +133,10 @@ class CurrencyController {
 		$result = $this->service->createCurrency( $data );
 
 		if ( $result instanceof Currency ) {
-			return new WP_REST_Response( [
-				'success' => true,
-				'message' => __( 'Currency created successfully.', 'nozule' ),
-				'data'    => $result->toArray(),
-			], 201 );
+			return ResponseHelper::created( $result->toArray(), __( 'Currency created successfully.', 'nozule' ) );
 		}
 
-		return new WP_REST_Response( [
-			'success' => false,
-			'message' => __( 'Validation failed.', 'nozule' ),
-			'errors'  => $result,
-		], 422 );
+		return ResponseHelper::error( __( 'Validation failed.', 'nozule' ), 422, $result );
 	}
 
 	/**
@@ -158,16 +147,10 @@ class CurrencyController {
 		$currency = $this->service->getCurrency( $id );
 
 		if ( ! $currency ) {
-			return new WP_REST_Response( [
-				'success' => false,
-				'message' => __( 'Currency not found.', 'nozule' ),
-			], 404 );
+			return ResponseHelper::notFound( __( 'Currency not found.', 'nozule' ) );
 		}
 
-		return new WP_REST_Response( [
-			'success' => true,
-			'data'    => $currency->toArray(),
-		], 200 );
+		return ResponseHelper::success( $currency->toArray() );
 	}
 
 	/**
@@ -180,26 +163,14 @@ class CurrencyController {
 		$result = $this->service->updateCurrency( $id, $data );
 
 		if ( $result instanceof Currency ) {
-			return new WP_REST_Response( [
-				'success' => true,
-				'message' => __( 'Currency updated successfully.', 'nozule' ),
-				'data'    => $result->toArray(),
-			], 200 );
+			return ResponseHelper::success( $result->toArray(), __( 'Currency updated successfully.', 'nozule' ) );
 		}
 
 		if ( isset( $result['id'] ) ) {
-			return new WP_REST_Response( [
-				'success' => false,
-				'message' => $result['id'][0],
-				'errors'  => $result,
-			], 404 );
+			return ResponseHelper::error( $result['id'][0], 404, $result );
 		}
 
-		return new WP_REST_Response( [
-			'success' => false,
-			'message' => __( 'Validation failed.', 'nozule' ),
-			'errors'  => $result,
-		], 422 );
+		return ResponseHelper::error( __( 'Validation failed.', 'nozule' ), 422, $result );
 	}
 
 	/**
@@ -210,39 +181,32 @@ class CurrencyController {
 		$result = $this->service->deleteCurrency( $id );
 
 		if ( $result === true ) {
-			return new WP_REST_Response( [
-				'success' => true,
-				'message' => __( 'Currency deleted successfully.', 'nozule' ),
-			], 200 );
+			return ResponseHelper::success( null, __( 'Currency deleted successfully.', 'nozule' ) );
 		}
 
 		$status_code = isset( $result['id'] ) ? 404 : 422;
 
-		return new WP_REST_Response( [
-			'success' => false,
-			'message' => __( 'Failed to delete currency.', 'nozule' ),
-			'errors'  => $result,
-		], $status_code );
+		return ResponseHelper::error( __( 'Failed to delete currency.', 'nozule' ), $status_code, $result );
 	}
 
 	/**
 	 * Set a currency as the default.
 	 */
 	public function setDefault( WP_REST_Request $request ): WP_REST_Response {
-		$id     = (int) $request->get_param( 'id' );
+		$id       = (int) $request->get_param( 'id' );
+		$currency = $this->service->getCurrency( $id );
+
+		if ( ! $currency ) {
+			return ResponseHelper::notFound( __( 'Currency not found.', 'nozule' ) );
+		}
+
 		$result = $this->service->setDefaultCurrency( $id );
 
 		if ( $result ) {
-			return new WP_REST_Response( [
-				'success' => true,
-				'message' => __( 'Default currency updated successfully.', 'nozule' ),
-			], 200 );
+			return ResponseHelper::success( null, __( 'Default currency updated successfully.', 'nozule' ) );
 		}
 
-		return new WP_REST_Response( [
-			'success' => false,
-			'message' => __( 'Failed to set default currency.', 'nozule' ),
-		], 404 );
+		return ResponseHelper::error( __( 'Failed to set default currency.', 'nozule' ), 500 );
 	}
 
 	/**
@@ -254,10 +218,7 @@ class CurrencyController {
 		$limit = absint( $request->get_param( 'limit' ) ?? 30 );
 
 		if ( empty( $from ) || empty( $to ) ) {
-			return new WP_REST_Response( [
-				'success' => false,
-				'message' => __( 'Both "from" and "to" currency codes are required.', 'nozule' ),
-			], 400 );
+			return ResponseHelper::error( __( 'Both "from" and "to" currency codes are required.', 'nozule' ), 400 );
 		}
 
 		$history = $this->service->getExchangeHistory( $from, $to, $limit );
@@ -267,11 +228,7 @@ class CurrencyController {
 			$history
 		);
 
-		return new WP_REST_Response( [
-			'success' => true,
-			'data'    => $data,
-			'total'   => count( $data ),
-		], 200 );
+		return ResponseHelper::success( $data, null, [ 'total' => count( $data ) ] );
 	}
 
 	/**
@@ -283,27 +240,16 @@ class CurrencyController {
 		$rate = (float) ( $request->get_param( 'rate' ) ?? 0 );
 
 		if ( empty( $from ) || empty( $to ) || $rate <= 0 ) {
-			return new WP_REST_Response( [
-				'success' => false,
-				'message' => __( 'from_currency, to_currency, and a positive rate are required.', 'nozule' ),
-			], 400 );
+			return ResponseHelper::error( __( 'from_currency, to_currency, and a positive rate are required.', 'nozule' ), 400 );
 		}
 
 		$result = $this->service->updateExchangeRate( $from, $to, $rate );
 
 		if ( $result instanceof ExchangeRate ) {
-			return new WP_REST_Response( [
-				'success' => true,
-				'message' => __( 'Exchange rate saved successfully.', 'nozule' ),
-				'data'    => $result->toArray(),
-			], 201 );
+			return ResponseHelper::created( $result->toArray(), __( 'Exchange rate saved successfully.', 'nozule' ) );
 		}
 
-		return new WP_REST_Response( [
-			'success' => false,
-			'message' => __( 'Failed to save exchange rate.', 'nozule' ),
-			'errors'  => $result,
-		], 422 );
+		return ResponseHelper::error( __( 'Failed to save exchange rate.', 'nozule' ), 422, $result );
 	}
 
 	/**
@@ -315,10 +261,7 @@ class CurrencyController {
 		$to     = sanitize_text_field( $request->get_param( 'to' ) ?? '' );
 
 		if ( empty( $from ) || empty( $to ) ) {
-			return new WP_REST_Response( [
-				'success' => false,
-				'message' => __( 'Both "from" and "to" currency codes are required.', 'nozule' ),
-			], 400 );
+			return ResponseHelper::error( __( 'Both "from" and "to" currency codes are required.', 'nozule' ), 400 );
 		}
 
 		$converted = $this->service->convert( $amount, $from, $to );
@@ -330,17 +273,14 @@ class CurrencyController {
 			? $to_currency->formatAmount( $converted )
 			: number_format( $converted, 2, '.', ',' );
 
-		return new WP_REST_Response( [
-			'success'   => true,
-			'data'      => [
-				'original_amount'  => $amount,
-				'converted_amount' => round( $converted, 6 ),
-				'formatted'        => $formatted,
-				'from'             => strtoupper( $from ),
-				'to'               => strtoupper( $to ),
-				'rate'             => $rate,
-			],
-		], 200 );
+		return ResponseHelper::success( [
+			'original_amount'  => $amount,
+			'converted_amount' => round( $converted, 6 ),
+			'formatted'        => $formatted,
+			'from'             => strtoupper( $from ),
+			'to'               => strtoupper( $to ),
+			'rate'             => $rate,
+		] );
 	}
 
 	/**

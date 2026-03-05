@@ -2,6 +2,7 @@
 
 namespace Nozule\Modules\Property\Controllers;
 
+use Nozule\Core\ResponseHelper;
 use Nozule\Modules\Property\Models\Property;
 use Nozule\Modules\Property\Services\PropertyService;
 use WP_REST_Request;
@@ -92,11 +93,7 @@ class PropertyController {
 			$properties
 		);
 
-		return new WP_REST_Response( [
-			'success' => true,
-			'data'    => $data,
-			'total'   => count( $data ),
-		], 200 );
+		return ResponseHelper::success( $data );
 	}
 
 	/**
@@ -107,16 +104,10 @@ class PropertyController {
 		$property = $this->service->find( $id );
 
 		if ( ! $property ) {
-			return new WP_REST_Response( [
-				'success' => false,
-				'message' => __( 'Property not found.', 'nozule' ),
-			], 404 );
+			return ResponseHelper::notFound( __( 'Property not found.', 'nozule' ) );
 		}
 
-		return new WP_REST_Response( [
-			'success' => true,
-			'data'    => $property->toArray(),
-		], 200 );
+		return ResponseHelper::success( $property->toArray() );
 	}
 
 	/**
@@ -128,18 +119,10 @@ class PropertyController {
 		$result = $this->service->createProperty( $data );
 
 		if ( $result instanceof Property ) {
-			return new WP_REST_Response( [
-				'success' => true,
-				'message' => __( 'Property created successfully.', 'nozule' ),
-				'data'    => $result->toArray(),
-			], 201 );
+			return ResponseHelper::created( $result->toArray(), __( 'Property created successfully.', 'nozule' ) );
 		}
 
-		return new WP_REST_Response( [
-			'success' => false,
-			'message' => __( 'Validation failed.', 'nozule' ),
-			'errors'  => $result,
-		], 422 );
+		return ResponseHelper::error( __( 'Validation failed.', 'nozule' ), 422, $result );
 	}
 
 	/**
@@ -152,26 +135,16 @@ class PropertyController {
 		$result = $this->service->updateProperty( $id, $data );
 
 		if ( $result instanceof Property ) {
-			return new WP_REST_Response( [
-				'success' => true,
-				'message' => __( 'Property updated successfully.', 'nozule' ),
-				'data'    => $result->toArray(),
-			], 200 );
+			return ResponseHelper::success( $result->toArray(), __( 'Property updated successfully.', 'nozule' ) );
 		}
 
 		if ( isset( $result['id'] ) ) {
-			return new WP_REST_Response( [
-				'success' => false,
-				'message' => $result['id'][0],
-				'errors'  => $result,
-			], 404 );
+			$message = is_array( $result['id'] ) && isset( $result['id'][0] ) ? $result['id'][0] : __( 'Property not found.', 'nozule' );
+
+			return ResponseHelper::error( $message, 404, $result );
 		}
 
-		return new WP_REST_Response( [
-			'success' => false,
-			'message' => __( 'Validation failed.', 'nozule' ),
-			'errors'  => $result,
-		], 422 );
+		return ResponseHelper::error( __( 'Validation failed.', 'nozule' ), 422, $result );
 	}
 
 	/**
@@ -182,10 +155,7 @@ class PropertyController {
 		$result = $this->service->deleteProperty( $id );
 
 		if ( $result === true ) {
-			return new WP_REST_Response( [
-				'success' => true,
-				'message' => __( 'Property deleted successfully.', 'nozule' ),
-			], 200 );
+			return ResponseHelper::success( null, __( 'Property deleted successfully.', 'nozule' ) );
 		}
 
 		$statusCode = isset( $result['id'] ) ? 404 : 422;
@@ -197,11 +167,7 @@ class PropertyController {
 			$message = $result['id'][0];
 		}
 
-		return new WP_REST_Response( [
-			'success' => false,
-			'message' => $message,
-			'errors'  => $result,
-		], $statusCode );
+		return ResponseHelper::error( $message, $statusCode, $result );
 	}
 
 	/**
@@ -211,20 +177,14 @@ class PropertyController {
 		$property = $this->service->getCurrent();
 
 		if ( ! $property ) {
-			return new WP_REST_Response( [
-				'success' => false,
-				'message' => __( 'No property configured.', 'nozule' ),
-			], 404 );
+			return ResponseHelper::notFound( __( 'No property configured.', 'nozule' ) );
 		}
 
 		// Return a subset of fields suitable for public consumption.
 		$data = $property->toArray();
 		unset( $data['tax_id'], $data['license_number'] );
 
-		return new WP_REST_Response( [
-			'success' => true,
-			'data'    => $data,
-		], 200 );
+		return ResponseHelper::success( $data );
 	}
 
 	/**

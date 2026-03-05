@@ -2,6 +2,7 @@
 
 namespace Nozule\Modules\Rooms\Controllers;
 
+use Nozule\Core\ResponseHelper;
 use Nozule\Modules\Rooms\Models\RoomType;
 use Nozule\Modules\Rooms\Services\RoomService;
 use WP_REST_Request;
@@ -114,10 +115,7 @@ class RoomTypeController {
 			$roomTypes
 		);
 
-		return new WP_REST_Response( [
-			'success' => true,
-			'data'    => $data,
-		], 200 );
+		return ResponseHelper::success( $data );
 	}
 
 	/**
@@ -128,16 +126,10 @@ class RoomTypeController {
 		$roomType = $this->roomService->findRoomType( $id );
 
 		if ( ! $roomType ) {
-			return new WP_REST_Response( [
-				'success' => false,
-				'message' => __( 'Room type not found.', 'nozule' ),
-			], 404 );
+			return ResponseHelper::notFound( __( 'Room type not found.', 'nozule' ) );
 		}
 
-		return new WP_REST_Response( [
-			'success' => true,
-			'data'    => $roomType->toPublicArray(),
-		], 200 );
+		return ResponseHelper::success( $roomType->toPublicArray() );
 	}
 
 	/**
@@ -151,10 +143,7 @@ class RoomTypeController {
 			$roomTypes
 		);
 
-		return new WP_REST_Response( [
-			'success' => true,
-			'data'    => $data,
-		], 200 );
+		return ResponseHelper::success( $data );
 	}
 
 	/**
@@ -166,18 +155,10 @@ class RoomTypeController {
 		$result = $this->roomService->createRoomType( $data );
 
 		if ( $result instanceof RoomType ) {
-			return new WP_REST_Response( [
-				'success' => true,
-				'message' => __( 'Room type created successfully.', 'nozule' ),
-				'data'    => $result->toPublicArray(),
-			], 201 );
+			return ResponseHelper::created( $result->toPublicArray(), __( 'Room type created successfully.', 'nozule' ) );
 		}
 
-		return new WP_REST_Response( [
-			'success' => false,
-			'message' => __( 'Validation failed.', 'nozule' ),
-			'errors'  => $result,
-		], 422 );
+		return ResponseHelper::error( __( 'Validation failed.', 'nozule' ), 422, $result );
 	}
 
 	/**
@@ -190,27 +171,15 @@ class RoomTypeController {
 		$result = $this->roomService->updateRoomType( $id, $data );
 
 		if ( $result instanceof RoomType ) {
-			return new WP_REST_Response( [
-				'success' => true,
-				'message' => __( 'Room type updated successfully.', 'nozule' ),
-				'data'    => $result->toPublicArray(),
-			], 200 );
+			return ResponseHelper::success( $result->toPublicArray(), __( 'Room type updated successfully.', 'nozule' ) );
 		}
 
 		// Check if the error is "not found".
 		if ( isset( $result['id'] ) ) {
-			return new WP_REST_Response( [
-				'success' => false,
-				'message' => $result['id'][0],
-				'errors'  => $result,
-			], 404 );
+			return ResponseHelper::error( $result['id'][0], 404, $result );
 		}
 
-		return new WP_REST_Response( [
-			'success' => false,
-			'message' => __( 'Validation failed.', 'nozule' ),
-			'errors'  => $result,
-		], 422 );
+		return ResponseHelper::error( __( 'Validation failed.', 'nozule' ), 422, $result );
 	}
 
 	/**
@@ -221,19 +190,12 @@ class RoomTypeController {
 		$result = $this->roomService->deleteRoomType( $id );
 
 		if ( $result === true ) {
-			return new WP_REST_Response( [
-				'success' => true,
-				'message' => __( 'Room type deleted successfully.', 'nozule' ),
-			], 200 );
+			return ResponseHelper::success( null, __( 'Room type deleted successfully.', 'nozule' ) );
 		}
 
 		$statusCode = isset( $result['id'] ) ? 404 : 422;
 
-		return new WP_REST_Response( [
-			'success' => false,
-			'message' => __( 'Failed to delete room type.', 'nozule' ),
-			'errors'  => $result,
-		], $statusCode );
+		return ResponseHelper::error( __( 'Failed to delete room type.', 'nozule' ), $statusCode, $result );
 	}
 
 	/**
@@ -243,26 +205,17 @@ class RoomTypeController {
 		$orderedIds = $request->get_param( 'ordered_ids' );
 
 		if ( ! is_array( $orderedIds ) || empty( $orderedIds ) ) {
-			return new WP_REST_Response( [
-				'success' => false,
-				'message' => __( 'ordered_ids is required and must be a non-empty array.', 'nozule' ),
-			], 422 );
+			return ResponseHelper::error( __( 'ordered_ids is required and must be a non-empty array.', 'nozule' ), 422 );
 		}
 
 		$orderedIds = array_map( 'absint', $orderedIds );
 		$success    = $this->roomService->reorderRoomTypes( $orderedIds );
 
 		if ( $success ) {
-			return new WP_REST_Response( [
-				'success' => true,
-				'message' => __( 'Room types reordered successfully.', 'nozule' ),
-			], 200 );
+			return ResponseHelper::success( null, __( 'Room types reordered successfully.', 'nozule' ) );
 		}
 
-		return new WP_REST_Response( [
-			'success' => false,
-			'message' => __( 'Failed to reorder room types.', 'nozule' ),
-		], 500 );
+		return ResponseHelper::error( __( 'Failed to reorder room types.', 'nozule' ), 500 );
 	}
 
 	/**

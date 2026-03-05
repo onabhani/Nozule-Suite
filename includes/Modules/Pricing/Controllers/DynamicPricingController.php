@@ -3,6 +3,7 @@
 namespace Nozule\Modules\Pricing\Controllers;
 
 use Nozule\Core\EventDispatcher;
+use Nozule\Core\ResponseHelper;
 use Nozule\Modules\Pricing\Models\DowRule;
 use Nozule\Modules\Pricing\Models\EventOverride;
 use Nozule\Modules\Pricing\Models\OccupancyRule;
@@ -134,15 +135,12 @@ class DynamicPricingController {
 	public function indexOccupancy( \WP_REST_Request $request ): \WP_REST_Response {
 		$rules = $this->repository->getAllOccupancyRules();
 
-		return new \WP_REST_Response( [
-			'success' => true,
-			'data'    => array_map(
+		return ResponseHelper::success( array_map(
 				function ( OccupancyRule $rule ) {
 					return $rule->toPublicArray();
 				},
 				$rules
-			),
-		] );
+			) );
 	}
 
 	/**
@@ -156,21 +154,12 @@ class DynamicPricingController {
 		$rule      = $this->repository->createOccupancyRule( $sanitized );
 
 		if ( ! $rule ) {
-			return new \WP_REST_Response( [
-				'success' => false,
-				'error'   => [
-					'code'    => 'CREATE_FAILED',
-					'message' => __( 'Failed to create occupancy rule.', 'nozule' ),
-				],
-			], 500 );
+			return ResponseHelper::error( __( 'Failed to create occupancy rule.', 'nozule' ), 500 );
 		}
 
 		$this->events->dispatch( 'pricing/dynamic_rule_created', $rule );
 
-		return new \WP_REST_Response( [
-			'success' => true,
-			'data'    => $rule->toPublicArray(),
-		], 201 );
+		return ResponseHelper::created( $rule->toPublicArray() );
 	}
 
 	/**
@@ -183,13 +172,7 @@ class DynamicPricingController {
 		$rule = $this->repository->findOccupancyRule( $id );
 
 		if ( ! $rule ) {
-			return new \WP_REST_Response( [
-				'success' => false,
-				'error'   => [
-					'code'    => 'NOT_FOUND',
-					'message' => __( 'Occupancy rule not found.', 'nozule' ),
-				],
-			], 404 );
+			return ResponseHelper::notFound( __( 'Occupancy rule not found.', 'nozule' ) );
 		}
 
 		$data       = $request->get_json_params();
@@ -201,22 +184,13 @@ class DynamicPricingController {
 		$updated = $this->repository->updateOccupancyRule( $id, $updateData );
 
 		if ( ! $updated ) {
-			return new \WP_REST_Response( [
-				'success' => false,
-				'error'   => [
-					'code'    => 'UPDATE_FAILED',
-					'message' => __( 'Failed to update occupancy rule.', 'nozule' ),
-				],
-			], 500 );
+			return ResponseHelper::error( __( 'Failed to update occupancy rule.', 'nozule' ), 500 );
 		}
 
 		$rule = $this->repository->findOccupancyRule( $id );
 		$this->events->dispatch( 'pricing/dynamic_rule_updated', $rule );
 
-		return new \WP_REST_Response( [
-			'success' => true,
-			'data'    => $rule->toPublicArray(),
-		] );
+		return ResponseHelper::success( $rule->toPublicArray() );
 	}
 
 	/**
@@ -229,33 +203,18 @@ class DynamicPricingController {
 		$rule = $this->repository->findOccupancyRule( $id );
 
 		if ( ! $rule ) {
-			return new \WP_REST_Response( [
-				'success' => false,
-				'error'   => [
-					'code'    => 'NOT_FOUND',
-					'message' => __( 'Occupancy rule not found.', 'nozule' ),
-				],
-			], 404 );
+			return ResponseHelper::notFound( __( 'Occupancy rule not found.', 'nozule' ) );
 		}
 
 		$deleted = $this->repository->deleteOccupancyRule( $id );
 
 		if ( ! $deleted ) {
-			return new \WP_REST_Response( [
-				'success' => false,
-				'error'   => [
-					'code'    => 'DELETE_FAILED',
-					'message' => __( 'Failed to delete occupancy rule.', 'nozule' ),
-				],
-			], 500 );
+			return ResponseHelper::error( __( 'Failed to delete occupancy rule.', 'nozule' ), 500 );
 		}
 
 		$this->events->dispatch( 'pricing/dynamic_rule_deleted', $id, $rule );
 
-		return new \WP_REST_Response( [
-			'success' => true,
-			'message' => __( 'Occupancy rule deleted successfully.', 'nozule' ),
-		] );
+		return ResponseHelper::success( null, __( 'Occupancy rule deleted successfully.', 'nozule' ) );
 	}
 
 	// =================================================================
@@ -270,15 +229,12 @@ class DynamicPricingController {
 	public function indexDow( \WP_REST_Request $request ): \WP_REST_Response {
 		$rules = $this->repository->getAllDowRules();
 
-		return new \WP_REST_Response( [
-			'success' => true,
-			'data'    => array_map(
+		return ResponseHelper::success( array_map(
 				function ( DowRule $rule ) {
 					return $rule->toPublicArray();
 				},
 				$rules
-			),
-		] );
+			) );
 	}
 
 	/**
@@ -292,21 +248,12 @@ class DynamicPricingController {
 		$rule      = $this->repository->createDowRule( $sanitized );
 
 		if ( ! $rule ) {
-			return new \WP_REST_Response( [
-				'success' => false,
-				'error'   => [
-					'code'    => 'CREATE_FAILED',
-					'message' => __( 'Failed to create day-of-week rule.', 'nozule' ),
-				],
-			], 500 );
+			return ResponseHelper::error( __( 'Failed to create day-of-week rule.', 'nozule' ), 500 );
 		}
 
 		$this->events->dispatch( 'pricing/dynamic_rule_created', $rule );
 
-		return new \WP_REST_Response( [
-			'success' => true,
-			'data'    => $rule->toPublicArray(),
-		], 201 );
+		return ResponseHelper::created( $rule->toPublicArray() );
 	}
 
 	/**
@@ -319,13 +266,7 @@ class DynamicPricingController {
 		$rule = $this->repository->findDowRule( $id );
 
 		if ( ! $rule ) {
-			return new \WP_REST_Response( [
-				'success' => false,
-				'error'   => [
-					'code'    => 'NOT_FOUND',
-					'message' => __( 'Day-of-week rule not found.', 'nozule' ),
-				],
-			], 404 );
+			return ResponseHelper::notFound( __( 'Day-of-week rule not found.', 'nozule' ) );
 		}
 
 		$data       = $request->get_json_params();
@@ -337,22 +278,13 @@ class DynamicPricingController {
 		$updated = $this->repository->updateDowRule( $id, $updateData );
 
 		if ( ! $updated ) {
-			return new \WP_REST_Response( [
-				'success' => false,
-				'error'   => [
-					'code'    => 'UPDATE_FAILED',
-					'message' => __( 'Failed to update day-of-week rule.', 'nozule' ),
-				],
-			], 500 );
+			return ResponseHelper::error( __( 'Failed to update day-of-week rule.', 'nozule' ), 500 );
 		}
 
 		$rule = $this->repository->findDowRule( $id );
 		$this->events->dispatch( 'pricing/dynamic_rule_updated', $rule );
 
-		return new \WP_REST_Response( [
-			'success' => true,
-			'data'    => $rule->toPublicArray(),
-		] );
+		return ResponseHelper::success( $rule->toPublicArray() );
 	}
 
 	/**
@@ -365,33 +297,18 @@ class DynamicPricingController {
 		$rule = $this->repository->findDowRule( $id );
 
 		if ( ! $rule ) {
-			return new \WP_REST_Response( [
-				'success' => false,
-				'error'   => [
-					'code'    => 'NOT_FOUND',
-					'message' => __( 'Day-of-week rule not found.', 'nozule' ),
-				],
-			], 404 );
+			return ResponseHelper::notFound( __( 'Day-of-week rule not found.', 'nozule' ) );
 		}
 
 		$deleted = $this->repository->deleteDowRule( $id );
 
 		if ( ! $deleted ) {
-			return new \WP_REST_Response( [
-				'success' => false,
-				'error'   => [
-					'code'    => 'DELETE_FAILED',
-					'message' => __( 'Failed to delete day-of-week rule.', 'nozule' ),
-				],
-			], 500 );
+			return ResponseHelper::error( __( 'Failed to delete day-of-week rule.', 'nozule' ), 500 );
 		}
 
 		$this->events->dispatch( 'pricing/dynamic_rule_deleted', $id, $rule );
 
-		return new \WP_REST_Response( [
-			'success' => true,
-			'message' => __( 'Day-of-week rule deleted successfully.', 'nozule' ),
-		] );
+		return ResponseHelper::success( null, __( 'Day-of-week rule deleted successfully.', 'nozule' ) );
 	}
 
 	// =================================================================
@@ -406,15 +323,12 @@ class DynamicPricingController {
 	public function indexEvents( \WP_REST_Request $request ): \WP_REST_Response {
 		$events = $this->repository->getAllEventOverrides();
 
-		return new \WP_REST_Response( [
-			'success' => true,
-			'data'    => array_map(
+		return ResponseHelper::success( array_map(
 				function ( EventOverride $event ) {
 					return $event->toPublicArray();
 				},
 				$events
-			),
-		] );
+			) );
 	}
 
 	/**
@@ -428,21 +342,12 @@ class DynamicPricingController {
 		$event     = $this->repository->createEventOverride( $sanitized );
 
 		if ( ! $event ) {
-			return new \WP_REST_Response( [
-				'success' => false,
-				'error'   => [
-					'code'    => 'CREATE_FAILED',
-					'message' => __( 'Failed to create event override.', 'nozule' ),
-				],
-			], 500 );
+			return ResponseHelper::error( __( 'Failed to create event override.', 'nozule' ), 500 );
 		}
 
 		$this->events->dispatch( 'pricing/dynamic_rule_created', $event );
 
-		return new \WP_REST_Response( [
-			'success' => true,
-			'data'    => $event->toPublicArray(),
-		], 201 );
+		return ResponseHelper::created( $event->toPublicArray() );
 	}
 
 	/**
@@ -455,13 +360,7 @@ class DynamicPricingController {
 		$event = $this->repository->findEventOverride( $id );
 
 		if ( ! $event ) {
-			return new \WP_REST_Response( [
-				'success' => false,
-				'error'   => [
-					'code'    => 'NOT_FOUND',
-					'message' => __( 'Event override not found.', 'nozule' ),
-				],
-			], 404 );
+			return ResponseHelper::notFound( __( 'Event override not found.', 'nozule' ) );
 		}
 
 		$data       = $request->get_json_params();
@@ -473,22 +372,13 @@ class DynamicPricingController {
 		$updated = $this->repository->updateEventOverride( $id, $updateData );
 
 		if ( ! $updated ) {
-			return new \WP_REST_Response( [
-				'success' => false,
-				'error'   => [
-					'code'    => 'UPDATE_FAILED',
-					'message' => __( 'Failed to update event override.', 'nozule' ),
-				],
-			], 500 );
+			return ResponseHelper::error( __( 'Failed to update event override.', 'nozule' ), 500 );
 		}
 
 		$event = $this->repository->findEventOverride( $id );
 		$this->events->dispatch( 'pricing/dynamic_rule_updated', $event );
 
-		return new \WP_REST_Response( [
-			'success' => true,
-			'data'    => $event->toPublicArray(),
-		] );
+		return ResponseHelper::success( $event->toPublicArray() );
 	}
 
 	/**
@@ -501,33 +391,18 @@ class DynamicPricingController {
 		$event = $this->repository->findEventOverride( $id );
 
 		if ( ! $event ) {
-			return new \WP_REST_Response( [
-				'success' => false,
-				'error'   => [
-					'code'    => 'NOT_FOUND',
-					'message' => __( 'Event override not found.', 'nozule' ),
-				],
-			], 404 );
+			return ResponseHelper::notFound( __( 'Event override not found.', 'nozule' ) );
 		}
 
 		$deleted = $this->repository->deleteEventOverride( $id );
 
 		if ( ! $deleted ) {
-			return new \WP_REST_Response( [
-				'success' => false,
-				'error'   => [
-					'code'    => 'DELETE_FAILED',
-					'message' => __( 'Failed to delete event override.', 'nozule' ),
-				],
-			], 500 );
+			return ResponseHelper::error( __( 'Failed to delete event override.', 'nozule' ), 500 );
 		}
 
 		$this->events->dispatch( 'pricing/dynamic_rule_deleted', $id, $event );
 
-		return new \WP_REST_Response( [
-			'success' => true,
-			'message' => __( 'Event override deleted successfully.', 'nozule' ),
-		] );
+		return ResponseHelper::success( null, __( 'Event override deleted successfully.', 'nozule' ) );
 	}
 
 	// =================================================================
