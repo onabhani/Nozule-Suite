@@ -63,9 +63,12 @@ function nozule_manager(): \Nozule\Core\Plugin {
 // Activation hook
 register_activation_hook( __FILE__, function () {
     ob_start();
-    require_once NZL_PLUGIN_DIR . 'includes/Core/Activator.php';
-    \Nozule\Core\Activator::activate();
-    ob_end_clean();
+    try {
+        require_once NZL_PLUGIN_DIR . 'includes/Core/Activator.php';
+        \Nozule\Core\Activator::activate();
+    } finally {
+        ob_end_clean();
+    }
 } );
 
 // Deactivation hook
@@ -82,8 +85,11 @@ add_action( 'plugins_loaded', function () {
 // Run pending migrations on version upgrade (after textdomain is available).
 add_action( 'init', function () {
     ob_start();
-    \Nozule\Core\Activator::maybeUpgrade();
-    ob_end_clean();
+    try {
+        \Nozule\Core\Activator::maybeUpgrade();
+    } finally {
+        ob_end_clean();
+    }
 }, 0 );
 
 // Dev/debug WP-CLI commands (only when WP_DEBUG is on).
