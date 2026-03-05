@@ -1,5 +1,5 @@
 {
-    "name": "nozule",
+    "name": "nozule/nozule-suite",
     "description": "Nozule - A comprehensive hotel booking management system for WordPress",
     "type": "wordpress-plugin",
     "version": "1.10.0",
@@ -18,7 +18,16 @@
             "homepage": "https://hdqah.com"
         }
     ],
+    "autoload-dev": {
+        "psr-4": {
+            "Nozule\\Tests\\": "tests/"
+        }
+    },
     "config": {
         "optimize-autoloader": true
+    },
+    "require-dev": {
+        "phpunit/phpunit": "^13.0",
+        "mockery/mockery": "^1.6"
     }
 }
