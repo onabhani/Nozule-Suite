@@ -2,6 +2,7 @@
 
 namespace Nozule\Modules\Reports\Controllers;
 
+use Nozule\Core\ResponseHelper;
 use Nozule\Modules\Reports\Services\ReportService;
 use Nozule\Modules\Reports\Services\ExportService;
 
@@ -120,7 +121,7 @@ class ReportController {
             $roomTypeId ? (int) $roomTypeId : null
         );
 
-        return new \WP_REST_Response( $data, 200 );
+        return ResponseHelper::success( $data );
     }
 
     /**
@@ -133,7 +134,7 @@ class ReportController {
 
         $data = $this->reportService->getRevenueReport( $startDate, $endDate, $groupBy );
 
-        return new \WP_REST_Response( $data, 200 );
+        return ResponseHelper::success( $data );
     }
 
     /**
@@ -145,7 +146,7 @@ class ReportController {
 
         $data = $this->reportService->getSourceReport( $startDate, $endDate );
 
-        return new \WP_REST_Response( $data, 200 );
+        return ResponseHelper::success( $data );
     }
 
     /**
@@ -157,7 +158,7 @@ class ReportController {
 
         $data = $this->reportService->getGuestReport( $startDate, $endDate );
 
-        return new \WP_REST_Response( $data, 200 );
+        return ResponseHelper::success( $data );
     }
 
     /**
@@ -169,7 +170,7 @@ class ReportController {
 
         $data = $this->reportService->getForecastReport( $startDate, $endDate );
 
-        return new \WP_REST_Response( $data, 200 );
+        return ResponseHelper::success( $data );
     }
 
     /**
@@ -181,7 +182,7 @@ class ReportController {
 
         $data = $this->reportService->getCancellationReport( $startDate, $endDate );
 
-        return new \WP_REST_Response( $data, 200 );
+        return ResponseHelper::success( $data );
     }
 
     /**
@@ -190,7 +191,7 @@ class ReportController {
     public function getDashboardStats( \WP_REST_Request $request ): \WP_REST_Response {
         $data = $this->reportService->getDashboardStats();
 
-        return new \WP_REST_Response( $data, 200 );
+        return ResponseHelper::success( $data );
     }
 
     /**
@@ -210,10 +211,7 @@ class ReportController {
         $reportData = $this->generateReportData( $reportType, $startDate, $endDate, $request );
 
         if ( $reportData === null ) {
-            return new \WP_REST_Response(
-                [ 'message' => __( 'Invalid report type.', 'nozule' ) ],
-                400
-            );
+            return ResponseHelper::error( __( 'Invalid report type.', 'nozule' ), 400 );
         }
 
         $filename = 'nozule-' . $reportType . '-' . $startDate . '-to-' . $endDate;

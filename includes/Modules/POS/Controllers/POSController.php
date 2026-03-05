@@ -2,6 +2,7 @@
 
 namespace Nozule\Modules\POS\Controllers;
 
+use Nozule\Core\ResponseHelper;
 use Nozule\Modules\POS\Models\POSItem;
 use Nozule\Modules\POS\Models\POSOrder;
 use Nozule\Modules\POS\Models\POSOutlet;
@@ -203,11 +204,7 @@ class POSController {
 			return $arr;
 		}, $outlets );
 
-		return new WP_REST_Response( [
-			'success' => true,
-			'data'    => $data,
-			'total'   => count( $data ),
-		], 200 );
+		return ResponseHelper::success( $data, null, [ 'total' => count( $data ) ] );
 	}
 
 	/**
@@ -232,20 +229,13 @@ class POSController {
 		$result = $this->posService->saveOutlet( $data );
 
 		if ( $result instanceof POSOutlet ) {
-			return new WP_REST_Response( [
-				'success' => true,
-				'message' => $id
-					? __( 'Outlet updated successfully.', 'nozule' )
-					: __( 'Outlet created successfully.', 'nozule' ),
-				'data'    => $result->toArray(),
-			], $id ? 200 : 201 );
+			if ( $id ) {
+				return ResponseHelper::success( $result->toArray(), __( 'Outlet updated successfully.', 'nozule' ) );
+			}
+			return ResponseHelper::created( $result->toArray(), __( 'Outlet created successfully.', 'nozule' ) );
 		}
 
-		return new WP_REST_Response( [
-			'success' => false,
-			'message' => __( 'Validation failed.', 'nozule' ),
-			'errors'  => $result,
-		], 422 );
+		return ResponseHelper::error( __( 'Validation failed.', 'nozule' ), 422, $result );
 	}
 
 	/**
@@ -256,19 +246,12 @@ class POSController {
 		$result = $this->posService->deleteOutlet( $id );
 
 		if ( $result === true ) {
-			return new WP_REST_Response( [
-				'success' => true,
-				'message' => __( 'Outlet deleted successfully.', 'nozule' ),
-			], 200 );
+			return ResponseHelper::success( null, __( 'Outlet deleted successfully.', 'nozule' ) );
 		}
 
 		$statusCode = isset( $result['id'] ) ? 404 : 422;
 
-		return new WP_REST_Response( [
-			'success' => false,
-			'message' => __( 'Failed to delete outlet.', 'nozule' ),
-			'errors'  => $result,
-		], $statusCode );
+		return ResponseHelper::error( __( 'Failed to delete outlet.', 'nozule' ), $statusCode, $result );
 	}
 
 	// =====================================================================
@@ -286,11 +269,7 @@ class POSController {
 			return $item->toArray();
 		}, $items );
 
-		return new WP_REST_Response( [
-			'success' => true,
-			'data'    => $data,
-			'total'   => count( $data ),
-		], 200 );
+		return ResponseHelper::success( $data, null, [ 'total' => count( $data ) ] );
 	}
 
 	/**
@@ -315,20 +294,13 @@ class POSController {
 		$result = $this->posService->saveItem( $data );
 
 		if ( $result instanceof POSItem ) {
-			return new WP_REST_Response( [
-				'success' => true,
-				'message' => $id
-					? __( 'Item updated successfully.', 'nozule' )
-					: __( 'Item created successfully.', 'nozule' ),
-				'data'    => $result->toArray(),
-			], $id ? 200 : 201 );
+			if ( $id ) {
+				return ResponseHelper::success( $result->toArray(), __( 'Item updated successfully.', 'nozule' ) );
+			}
+			return ResponseHelper::created( $result->toArray(), __( 'Item created successfully.', 'nozule' ) );
 		}
 
-		return new WP_REST_Response( [
-			'success' => false,
-			'message' => __( 'Validation failed.', 'nozule' ),
-			'errors'  => $result,
-		], 422 );
+		return ResponseHelper::error( __( 'Validation failed.', 'nozule' ), 422, $result );
 	}
 
 	/**
@@ -339,19 +311,12 @@ class POSController {
 		$result = $this->posService->deleteItem( $id );
 
 		if ( $result === true ) {
-			return new WP_REST_Response( [
-				'success' => true,
-				'message' => __( 'Item deleted successfully.', 'nozule' ),
-			], 200 );
+			return ResponseHelper::success( null, __( 'Item deleted successfully.', 'nozule' ) );
 		}
 
 		$statusCode = isset( $result['id'] ) ? 404 : 422;
 
-		return new WP_REST_Response( [
-			'success' => false,
-			'message' => __( 'Failed to delete item.', 'nozule' ),
-			'errors'  => $result,
-		], $statusCode );
+		return ResponseHelper::error( __( 'Failed to delete item.', 'nozule' ), $statusCode, $result );
 	}
 
 	// =====================================================================
@@ -392,15 +357,7 @@ class POSController {
 			return $order->toArray();
 		}, $result['items'] );
 
-		return new WP_REST_Response( [
-			'success'    => true,
-			'data'       => $items,
-			'pagination' => [
-				'total'       => $result['total'],
-				'page'        => $result['page'],
-				'total_pages' => $result['total_pages'],
-			],
-		], 200 );
+		return ResponseHelper::paginated( $items, $result['total'], $result['page'] ?? $page, $perPage );
 	}
 
 	/**
@@ -415,27 +372,16 @@ class POSController {
 		$notes      = $request->get_param( 'notes' ) ? sanitize_textarea_field( $request->get_param( 'notes' ) ) : null;
 
 		if ( ! is_array( $items ) ) {
-			return new WP_REST_Response( [
-				'success' => false,
-				'message' => __( 'Items must be an array.', 'nozule' ),
-			], 422 );
+			return ResponseHelper::error( __( 'Items must be an array.', 'nozule' ), 422 );
 		}
 
 		$result = $this->posService->createOrder( $outletId, $items, $roomNumber, $bookingId, $guestId, $notes );
 
 		if ( $result instanceof POSOrder ) {
-			return new WP_REST_Response( [
-				'success' => true,
-				'message' => __( 'Order created successfully.', 'nozule' ),
-				'data'    => $result->toArray(),
-			], 201 );
+			return ResponseHelper::created( $result->toArray(), __( 'Order created successfully.', 'nozule' ) );
 		}
 
-		return new WP_REST_Response( [
-			'success' => false,
-			'message' => __( 'Failed to create order.', 'nozule' ),
-			'errors'  => $result,
-		], 422 );
+		return ResponseHelper::error( __( 'Failed to create order.', 'nozule' ), 422, $result );
 	}
 
 	/**
@@ -446,16 +392,10 @@ class POSController {
 		$result = $this->posService->getOrderSummary( $id );
 
 		if ( ! $result ) {
-			return new WP_REST_Response( [
-				'success' => false,
-				'message' => __( 'Order not found.', 'nozule' ),
-			], 404 );
+			return ResponseHelper::notFound( __( 'Order not found.', 'nozule' ) );
 		}
 
-		return new WP_REST_Response( [
-			'success' => true,
-			'data'    => $result,
-		], 200 );
+		return ResponseHelper::success( $result );
 	}
 
 	/**
@@ -466,10 +406,7 @@ class POSController {
 		$status = sanitize_text_field( $request->get_param( 'status' ) ?? '' );
 
 		if ( ! in_array( $status, POSOrder::validStatuses(), true ) ) {
-			return new WP_REST_Response( [
-				'success' => false,
-				'message' => __( 'Invalid status.', 'nozule' ),
-			], 422 );
+			return ResponseHelper::error( __( 'Invalid status.', 'nozule' ), 422 );
 		}
 
 		// Only cancellation is handled via status update; posting is a separate route.
@@ -479,29 +416,18 @@ class POSController {
 			// For other statuses, just return the order.
 			$order = $this->posService->getOrder( $id );
 			if ( ! $order ) {
-				return new WP_REST_Response( [
-					'success' => false,
-					'message' => __( 'Order not found.', 'nozule' ),
-				], 404 );
+				return ResponseHelper::notFound( __( 'Order not found.', 'nozule' ) );
 			}
 			$result = $order;
 		}
 
 		if ( $result instanceof POSOrder ) {
-			return new WP_REST_Response( [
-				'success' => true,
-				'message' => __( 'Order status updated.', 'nozule' ),
-				'data'    => $result->toArray(),
-			], 200 );
+			return ResponseHelper::success( $result->toArray(), __( 'Order status updated.', 'nozule' ) );
 		}
 
 		$statusCode = isset( $result['id'] ) ? 404 : 422;
 
-		return new WP_REST_Response( [
-			'success' => false,
-			'message' => __( 'Failed to update order status.', 'nozule' ),
-			'errors'  => $result,
-		], $statusCode );
+		return ResponseHelper::error( __( 'Failed to update order status.', 'nozule' ), $statusCode, $result );
 	}
 
 	/**
@@ -512,20 +438,12 @@ class POSController {
 		$result = $this->posService->postToFolio( $id );
 
 		if ( $result instanceof POSOrder ) {
-			return new WP_REST_Response( [
-				'success' => true,
-				'message' => __( 'Order posted to folio successfully.', 'nozule' ),
-				'data'    => $result->toArray(),
-			], 200 );
+			return ResponseHelper::success( $result->toArray(), __( 'Order posted to folio successfully.', 'nozule' ) );
 		}
 
 		$statusCode = isset( $result['id'] ) ? 404 : 422;
 
-		return new WP_REST_Response( [
-			'success' => false,
-			'message' => __( 'Failed to post order to folio.', 'nozule' ),
-			'errors'  => $result,
-		], $statusCode );
+		return ResponseHelper::error( __( 'Failed to post order to folio.', 'nozule' ), $statusCode, $result );
 	}
 
 	// =====================================================================
@@ -540,10 +458,7 @@ class POSController {
 
 		$summary = $this->posService->getDailySummary( $date );
 
-		return new WP_REST_Response( [
-			'success' => true,
-			'data'    => $summary,
-		], 200 );
+		return ResponseHelper::success( $summary );
 	}
 
 	// =====================================================================

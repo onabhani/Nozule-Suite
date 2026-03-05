@@ -2,6 +2,7 @@
 
 namespace Nozule\Modules\Channels\Controllers;
 
+use Nozule\Core\ResponseHelper;
 use Nozule\Modules\Channels\Models\ChannelConnection;
 use Nozule\Modules\Channels\Repositories\ChannelConnectionRepository;
 use Nozule\Modules\Channels\Repositories\ChannelRateMappingRepository;
@@ -160,9 +161,7 @@ class ChannelSyncController {
 			return $arr;
 		}, $connections );
 
-		return new \WP_REST_Response( [
-			'connections' => $data,
-		], 200 );
+		return ResponseHelper::success( ['connections' => $data] );
 	}
 
 	/**
@@ -178,9 +177,7 @@ class ChannelSyncController {
 		$isActive    = (int) (bool) $request->get_param( 'is_active' );
 
 		if ( empty( $channelName ) ) {
-			return new \WP_REST_Response( [
-				'message' => __( 'Channel name is required.', 'nozule' ),
-			], 422 );
+			return ResponseHelper::error( __( 'Channel name is required.', 'nozule' ), 422 );
 		}
 
 		// Build credentials from request.
@@ -226,17 +223,13 @@ class ChannelSyncController {
 			// Update existing.
 			$existing = $this->connectionRepo->find( (int) $id );
 			if ( ! $existing ) {
-				return new \WP_REST_Response( [
-					'message' => __( 'Connection not found.', 'nozule' ),
-				], 404 );
+				return ResponseHelper::notFound( __( 'Connection not found.', 'nozule' ) );
 			}
 
 			$updated = $this->connectionRepo->update( (int) $id, $data );
 
 			if ( ! $updated ) {
-				return new \WP_REST_Response( [
-					'message' => __( 'Failed to update connection.', 'nozule' ),
-				], 500 );
+				return ResponseHelper::error( __( 'Failed to update connection.', 'nozule' ), 500 );
 			}
 
 			$connection = $this->connectionRepo->find( (int) $id );
@@ -244,45 +237,39 @@ class ChannelSyncController {
 			unset( $arr['credentials'] );
 			$arr['channel_label'] = $connection->getChannelLabel();
 
-			return new \WP_REST_Response( [
-				'message'    => __( 'Connection updated.', 'nozule' ),
-				'connection' => $arr,
-			], 200 );
+			return ResponseHelper::success( ['connection' => $arr], __( 'Connection updated.', 'nozule' ) );
 		}
 
 		// Check for duplicate channel name.
 		$duplicate = $this->connectionRepo->getByChannelName( $channelName );
 		if ( $duplicate ) {
 			// Update the existing one instead.
-			$this->connectionRepo->update( $duplicate->id, $data );
+			$updated = $this->connectionRepo->update( $duplicate->id, $data );
+
+			if ( ! $updated ) {
+				return ResponseHelper::error( __( 'Failed to update connection.', 'nozule' ), 500 );
+			}
+
 			$connection = $this->connectionRepo->find( $duplicate->id );
 			$arr = $connection->toArray();
 			unset( $arr['credentials'] );
 			$arr['channel_label'] = $connection->getChannelLabel();
 
-			return new \WP_REST_Response( [
-				'message'    => __( 'Connection updated.', 'nozule' ),
-				'connection' => $arr,
-			], 200 );
+			return ResponseHelper::success( ['connection' => $arr], __( 'Connection updated.', 'nozule' ) );
 		}
 
 		// Create new.
 		$connection = $this->connectionRepo->create( $data );
 
 		if ( ! $connection ) {
-			return new \WP_REST_Response( [
-				'message' => __( 'Failed to create connection.', 'nozule' ),
-			], 500 );
+			return ResponseHelper::error( __( 'Failed to create connection.', 'nozule' ), 500 );
 		}
 
 		$arr = $connection->toArray();
 		unset( $arr['credentials'] );
 		$arr['channel_label'] = $connection->getChannelLabel();
 
-		return new \WP_REST_Response( [
-			'message'    => __( 'Connection created.', 'nozule' ),
-			'connection' => $arr,
-		], 201 );
+		return ResponseHelper::created( ['connection' => $arr], __( 'Connection created.', 'nozule' ) );
 	}
 
 	/**
@@ -293,25 +280,19 @@ class ChannelSyncController {
 		$connection = $this->connectionRepo->find( $id );
 
 		if ( ! $connection ) {
-			return new \WP_REST_Response( [
-				'message' => __( 'Connection not found.', 'nozule' ),
-			], 404 );
+			return ResponseHelper::notFound( __( 'Connection not found.', 'nozule' ) );
 		}
 
 		$deleted = $this->connectionRepo->delete( $id );
 
 		if ( ! $deleted ) {
-			return new \WP_REST_Response( [
-				'message' => __( 'Failed to delete connection.', 'nozule' ),
-			], 500 );
+			return ResponseHelper::error( __( 'Failed to delete connection.', 'nozule' ), 500 );
 		}
 
 		// Also remove rate mappings for this channel.
 		$this->rateMappingRepo->deleteByChannel( $connection->channel_name );
 
-		return new \WP_REST_Response( [
-			'message' => __( 'Connection deleted.', 'nozule' ),
-		], 200 );
+		return ResponseHelper::success( null, __( 'Connection deleted.', 'nozule' ) );
 	}
 
 	/**
@@ -322,9 +303,7 @@ class ChannelSyncController {
 		$connection = $this->connectionRepo->find( $id );
 
 		if ( ! $connection ) {
-			return new \WP_REST_Response( [
-				'message' => __( 'Connection not found.', 'nozule' ),
-			], 404 );
+			return ResponseHelper::notFound( __( 'Connection not found.', 'nozule' ) );
 		}
 
 		$credentials = $connection->getDecryptedCredentials();
@@ -350,10 +329,7 @@ class ChannelSyncController {
 
 		$result = $client->testConnection();
 
-		return new \WP_REST_Response( [
-			'success' => $result['success'],
-			'message' => $result['message'],
-		], 200 );
+		return ResponseHelper::success( null, $result['message'] );
 	}
 
 	// ------------------------------------------------------------------
@@ -367,10 +343,7 @@ class ChannelSyncController {
 		$channel = sanitize_text_field( $request->get_param( 'channel' ) );
 		$results = $this->syncService->fullSync( $channel );
 
-		return new \WP_REST_Response( [
-			'message' => __( 'Full sync completed.', 'nozule' ),
-			'results' => $results,
-		], 200 );
+		return ResponseHelper::success( ['results' => $results], __( 'Full sync completed.', 'nozule' ) );
 	}
 
 	/**
@@ -384,10 +357,7 @@ class ChannelSyncController {
 
 		$result = $this->syncService->pushAvailability( $channel, $roomTypeId, $startDate, $endDate );
 
-		return new \WP_REST_Response( [
-			'message' => $result['message'] ?? __( 'Availability push completed.', 'nozule' ),
-			'result'  => $result,
-		], 200 );
+		return ResponseHelper::success( ['result' => $result], $result['message'] ?? __( 'Availability push completed.', 'nozule' ) );
 	}
 
 	/**
@@ -401,10 +371,7 @@ class ChannelSyncController {
 
 		$result = $this->syncService->pushRates( $channel, $roomTypeId, $startDate, $endDate );
 
-		return new \WP_REST_Response( [
-			'message' => $result['message'] ?? __( 'Rate push completed.', 'nozule' ),
-			'result'  => $result,
-		], 200 );
+		return ResponseHelper::success( ['result' => $result], $result['message'] ?? __( 'Rate push completed.', 'nozule' ) );
 	}
 
 	/**
@@ -414,10 +381,7 @@ class ChannelSyncController {
 		$channel = sanitize_text_field( $request->get_param( 'channel' ) );
 		$result  = $this->syncService->pullReservations( $channel );
 
-		return new \WP_REST_Response( [
-			'message' => $result['message'] ?? __( 'Reservation pull completed.', 'nozule' ),
-			'result'  => $result,
-		], 200 );
+		return ResponseHelper::success( ['result' => $result], $result['message'] ?? __( 'Reservation pull completed.', 'nozule' ) );
 	}
 
 	// ------------------------------------------------------------------
@@ -441,13 +405,13 @@ class ChannelSyncController {
 
 		$result = $this->syncLogRepo->list( $args );
 
-		return new \WP_REST_Response( [
+		return ResponseHelper::success( [
 			'items' => array_map( function ( $item ) {
 				return $item->toArray();
 			}, $result['items'] ),
 			'total' => $result['total'],
 			'pages' => $result['pages'],
-		], 200 );
+		] );
 	}
 
 	// ------------------------------------------------------------------
@@ -461,11 +425,11 @@ class ChannelSyncController {
 		$channel  = sanitize_text_field( $request->get_param( 'channel' ) );
 		$mappings = $this->rateMappingRepo->getByChannel( $channel );
 
-		return new \WP_REST_Response( [
+		return ResponseHelper::success( [
 			'mappings' => array_map( function ( $m ) {
 				return $m->toArray();
 			}, $mappings ),
-		], 200 );
+		] );
 	}
 
 	/**
@@ -488,53 +452,37 @@ class ChannelSyncController {
 		];
 
 		if ( empty( $data['channel_name'] ) ) {
-			return new \WP_REST_Response( [
-				'message' => __( 'Channel name is required.', 'nozule' ),
-			], 422 );
+			return ResponseHelper::error( __( 'Channel name is required.', 'nozule' ), 422 );
 		}
 
 		if ( empty( $data['local_room_type_id'] ) ) {
-			return new \WP_REST_Response( [
-				'message' => __( 'Local room type is required.', 'nozule' ),
-			], 422 );
+			return ResponseHelper::error( __( 'Local room type is required.', 'nozule' ), 422 );
 		}
 
 		if ( $id ) {
 			$existing = $this->rateMappingRepo->find( (int) $id );
 			if ( ! $existing ) {
-				return new \WP_REST_Response( [
-					'message' => __( 'Rate mapping not found.', 'nozule' ),
-				], 404 );
+				return ResponseHelper::notFound( __( 'Rate mapping not found.', 'nozule' ) );
 			}
 
 			$updated = $this->rateMappingRepo->update( (int) $id, $data );
 
 			if ( ! $updated ) {
-				return new \WP_REST_Response( [
-					'message' => __( 'Failed to update rate mapping.', 'nozule' ),
-				], 500 );
+				return ResponseHelper::error( __( 'Failed to update rate mapping.', 'nozule' ), 500 );
 			}
 
 			$mapping = $this->rateMappingRepo->find( (int) $id );
 
-			return new \WP_REST_Response( [
-				'message' => __( 'Rate mapping updated.', 'nozule' ),
-				'mapping' => $mapping->toArray(),
-			], 200 );
+			return ResponseHelper::success( ['mapping' => $mapping->toArray()], __( 'Rate mapping updated.', 'nozule' ) );
 		}
 
 		$mapping = $this->rateMappingRepo->create( $data );
 
 		if ( ! $mapping ) {
-			return new \WP_REST_Response( [
-				'message' => __( 'Failed to create rate mapping.', 'nozule' ),
-			], 500 );
+			return ResponseHelper::error( __( 'Failed to create rate mapping.', 'nozule' ), 500 );
 		}
 
-		return new \WP_REST_Response( [
-			'message' => __( 'Rate mapping created.', 'nozule' ),
-			'mapping' => $mapping->toArray(),
-		], 201 );
+		return ResponseHelper::created( ['mapping' => $mapping->toArray()], __( 'Rate mapping created.', 'nozule' ) );
 	}
 
 	/**
@@ -545,21 +493,15 @@ class ChannelSyncController {
 		$mapping = $this->rateMappingRepo->find( $id );
 
 		if ( ! $mapping ) {
-			return new \WP_REST_Response( [
-				'message' => __( 'Rate mapping not found.', 'nozule' ),
-			], 404 );
+			return ResponseHelper::notFound( __( 'Rate mapping not found.', 'nozule' ) );
 		}
 
 		$deleted = $this->rateMappingRepo->delete( $id );
 
 		if ( ! $deleted ) {
-			return new \WP_REST_Response( [
-				'message' => __( 'Failed to delete rate mapping.', 'nozule' ),
-			], 500 );
+			return ResponseHelper::error( __( 'Failed to delete rate mapping.', 'nozule' ), 500 );
 		}
 
-		return new \WP_REST_Response( [
-			'message' => __( 'Rate mapping deleted.', 'nozule' ),
-		], 200 );
+		return ResponseHelper::success( null, __( 'Rate mapping deleted.', 'nozule' ) );
 	}
 }

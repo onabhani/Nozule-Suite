@@ -4,6 +4,7 @@ namespace Nozule\Modules\Audit\Controllers;
 
 use Nozule\Modules\Audit\Models\NightAudit;
 use Nozule\Modules\Audit\Services\NightAuditService;
+use Nozule\Core\ResponseHelper;
 
 /**
  * REST API controller for night audit operations.
@@ -137,17 +138,10 @@ class NightAuditController {
 
 		// If an error array was returned.
 		if ( is_array( $result ) && ! empty( $result['error'] ) ) {
-			return new \WP_REST_Response( [
-				'success' => false,
-				'message' => $result['message'],
-			], 409 );
+			return ResponseHelper::error( $result['message'], 409 );
 		}
 
-		return new \WP_REST_Response( [
-			'success' => true,
-			'message' => __( 'Night audit completed successfully.', 'nozule' ),
-			'data'    => $result->toArray(),
-		], 201 );
+		return ResponseHelper::created( $result->toArray(), __( 'Night audit completed successfully.', 'nozule' ) );
 	}
 
 	/**
@@ -159,10 +153,7 @@ class NightAuditController {
 		$limit  = (int) ( $request->get_param( 'limit' ) ?? 30 );
 		$audits = $this->service->getRecentAudits( $limit );
 
-		return new \WP_REST_Response( [
-			'success' => true,
-			'data'    => array_map( fn( NightAudit $a ) => $a->toArray(), $audits ),
-		], 200 );
+		return ResponseHelper::success( array_map( fn( NightAudit $a ) => $a->toArray(), $audits ) );
 	}
 
 	/**
@@ -174,16 +165,10 @@ class NightAuditController {
 		$audit = $this->service->getAudit( (int) $request->get_param( 'id' ) );
 
 		if ( ! $audit ) {
-			return new \WP_REST_Response( [
-				'success' => false,
-				'message' => __( 'Night audit not found.', 'nozule' ),
-			], 404 );
+			return ResponseHelper::notFound( __( 'Night audit not found.', 'nozule' ) );
 		}
 
-		return new \WP_REST_Response( [
-			'success' => true,
-			'data'    => $audit->toArray(),
-		], 200 );
+		return ResponseHelper::success( $audit->toArray() );
 	}
 
 	/**
@@ -196,20 +181,14 @@ class NightAuditController {
 		$audit = $this->service->getAuditByDate( $date );
 
 		if ( ! $audit ) {
-			return new \WP_REST_Response( [
-				'success' => false,
-				'message' => sprintf(
-					/* translators: %s: audit date */
-					__( 'No night audit found for %s.', 'nozule' ),
-					$date
-				),
-			], 404 );
+			return ResponseHelper::notFound( sprintf(
+				/* translators: %s: audit date */
+				__( 'No night audit found for %s.', 'nozule' ),
+				$date
+			) );
 		}
 
-		return new \WP_REST_Response( [
-			'success' => true,
-			'data'    => $audit->toArray(),
-		], 200 );
+		return ResponseHelper::success( $audit->toArray() );
 	}
 
 	/**
@@ -223,11 +202,11 @@ class NightAuditController {
 
 		$data = $this->service->getAuditSummary( $from, $to );
 
-		return new \WP_REST_Response( [
-			'success' => true,
-			'data'    => array_map( fn( NightAudit $a ) => $a->toArray(), $data['audits'] ),
-			'summary' => $data['summary'],
-		], 200 );
+		return ResponseHelper::success(
+			array_map( fn( NightAudit $a ) => $a->toArray(), $data['audits'] ),
+			null,
+			[ 'summary' => $data['summary'] ]
+		);
 	}
 
 	// ── Validation ─────────────────────────────────────────────────

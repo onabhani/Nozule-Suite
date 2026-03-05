@@ -2,6 +2,7 @@
 
 namespace Nozule\Modules\Rooms\Controllers;
 
+use Nozule\Core\ResponseHelper;
 use Nozule\Modules\Rooms\Models\RoomInventory;
 use Nozule\Modules\Rooms\Repositories\InventoryRepository;
 use Nozule\Modules\Rooms\Services\RoomService;
@@ -94,13 +95,7 @@ class InventoryController {
 		$endDate    = sanitize_text_field( $request->get_param( 'end_date' ) );
 
 		if ( ! $startDate || ! $endDate ) {
-			return new WP_REST_Response( [
-				'success' => false,
-				'error'   => [
-					'code'    => 'MISSING_DATES',
-					'message' => __( 'start_date and end_date are required.', 'nozule' ),
-				],
-			], 400 );
+			return ResponseHelper::error( __( 'start_date and end_date are required.', 'nozule' ), 400 );
 		}
 
 		// Build dates array.
@@ -142,13 +137,10 @@ class InventoryController {
 			];
 		}
 
-		return new WP_REST_Response( [
-			'success' => true,
-			'data'    => [
-				'inventory' => $inventory,
-				'dates'     => $dates,
-			],
-		], 200 );
+		return ResponseHelper::success( [
+			'inventory' => $inventory,
+			'dates'     => $dates,
+		] );
 	}
 
 	/**
@@ -162,17 +154,11 @@ class InventoryController {
 		$endDate    = sanitize_text_field( $request->get_param( 'end_date' ) ?? '' );
 
 		if ( ! $roomTypeId || ! $startDate || ! $endDate ) {
-			return new WP_REST_Response( [
-				'success' => false,
-				'message' => __( 'room_type_id, start_date, and end_date are required.', 'nozule' ),
-			], 422 );
+			return ResponseHelper::error( __( 'room_type_id, start_date, and end_date are required.', 'nozule' ), 422 );
 		}
 
 		if ( strtotime( $endDate ) < strtotime( $startDate ) ) {
-			return new WP_REST_Response( [
-				'success' => false,
-				'message' => __( 'end_date must be on or after start_date.', 'nozule' ),
-			], 422 );
+			return ResponseHelper::error( __( 'end_date must be on or after start_date.', 'nozule' ), 422 );
 		}
 
 		// Extract updateable fields.
@@ -187,10 +173,7 @@ class InventoryController {
 		}
 
 		if ( empty( $updateData ) ) {
-			return new WP_REST_Response( [
-				'success' => false,
-				'message' => __( 'No fields provided for update.', 'nozule' ),
-			], 422 );
+			return ResponseHelper::error( __( 'No fields provided for update.', 'nozule' ), 422 );
 		}
 
 		// Sanitize values.
@@ -210,16 +193,10 @@ class InventoryController {
 		$success = $this->inventoryRepository->bulkUpdate( $roomTypeId, $startDate, $endDate, $updateData );
 
 		if ( $success ) {
-			return new WP_REST_Response( [
-				'success' => true,
-				'message' => __( 'Inventory updated successfully.', 'nozule' ),
-			], 200 );
+			return ResponseHelper::success( null, __( 'Inventory updated successfully.', 'nozule' ) );
 		}
 
-		return new WP_REST_Response( [
-			'success' => false,
-			'message' => __( 'Failed to update inventory.', 'nozule' ),
-		], 500 );
+		return ResponseHelper::error( __( 'Failed to update inventory.', 'nozule' ), 500 );
 	}
 
 	/**
@@ -233,32 +210,23 @@ class InventoryController {
 		$endDate    = sanitize_text_field( $request->get_param( 'end_date' ) ?? '' );
 
 		if ( ! $roomTypeId || ! $startDate || ! $endDate ) {
-			return new WP_REST_Response( [
-				'success' => false,
-				'message' => __( 'room_type_id, start_date, and end_date are required.', 'nozule' ),
-			], 422 );
+			return ResponseHelper::error( __( 'room_type_id, start_date, and end_date are required.', 'nozule' ), 422 );
 		}
 
 		$roomType = $this->roomService->findRoomType( $roomTypeId );
 		if ( ! $roomType ) {
-			return new WP_REST_Response( [
-				'success' => false,
-				'message' => __( 'Room type not found.', 'nozule' ),
-			], 404 );
+			return ResponseHelper::notFound( __( 'Room type not found.', 'nozule' ) );
 		}
 
 		$created = $this->roomService->initializeInventory( $roomTypeId, $startDate, $endDate );
 
-		return new WP_REST_Response( [
-			'success' => true,
-			'message' => sprintf(
+		return ResponseHelper::success(
+			[ 'days_created' => $created ],
+			sprintf(
 				__( 'Inventory initialized: %d new day(s) created.', 'nozule' ),
 				$created
-			),
-			'data'    => [
-				'days_created' => $created,
-			],
-		], 200 );
+			)
+		);
 	}
 
 	/**

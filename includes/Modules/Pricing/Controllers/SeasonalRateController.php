@@ -3,6 +3,7 @@
 namespace Nozule\Modules\Pricing\Controllers;
 
 use Nozule\Core\EventDispatcher;
+use Nozule\Core\ResponseHelper;
 use Nozule\Modules\Pricing\Models\SeasonalRate;
 use Nozule\Modules\Pricing\Repositories\SeasonalRateRepository;
 use Nozule\Modules\Pricing\Validators\SeasonalRateValidator;
@@ -90,13 +91,10 @@ class SeasonalRateController {
 			$rates = $this->repository->getAllOrdered();
 		}
 
-		return new \WP_REST_Response( [
-			'success' => true,
-			'data'    => array_map(
+		return ResponseHelper::success( array_map(
 				fn( SeasonalRate $rate ) => $rate->toPublicArray(),
 				$rates
-			),
-		] );
+			) );
 	}
 
 	/**
@@ -108,19 +106,10 @@ class SeasonalRateController {
 		$rate = $this->repository->find( (int) $request->get_param( 'id' ) );
 
 		if ( ! $rate ) {
-			return new \WP_REST_Response( [
-				'success' => false,
-				'error'   => [
-					'code'    => 'NOT_FOUND',
-					'message' => __( 'Seasonal rate not found.', 'nozule' ),
-				],
-			], 404 );
+			return ResponseHelper::notFound( __( 'Seasonal rate not found.', 'nozule' ) );
 		}
 
-		return new \WP_REST_Response( [
-			'success' => true,
-			'data'    => $rate->toPublicArray(),
-		] );
+		return ResponseHelper::success( $rate->toPublicArray() );
 	}
 
 	/**
@@ -132,35 +121,19 @@ class SeasonalRateController {
 		$data = $request->get_json_params();
 
 		if ( ! $this->validator->validateCreate( $data ) ) {
-			return new \WP_REST_Response( [
-				'success' => false,
-				'error'   => [
-					'code'    => 'VALIDATION_ERROR',
-					'message' => implode( ' ', $this->validator->getAllErrors() ),
-					'fields'  => $this->validator->getErrors(),
-				],
-			], 422 );
+			return ResponseHelper::error( implode( ' ', $this->validator->getAllErrors() ), 422, $this->validator->getErrors() );
 		}
 
 		$sanitized = $this->sanitizeSeasonalRateData( $data );
 		$rate      = $this->repository->create( $sanitized );
 
 		if ( ! $rate ) {
-			return new \WP_REST_Response( [
-				'success' => false,
-				'error'   => [
-					'code'    => 'CREATE_FAILED',
-					'message' => __( 'Failed to create seasonal rate.', 'nozule' ),
-				],
-			], 500 );
+			return ResponseHelper::error( __( 'Failed to create seasonal rate.', 'nozule' ), 500 );
 		}
 
 		$this->events->dispatch( 'pricing/seasonal_rate_created', $rate );
 
-		return new \WP_REST_Response( [
-			'success' => true,
-			'data'    => $rate->toPublicArray(),
-		], 201 );
+		return ResponseHelper::created( $rate->toPublicArray() );
 	}
 
 	/**
@@ -173,26 +146,13 @@ class SeasonalRateController {
 		$rate = $this->repository->find( $id );
 
 		if ( ! $rate ) {
-			return new \WP_REST_Response( [
-				'success' => false,
-				'error'   => [
-					'code'    => 'NOT_FOUND',
-					'message' => __( 'Seasonal rate not found.', 'nozule' ),
-				],
-			], 404 );
+			return ResponseHelper::notFound( __( 'Seasonal rate not found.', 'nozule' ) );
 		}
 
 		$data = $request->get_json_params();
 
 		if ( ! $this->validator->validateUpdate( $data ) ) {
-			return new \WP_REST_Response( [
-				'success' => false,
-				'error'   => [
-					'code'    => 'VALIDATION_ERROR',
-					'message' => implode( ' ', $this->validator->getAllErrors() ),
-					'fields'  => $this->validator->getErrors(),
-				],
-			], 422 );
+			return ResponseHelper::error( implode( ' ', $this->validator->getAllErrors() ), 422, $this->validator->getErrors() );
 		}
 
 		$sanitized = $this->sanitizeSeasonalRateData( $data );
@@ -203,22 +163,13 @@ class SeasonalRateController {
 		$updated = $this->repository->update( $id, $updateData );
 
 		if ( ! $updated ) {
-			return new \WP_REST_Response( [
-				'success' => false,
-				'error'   => [
-					'code'    => 'UPDATE_FAILED',
-					'message' => __( 'Failed to update seasonal rate.', 'nozule' ),
-				],
-			], 500 );
+			return ResponseHelper::error( __( 'Failed to update seasonal rate.', 'nozule' ), 500 );
 		}
 
 		$rate = $this->repository->find( $id );
 		$this->events->dispatch( 'pricing/seasonal_rate_updated', $rate );
 
-		return new \WP_REST_Response( [
-			'success' => true,
-			'data'    => $rate->toPublicArray(),
-		] );
+		return ResponseHelper::success( $rate->toPublicArray() );
 	}
 
 	/**
@@ -231,33 +182,18 @@ class SeasonalRateController {
 		$rate = $this->repository->find( $id );
 
 		if ( ! $rate ) {
-			return new \WP_REST_Response( [
-				'success' => false,
-				'error'   => [
-					'code'    => 'NOT_FOUND',
-					'message' => __( 'Seasonal rate not found.', 'nozule' ),
-				],
-			], 404 );
+			return ResponseHelper::notFound( __( 'Seasonal rate not found.', 'nozule' ) );
 		}
 
 		$deleted = $this->repository->delete( $id );
 
 		if ( ! $deleted ) {
-			return new \WP_REST_Response( [
-				'success' => false,
-				'error'   => [
-					'code'    => 'DELETE_FAILED',
-					'message' => __( 'Failed to delete seasonal rate.', 'nozule' ),
-				],
-			], 500 );
+			return ResponseHelper::error( __( 'Failed to delete seasonal rate.', 'nozule' ), 500 );
 		}
 
 		$this->events->dispatch( 'pricing/seasonal_rate_deleted', $id, $rate );
 
-		return new \WP_REST_Response( [
-			'success' => true,
-			'message' => __( 'Seasonal rate deleted successfully.', 'nozule' ),
-		] );
+		return ResponseHelper::success( null, __( 'Seasonal rate deleted successfully.', 'nozule' ) );
 	}
 
 	/**

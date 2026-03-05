@@ -3,6 +3,7 @@
 namespace Nozule\Modules\Forecasting\Controllers;
 
 use Nozule\Core\Database;
+use Nozule\Core\ResponseHelper;
 use Nozule\Modules\Forecasting\Repositories\ForecastRepository;
 use Nozule\Modules\Forecasting\Services\ForecastService;
 use WP_REST_Request;
@@ -120,10 +121,7 @@ class ForecastController {
 			return $item;
 		}, $forecasts );
 
-		return new WP_REST_Response( [
-			'success' => true,
-			'data'    => $data,
-		], 200 );
+		return ResponseHelper::success( $data );
 	}
 
 	/**
@@ -137,10 +135,7 @@ class ForecastController {
 
 		$summary = $this->service->getSummary( $roomTypeId );
 
-		return new WP_REST_Response( [
-			'success' => true,
-			'data'    => $summary,
-		], 200 );
+		return ResponseHelper::success( $summary );
 	}
 
 	/**
@@ -152,22 +147,16 @@ class ForecastController {
 		try {
 			$result = $this->service->generateForecasts();
 
-			return new WP_REST_Response( [
-				'success' => true,
-				'message' => sprintf(
-					/* translators: 1: number of room types, 2: number of forecasts */
-					__( 'Forecasts generated: %1$d room types, %2$d forecast records.', 'nozule' ),
-					$result['room_types_processed'],
-					$result['forecasts_generated']
-				),
-				'data' => $result,
-			], 200 );
+			return ResponseHelper::success( $result, sprintf(
+				/* translators: 1: number of room types, 2: number of forecasts */
+				__( 'Forecasts generated: %1$d room types, %2$d forecast records.', 'nozule' ),
+				$result['room_types_processed'],
+				$result['forecasts_generated']
+			) );
 		} catch ( \Throwable $e ) {
-			return new WP_REST_Response( [
-				'success' => false,
-				'message' => __( 'Failed to generate forecasts.', 'nozule' ),
-				'error'   => $e->getMessage(),
-			], 500 );
+			error_log( sprintf( '[Nozule] Forecast generation failed: %s in %s:%d', $e->getMessage(), $e->getFile(), $e->getLine() ) );
+
+			return ResponseHelper::error( __( 'Failed to generate forecasts.', 'nozule' ), 500 );
 		}
 	}
 
@@ -196,10 +185,7 @@ class ForecastController {
 			];
 		}, $rows );
 
-		return new WP_REST_Response( [
-			'success' => true,
-			'data'    => $data,
-		], 200 );
+		return ResponseHelper::success( $data );
 	}
 
 	/**

@@ -2,6 +2,7 @@
 
 namespace Nozule\Modules\Promotions\Controllers;
 
+use Nozule\Core\ResponseHelper;
 use Nozule\Modules\Promotions\Models\PromoCode;
 use Nozule\Modules\Promotions\Services\PromoCodeService;
 use Nozule\Core\RateLimiter;
@@ -100,18 +101,10 @@ class PromoCodeController {
 			$result['items']
 		);
 
-		return new WP_REST_Response( [
-			'success' => true,
-			'data'    => [
-				'items'      => $items,
-				'pagination' => [
-					'page'        => (int) ( $request->get_param( 'page' ) ?? 1 ),
-					'per_page'    => (int) ( $request->get_param( 'per_page' ) ?? 20 ),
-					'total'       => $result['total'],
-					'total_pages' => $result['pages'],
-				],
-			],
-		], 200 );
+		$page    = (int) ( $request->get_param( 'page' ) ?? 1 );
+		$perPage = (int) ( $request->get_param( 'per_page' ) ?? 20 );
+
+		return ResponseHelper::paginated( $items, $result['total'], $page, $perPage );
 	}
 
 	/**
@@ -122,16 +115,10 @@ class PromoCodeController {
 		$promo = $this->service->getPromoCode( $id );
 
 		if ( ! $promo ) {
-			return new WP_REST_Response( [
-				'success' => false,
-				'message' => __( 'Promo code not found.', 'nozule' ),
-			], 404 );
+			return ResponseHelper::notFound( __( 'Promo code not found.', 'nozule' ) );
 		}
 
-		return new WP_REST_Response( [
-			'success' => true,
-			'data'    => $promo->toArray(),
-		], 200 );
+		return ResponseHelper::success( $promo->toArray() );
 	}
 
 	/**
@@ -146,18 +133,10 @@ class PromoCodeController {
 		$result = $this->service->createPromoCode( $data );
 
 		if ( $result instanceof PromoCode ) {
-			return new WP_REST_Response( [
-				'success' => true,
-				'message' => __( 'Promo code created successfully.', 'nozule' ),
-				'data'    => $result->toArray(),
-			], 201 );
+			return ResponseHelper::created( $result->toArray(), __( 'Promo code created successfully.', 'nozule' ) );
 		}
 
-		return new WP_REST_Response( [
-			'success' => false,
-			'message' => __( 'Validation failed.', 'nozule' ),
-			'errors'  => $result,
-		], 422 );
+		return ResponseHelper::error( __( 'Validation failed.', 'nozule' ), 422, $result );
 	}
 
 	/**
@@ -170,26 +149,14 @@ class PromoCodeController {
 		$result = $this->service->updatePromoCode( $id, $data );
 
 		if ( $result instanceof PromoCode ) {
-			return new WP_REST_Response( [
-				'success' => true,
-				'message' => __( 'Promo code updated successfully.', 'nozule' ),
-				'data'    => $result->toArray(),
-			], 200 );
+			return ResponseHelper::success( $result->toArray(), __( 'Promo code updated successfully.', 'nozule' ) );
 		}
 
 		if ( isset( $result['id'] ) ) {
-			return new WP_REST_Response( [
-				'success' => false,
-				'message' => $result['id'][0],
-				'errors'  => $result,
-			], 404 );
+			return ResponseHelper::error( $result['id'][0], 404, $result );
 		}
 
-		return new WP_REST_Response( [
-			'success' => false,
-			'message' => __( 'Validation failed.', 'nozule' ),
-			'errors'  => $result,
-		], 422 );
+		return ResponseHelper::error( __( 'Validation failed.', 'nozule' ), 422, $result );
 	}
 
 	/**
@@ -200,19 +167,12 @@ class PromoCodeController {
 		$result = $this->service->deletePromoCode( $id );
 
 		if ( $result === true ) {
-			return new WP_REST_Response( [
-				'success' => true,
-				'message' => __( 'Promo code deleted successfully.', 'nozule' ),
-			], 200 );
+			return ResponseHelper::success( null, __( 'Promo code deleted successfully.', 'nozule' ) );
 		}
 
 		$statusCode = isset( $result['id'] ) ? 404 : 422;
 
-		return new WP_REST_Response( [
-			'success' => false,
-			'message' => __( 'Failed to delete promo code.', 'nozule' ),
-			'errors'  => $result,
-		], $statusCode );
+		return ResponseHelper::error( __( 'Failed to delete promo code.', 'nozule' ), $statusCode, $result );
 	}
 
 	/**
@@ -228,10 +188,7 @@ class PromoCodeController {
 		$guestId  = $request->get_param( 'guest_id' ) ? (int) $request->get_param( 'guest_id' ) : null;
 
 		if ( empty( $code ) ) {
-			return new WP_REST_Response( [
-				'success' => false,
-				'message' => __( 'Promo code is required.', 'nozule' ),
-			], 400 );
+			return ResponseHelper::error( __( 'Promo code is required.', 'nozule' ), 400 );
 		}
 
 		$result = $this->service->validateCode( $code, $subtotal, $nights, $guestId );
@@ -239,9 +196,7 @@ class PromoCodeController {
 		if ( $result instanceof PromoCode ) {
 			$discount = $this->service->applyDiscount( $result, $subtotal );
 
-			return new WP_REST_Response( [
-				'success' => true,
-				'data'    => [
+			return ResponseHelper::success( [
 					'code'           => $result->code,
 					'name'           => $result->name,
 					'name_ar'        => $result->name_ar,
@@ -249,15 +204,10 @@ class PromoCodeController {
 					'discount_value' => $result->discount_value,
 					'discount_amount' => $discount,
 					'currency_code'  => $result->currency_code,
-				],
-			], 200 );
+				] );
 		}
 
-		return new WP_REST_Response( [
-			'success' => false,
-			'message' => __( 'Invalid promo code.', 'nozule' ),
-			'errors'  => $result,
-		], 422 );
+		return ResponseHelper::error( __( 'Invalid promo code.', 'nozule' ), 422, $result );
 	}
 
 	/**

@@ -3,6 +3,7 @@
 namespace Nozule\Modules\Employees\Controllers;
 
 use Nozule\Core\HotelRoles;
+use Nozule\Core\ResponseHelper;
 use Nozule\Modules\Employees\Models\Employee;
 use Nozule\Modules\Employees\Repositories\EmployeeRepository;
 use WP_REST_Request;
@@ -113,10 +114,7 @@ class EmployeeController {
 
         $result = array_map( fn( Employee $e ) => $this->formatEmployee( $e ), $employees );
 
-        return new WP_REST_Response( [
-            'success' => true,
-            'data'    => $result,
-        ], 200 );
+        return ResponseHelper::success( $result );
     }
 
     /**
@@ -133,31 +131,19 @@ class EmployeeController {
         $role         = sanitize_text_field( $request->get_param( 'role' ) ?? 'nzl_reception' );
 
         if ( empty( $username ) || empty( $email ) || empty( $password ) ) {
-            return new WP_REST_Response( [
-                'success' => false,
-                'message' => __( 'Username, email, and password are required.', 'nozule' ),
-            ], 400 );
+            return ResponseHelper::error( __( 'Username, email, and password are required.', 'nozule' ), 400 );
         }
 
         if ( ! in_array( $role, HotelRoles::getSlugs(), true ) ) {
-            return new WP_REST_Response( [
-                'success' => false,
-                'message' => __( 'Invalid role.', 'nozule' ),
-            ], 400 );
+            return ResponseHelper::error( __( 'Invalid role.', 'nozule' ), 400 );
         }
 
         if ( $this->wpUsernameExists( $username ) ) {
-            return new WP_REST_Response( [
-                'success' => false,
-                'message' => __( 'Username already exists.', 'nozule' ),
-            ], 400 );
+            return ResponseHelper::error( __( 'Username already exists.', 'nozule' ), 400 );
         }
 
         if ( $this->wpEmailExists( $email ) ) {
-            return new WP_REST_Response( [
-                'success' => false,
-                'message' => __( 'Email already exists.', 'nozule' ),
-            ], 400 );
+            return ResponseHelper::error( __( 'Email already exists.', 'nozule' ), 400 );
         }
 
         // Create WP user for authentication.
@@ -170,10 +156,7 @@ class EmployeeController {
         ] );
 
         if ( is_wp_error( $wp_user_id ) ) {
-            return new WP_REST_Response( [
-                'success' => false,
-                'message' => $wp_user_id->get_error_message(),
-            ], 400 );
+            return ResponseHelper::error( $wp_user_id->get_error_message(), 400 );
         }
 
         // Apply WP capabilities for permission checks.
@@ -195,17 +178,10 @@ class EmployeeController {
 
         if ( ! $employee ) {
             $this->wpDeleteUser( $wp_user_id );
-            return new WP_REST_Response( [
-                'success' => false,
-                'message' => __( 'Failed to create employee record.', 'nozule' ),
-            ], 500 );
+            return ResponseHelper::error( __( 'Failed to create employee record.', 'nozule' ), 500 );
         }
 
-        return new WP_REST_Response( [
-            'success' => true,
-            'message' => __( 'Employee created successfully.', 'nozule' ),
-            'data'    => $this->formatEmployee( $employee ),
-        ], 201 );
+        return ResponseHelper::created( $this->formatEmployee( $employee ), __( 'Employee created successfully.', 'nozule' ) );
     }
 
     /**
@@ -219,10 +195,7 @@ class EmployeeController {
         $employee = $this->repo->find( $id );
 
         if ( ! $employee || ! $employee->is_active ) {
-            return new WP_REST_Response( [
-                'success' => false,
-                'message' => __( 'Employee not found.', 'nozule' ),
-            ], 404 );
+            return ResponseHelper::notFound( __( 'Employee not found.', 'nozule' ) );
         }
 
         // Prevent users from editing their own role or capabilities
@@ -233,10 +206,7 @@ class EmployeeController {
             $requested_caps = $request->get_param( 'capabilities' );
             $requested_role = $request->get_param( 'role' );
             if ( $requested_caps !== null || ( $requested_role !== null && $requested_role !== '' ) ) {
-                return new WP_REST_Response( [
-                    'success' => false,
-                    'message' => __( 'You cannot change your own role or permissions.', 'nozule' ),
-                ], 403 );
+                return ResponseHelper::forbidden( __( 'You cannot change your own role or permissions.', 'nozule' ) );
             }
         }
 
@@ -255,18 +225,12 @@ class EmployeeController {
             // Check repo first, then WP for uniqueness.
             $existing_emp = $this->repo->findByEmail( $email );
             if ( $existing_emp && (int) $existing_emp->id !== $id ) {
-                return new WP_REST_Response( [
-                    'success' => false,
-                    'message' => __( 'Email already exists.', 'nozule' ),
-                ], 400 );
+                return ResponseHelper::error( __( 'Email already exists.', 'nozule' ), 400 );
             }
 
             $wp_owner = $this->wpEmailExists( $email );
             if ( $wp_owner && $wp_owner !== (int) $employee->wp_user_id ) {
-                return new WP_REST_Response( [
-                    'success' => false,
-                    'message' => __( 'Email already exists.', 'nozule' ),
-                ], 400 );
+                return ResponseHelper::error( __( 'Email already exists.', 'nozule' ), 400 );
             }
 
             $emp_data['email'] = $email;
@@ -281,10 +245,7 @@ class EmployeeController {
         $role = sanitize_text_field( $request->get_param( 'role' ) ?? '' );
         if ( $role && ! ( $is_self && ! $is_admin ) ) {
             if ( ! in_array( $role, HotelRoles::getSlugs(), true ) ) {
-                return new WP_REST_Response( [
-                    'success' => false,
-                    'message' => __( 'Invalid role.', 'nozule' ),
-                ], 400 );
+                return ResponseHelper::error( __( 'Invalid role.', 'nozule' ), 400 );
             }
             $emp_data['role'] = $role;
         }
@@ -316,10 +277,7 @@ class EmployeeController {
         if ( $needs_wp ) {
             $result = $this->wpUpdateUser( $wp_update );
             if ( is_wp_error( $result ) ) {
-                return new WP_REST_Response( [
-                    'success' => false,
-                    'message' => $result->get_error_message(),
-                ], 400 );
+                return ResponseHelper::error( $result->get_error_message(), 400 );
             }
         }
 
@@ -341,17 +299,10 @@ class EmployeeController {
         $updated = $this->repo->find( $id );
 
         if ( ! $updated ) {
-            return new WP_REST_Response( [
-                'success' => false,
-                'message' => __( 'Employee not found after update.', 'nozule' ),
-            ], 404 );
+            return ResponseHelper::notFound( __( 'Employee not found after update.', 'nozule' ) );
         }
 
-        return new WP_REST_Response( [
-            'success' => true,
-            'message' => __( 'Employee updated successfully.', 'nozule' ),
-            'data'    => $this->formatEmployee( $updated ),
-        ], 200 );
+        return ResponseHelper::success( $this->formatEmployee( $updated ), __( 'Employee updated successfully.', 'nozule' ) );
     }
 
     /**
@@ -365,18 +316,12 @@ class EmployeeController {
         $employee = $this->repo->find( $id );
 
         if ( ! $employee || ! $employee->is_active ) {
-            return new WP_REST_Response( [
-                'success' => false,
-                'message' => __( 'Employee not found.', 'nozule' ),
-            ], 404 );
+            return ResponseHelper::notFound( __( 'Employee not found.', 'nozule' ) );
         }
 
         // Don't allow deactivating yourself.
         if ( (int) $employee->wp_user_id === get_current_user_id() ) {
-            return new WP_REST_Response( [
-                'success' => false,
-                'message' => __( 'You cannot deactivate yourself.', 'nozule' ),
-            ], 400 );
+            return ResponseHelper::error( __( 'You cannot deactivate yourself.', 'nozule' ), 400 );
         }
 
         // Soft-delete in nzl_employees.
@@ -387,10 +332,7 @@ class EmployeeController {
             $this->wpDeleteUser( (int) $employee->wp_user_id );
         }
 
-        return new WP_REST_Response( [
-            'success' => true,
-            'message' => __( 'Employee deactivated.', 'nozule' ),
-        ], 200 );
+        return ResponseHelper::success( null, __( 'Employee deactivated.', 'nozule' ) );
     }
 
     /**
@@ -416,10 +358,7 @@ class EmployeeController {
             [ 'key' => 'nzl_manage_messaging',    'label' => 'Manage Messaging',      'label_ar' => 'إدارة الرسائل' ],
         ];
 
-        return new WP_REST_Response( [
-            'success' => true,
-            'data'    => $caps,
-        ], 200 );
+        return ResponseHelper::success( $caps );
     }
 
     /**

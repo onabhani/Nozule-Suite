@@ -10,6 +10,7 @@ use Nozule\Modules\Bookings\Repositories\BookingRepository;
 use Nozule\Modules\Bookings\Repositories\PaymentRepository;
 use Nozule\Modules\Bookings\Services\BookingService;
 use Nozule\Modules\Bookings\Validators\BookingValidator;
+use Nozule\Core\ResponseHelper;
 
 /**
  * REST controller for admin booking management.
@@ -181,14 +182,15 @@ class AdminBookingController {
 			'page'      => (int) ( $request->get_param( 'page' ) ?? 1 ),
 		] );
 
-		return new \WP_REST_Response( [
-			'success' => true,
-			'data'    => array_map( fn( Booking $b ) => $b->toArray(), $result['bookings'] ),
-			'meta'    => [
-				'total' => $result['total'],
-				'pages' => $result['pages'],
-			],
-		], 200 );
+		$page    = (int) ( $request->get_param( 'page' ) ?? 1 );
+		$perPage = (int) ( $request->get_param( 'per_page' ) ?? 20 );
+
+		return ResponseHelper::paginated(
+			array_map( fn( Booking $b ) => $b->toArray(), $result['bookings'] ),
+			$result['total'],
+			$page,
+			$perPage
+		);
 	}
 
 	/**
@@ -200,20 +202,14 @@ class AdminBookingController {
 		$booking = $this->bookingRepository->find( (int) $request->get_param( 'id' ) );
 
 		if ( ! $booking ) {
-			return new \WP_REST_Response( [
-				'success' => false,
-				'message' => __( 'Booking not found.', 'nozule' ),
-			], 404 );
+			return ResponseHelper::notFound( __( 'Booking not found.', 'nozule' ) );
 		}
 
 		if ( ! $this->propertyScope->canAccessAllProperties() && ( $booking->property_id ?? null ) !== $this->propertyScope->getActivePropertyId() ) {
-			return new \WP_REST_Response( [ 'success' => false, 'message' => __( 'Forbidden', 'nozule' ) ], 403 );
+			return ResponseHelper::forbidden( __( 'Forbidden', 'nozule' ) );
 		}
 
-		return new \WP_REST_Response( [
-			'success' => true,
-			'data'    => $booking->toArray(),
-		], 200 );
+		return ResponseHelper::success( $booking->toArray() );
 	}
 
 	/**
@@ -225,25 +221,13 @@ class AdminBookingController {
 		try {
 			$booking = $this->service->createBooking( $request->get_params() );
 
-			return new \WP_REST_Response( [
-				'success' => true,
-				'data'    => $booking->toArray(),
-			], 201 );
+			return ResponseHelper::created( $booking->toArray() );
 		} catch ( \InvalidArgumentException $e ) {
-			return new \WP_REST_Response( [
-				'success' => false,
-				'message' => $e->getMessage(),
-			], 400 );
+			return ResponseHelper::error( $e->getMessage(), 400 );
 		} catch ( NoAvailabilityException $e ) {
-			return new \WP_REST_Response( [
-				'success' => false,
-				'message' => $e->getMessage(),
-			], 409 );
+			return ResponseHelper::error( $e->getMessage(), 409 );
 		} catch ( \Throwable $e ) {
-			return new \WP_REST_Response( [
-				'success' => false,
-				'message' => __( 'Failed to create booking.', 'nozule' ),
-			], 500 );
+			return ResponseHelper::error( __( 'Failed to create booking.', 'nozule' ), 500 );
 		}
 	}
 
@@ -258,14 +242,11 @@ class AdminBookingController {
 
 		$booking = $this->bookingRepository->find( $id );
 		if ( ! $booking ) {
-			return new \WP_REST_Response( [
-				'success' => false,
-				'message' => __( 'Booking not found.', 'nozule' ),
-			], 404 );
+			return ResponseHelper::notFound( __( 'Booking not found.', 'nozule' ) );
 		}
 
 		if ( ! $this->propertyScope->canAccessAllProperties() && ( $booking->property_id ?? null ) !== $this->propertyScope->getActivePropertyId() ) {
-			return new \WP_REST_Response( [ 'success' => false, 'message' => __( 'Forbidden', 'nozule' ) ], 403 );
+			return ResponseHelper::forbidden( __( 'Forbidden', 'nozule' ) );
 		}
 
 		$data = $request->get_params();
@@ -279,10 +260,7 @@ class AdminBookingController {
 		);
 
 		if ( ! $this->validator->validateUpdate( $data ) ) {
-			return new \WP_REST_Response( [
-				'success' => false,
-				'message' => implode( ' ', $this->validator->getAllErrors() ),
-			], 400 );
+			return ResponseHelper::error( implode( ' ', $this->validator->getAllErrors() ), 400 );
 		}
 
 		// Sanitize text fields.
@@ -303,10 +281,7 @@ class AdminBookingController {
 		$success = $this->bookingRepository->update( $id, $data );
 
 		if ( ! $success ) {
-			return new \WP_REST_Response( [
-				'success' => false,
-				'message' => __( 'Failed to update booking.', 'nozule' ),
-			], 500 );
+			return ResponseHelper::error( __( 'Failed to update booking.', 'nozule' ), 500 );
 		}
 
 		$this->bookingRepository->createLog( [
@@ -317,10 +292,7 @@ class AdminBookingController {
 			'ip_address' => BookingService::getClientIP(),
 		] );
 
-		return new \WP_REST_Response( [
-			'success' => true,
-			'data'    => $this->bookingRepository->findOrFail( $id )->toArray(),
-		], 200 );
+		return ResponseHelper::success( $this->bookingRepository->findOrFail( $id )->toArray() );
 	}
 
 	/**
@@ -330,20 +302,11 @@ class AdminBookingController {
 		try {
 			$booking = $this->service->confirmBooking( (int) $request->get_param( 'id' ) );
 
-			return new \WP_REST_Response( [
-				'success' => true,
-				'data'    => $booking->toArray(),
-			], 200 );
+			return ResponseHelper::success( $booking->toArray() );
 		} catch ( InvalidStateException $e ) {
-			return new \WP_REST_Response( [
-				'success' => false,
-				'message' => $e->getMessage(),
-			], 409 );
+			return ResponseHelper::error( $e->getMessage(), 409 );
 		} catch ( \Throwable $e ) {
-			return new \WP_REST_Response( [
-				'success' => false,
-				'message' => __( 'Failed to confirm booking.', 'nozule' ),
-			], 500 );
+			return ResponseHelper::error( __( 'Failed to confirm booking.', 'nozule' ), 500 );
 		}
 	}
 
@@ -357,20 +320,11 @@ class AdminBookingController {
 				$request->get_param( 'reason' ) ?? ''
 			);
 
-			return new \WP_REST_Response( [
-				'success' => true,
-				'data'    => $booking->toArray(),
-			], 200 );
+			return ResponseHelper::success( $booking->toArray() );
 		} catch ( InvalidStateException $e ) {
-			return new \WP_REST_Response( [
-				'success' => false,
-				'message' => $e->getMessage(),
-			], 409 );
+			return ResponseHelper::error( $e->getMessage(), 409 );
 		} catch ( \Throwable $e ) {
-			return new \WP_REST_Response( [
-				'success' => false,
-				'message' => __( 'Failed to cancel booking.', 'nozule' ),
-			], 500 );
+			return ResponseHelper::error( __( 'Failed to cancel booking.', 'nozule' ), 500 );
 		}
 	}
 
@@ -382,20 +336,11 @@ class AdminBookingController {
 			$roomId  = $request->get_param( 'room_id' ) ? (int) $request->get_param( 'room_id' ) : null;
 			$booking = $this->service->checkIn( (int) $request->get_param( 'id' ), $roomId );
 
-			return new \WP_REST_Response( [
-				'success' => true,
-				'data'    => $booking->toArray(),
-			], 200 );
+			return ResponseHelper::success( $booking->toArray() );
 		} catch ( InvalidStateException $e ) {
-			return new \WP_REST_Response( [
-				'success' => false,
-				'message' => $e->getMessage(),
-			], 409 );
+			return ResponseHelper::error( $e->getMessage(), 409 );
 		} catch ( \Throwable $e ) {
-			return new \WP_REST_Response( [
-				'success' => false,
-				'message' => __( 'Failed to check in.', 'nozule' ),
-			], 500 );
+			return ResponseHelper::error( __( 'Failed to check in.', 'nozule' ), 500 );
 		}
 	}
 
@@ -406,20 +351,11 @@ class AdminBookingController {
 		try {
 			$booking = $this->service->checkOut( (int) $request->get_param( 'id' ) );
 
-			return new \WP_REST_Response( [
-				'success' => true,
-				'data'    => $booking->toArray(),
-			], 200 );
+			return ResponseHelper::success( $booking->toArray() );
 		} catch ( InvalidStateException $e ) {
-			return new \WP_REST_Response( [
-				'success' => false,
-				'message' => $e->getMessage(),
-			], 409 );
+			return ResponseHelper::error( $e->getMessage(), 409 );
 		} catch ( \Throwable $e ) {
-			return new \WP_REST_Response( [
-				'success' => false,
-				'message' => __( 'Failed to check out.', 'nozule' ),
-			], 500 );
+			return ResponseHelper::error( __( 'Failed to check out.', 'nozule' ), 500 );
 		}
 	}
 
@@ -434,10 +370,7 @@ class AdminBookingController {
 
 		$booking = $this->bookingRepository->find( $id );
 		if ( ! $booking ) {
-			return new \WP_REST_Response( [
-				'success' => false,
-				'message' => __( 'Booking not found.', 'nozule' ),
-			], 404 );
+			return ResponseHelper::notFound( __( 'Booking not found.', 'nozule' ) );
 		}
 
 		$this->bookingRepository->update( $id, [
@@ -452,10 +385,7 @@ class AdminBookingController {
 			'ip_address' => BookingService::getClientIP(),
 		] );
 
-		return new \WP_REST_Response( [
-			'success' => true,
-			'data'    => $this->bookingRepository->findOrFail( $id )->toArray(),
-		], 200 );
+		return ResponseHelper::success( $this->bookingRepository->findOrFail( $id )->toArray() );
 	}
 
 	/**
@@ -470,20 +400,11 @@ class AdminBookingController {
 				$request->get_params()
 			);
 
-			return new \WP_REST_Response( [
-				'success' => true,
-				'data'    => $payment->toArray(),
-			], 201 );
+			return ResponseHelper::created( $payment->toArray() );
 		} catch ( \InvalidArgumentException $e ) {
-			return new \WP_REST_Response( [
-				'success' => false,
-				'message' => $e->getMessage(),
-			], 400 );
+			return ResponseHelper::error( $e->getMessage(), 400 );
 		} catch ( \Throwable $e ) {
-			return new \WP_REST_Response( [
-				'success' => false,
-				'message' => __( 'Failed to record payment.', 'nozule' ),
-			], 500 );
+			return ResponseHelper::error( __( 'Failed to record payment.', 'nozule' ), 500 );
 		}
 	}
 
@@ -497,18 +418,12 @@ class AdminBookingController {
 
 		$booking = $this->bookingRepository->find( $id );
 		if ( ! $booking ) {
-			return new \WP_REST_Response( [
-				'success' => false,
-				'message' => __( 'Booking not found.', 'nozule' ),
-			], 404 );
+			return ResponseHelper::notFound( __( 'Booking not found.', 'nozule' ) );
 		}
 
 		$payments = $this->paymentRepository->getByBookingId( $id );
 
-		return new \WP_REST_Response( [
-			'success' => true,
-			'data'    => array_map( fn( $p ) => $p->toArray(), $payments ),
-		], 200 );
+		return ResponseHelper::success( array_map( fn( $p ) => $p->toArray(), $payments ) );
 	}
 
 	/**
@@ -521,18 +436,12 @@ class AdminBookingController {
 
 		$booking = $this->bookingRepository->find( $id );
 		if ( ! $booking ) {
-			return new \WP_REST_Response( [
-				'success' => false,
-				'message' => __( 'Booking not found.', 'nozule' ),
-			], 404 );
+			return ResponseHelper::notFound( __( 'Booking not found.', 'nozule' ) );
 		}
 
 		$logs = $this->bookingRepository->getLogsForBooking( $id );
 
-		return new \WP_REST_Response( [
-			'success' => true,
-			'data'    => array_map( fn( $log ) => $log->toArray(), $logs ),
-		], 200 );
+		return ResponseHelper::success( array_map( fn( $log ) => $log->toArray(), $logs ) );
 	}
 
 	// ── Helpers ─────────────────────────────────────────────────────

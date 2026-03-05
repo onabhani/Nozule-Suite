@@ -2,6 +2,7 @@
 
 namespace Nozule\Modules\Billing\Controllers;
 
+use Nozule\Core\ResponseHelper;
 use Nozule\Modules\Billing\Models\Tax;
 use Nozule\Modules\Billing\Services\TaxService;
 use WP_REST_Request;
@@ -80,11 +81,7 @@ class TaxController {
 			$taxes
 		);
 
-		return new WP_REST_Response( [
-			'success' => true,
-			'data'    => $data,
-			'total'   => count( $data ),
-		], 200 );
+		return ResponseHelper::success( $data, null, ['total' => count( $data )] );
 	}
 
 	/**
@@ -95,16 +92,10 @@ class TaxController {
 		$tax = $this->taxService->findTax( $id );
 
 		if ( ! $tax ) {
-			return new WP_REST_Response( [
-				'success' => false,
-				'message' => __( 'Tax not found.', 'nozule' ),
-			], 404 );
+			return ResponseHelper::notFound( __( 'Tax not found.', 'nozule' ) );
 		}
 
-		return new WP_REST_Response( [
-			'success' => true,
-			'data'    => $tax->toArray(),
-		], 200 );
+		return ResponseHelper::success( $tax->toArray() );
 	}
 
 	/**
@@ -116,18 +107,10 @@ class TaxController {
 		$result = $this->taxService->createTax( $data );
 
 		if ( $result instanceof Tax ) {
-			return new WP_REST_Response( [
-				'success' => true,
-				'message' => __( 'Tax created successfully.', 'nozule' ),
-				'data'    => $result->toArray(),
-			], 201 );
+			return ResponseHelper::created( $result->toArray(), __( 'Tax created successfully.', 'nozule' ) );
 		}
 
-		return new WP_REST_Response( [
-			'success' => false,
-			'message' => __( 'Validation failed.', 'nozule' ),
-			'errors'  => $result,
-		], 422 );
+		return ResponseHelper::error( __( 'Validation failed.', 'nozule' ), 422, $result );
 	}
 
 	/**
@@ -140,26 +123,14 @@ class TaxController {
 		$result = $this->taxService->updateTax( $id, $data );
 
 		if ( $result instanceof Tax ) {
-			return new WP_REST_Response( [
-				'success' => true,
-				'message' => __( 'Tax updated successfully.', 'nozule' ),
-				'data'    => $result->toArray(),
-			], 200 );
+			return ResponseHelper::success( $result->toArray(), __( 'Tax updated successfully.', 'nozule' ) );
 		}
 
 		if ( isset( $result['id'] ) ) {
-			return new WP_REST_Response( [
-				'success' => false,
-				'message' => $result['id'][0],
-				'errors'  => $result,
-			], 404 );
+			return ResponseHelper::error( $result['id'][0], 404, $result );
 		}
 
-		return new WP_REST_Response( [
-			'success' => false,
-			'message' => __( 'Validation failed.', 'nozule' ),
-			'errors'  => $result,
-		], 422 );
+		return ResponseHelper::error( __( 'Validation failed.', 'nozule' ), 422, $result );
 	}
 
 	/**
@@ -170,19 +141,12 @@ class TaxController {
 		$result = $this->taxService->deleteTax( $id );
 
 		if ( $result === true ) {
-			return new WP_REST_Response( [
-				'success' => true,
-				'message' => __( 'Tax deleted successfully.', 'nozule' ),
-			], 200 );
+			return ResponseHelper::success( null, __( 'Tax deleted successfully.', 'nozule' ) );
 		}
 
 		$statusCode = isset( $result['id'] ) ? 404 : 422;
 
-		return new WP_REST_Response( [
-			'success' => false,
-			'message' => __( 'Failed to delete tax.', 'nozule' ),
-			'errors'  => $result,
-		], $statusCode );
+		return ResponseHelper::error( __( 'Failed to delete tax.', 'nozule' ), $statusCode, $result );
 	}
 
 	/**

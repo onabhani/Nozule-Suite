@@ -3,6 +3,7 @@
 namespace Nozule\Modules\Billing\Controllers;
 
 use Nozule\Core\PropertyScope;
+use Nozule\Core\ResponseHelper;
 use Nozule\Modules\Billing\Models\Folio;
 use Nozule\Modules\Billing\Models\FolioItem;
 use Nozule\Modules\Billing\Repositories\FolioRepository;
@@ -132,11 +133,7 @@ class FolioController {
 			$folios
 		);
 
-		return new WP_REST_Response( [
-			'success' => true,
-			'data'    => $data,
-			'total'   => count( $data ),
-		], 200 );
+		return ResponseHelper::success( $data, null, ['total' => count( $data )] );
 	}
 
 	/**
@@ -148,10 +145,7 @@ class FolioController {
 		$guestId        = absint( $request->get_param( 'guest_id' ) );
 
 		if ( ! $guestId ) {
-			return new WP_REST_Response( [
-				'success' => false,
-				'message' => __( 'guest_id is required.', 'nozule' ),
-			], 422 );
+			return ResponseHelper::error( __( 'guest_id is required.', 'nozule' ), 422 );
 		}
 
 		if ( $groupBookingId ) {
@@ -164,18 +158,10 @@ class FolioController {
 		}
 
 		if ( $result instanceof Folio ) {
-			return new WP_REST_Response( [
-				'success' => true,
-				'message' => __( 'Folio created successfully.', 'nozule' ),
-				'data'    => $result->toArray(),
-			], 201 );
+			return ResponseHelper::created( $result->toArray(), __( 'Folio created successfully.', 'nozule' ) );
 		}
 
-		return new WP_REST_Response( [
-			'success' => false,
-			'message' => __( 'Validation failed.', 'nozule' ),
-			'errors'  => $result,
-		], 422 );
+		return ResponseHelper::error( __( 'Validation failed.', 'nozule' ), 422, $result );
 	}
 
 	/**
@@ -186,15 +172,12 @@ class FolioController {
 		$result = $this->folioService->getFolioWithItems( $id );
 
 		if ( ! $result ) {
-			return new WP_REST_Response( [
-				'success' => false,
-				'message' => __( 'Folio not found.', 'nozule' ),
-			], 404 );
+			return ResponseHelper::notFound( __( 'Folio not found.', 'nozule' ) );
 		}
 
 		$folio = $result['folio'];
 		if ( ! $this->propertyScope->canAccessAllProperties() && ( $folio->property_id ?? null ) !== $this->propertyScope->getActivePropertyId() ) {
-			return new WP_REST_Response( [ 'success' => false, 'message' => __( 'Forbidden', 'nozule' ) ], 403 );
+			return ResponseHelper::forbidden( __( 'Forbidden', 'nozule' ) );
 		}
 
 		$items = array_map(
@@ -202,13 +185,10 @@ class FolioController {
 			$result['items']
 		);
 
-		return new WP_REST_Response( [
-			'success' => true,
-			'data'    => [
+		return ResponseHelper::success( [
 				'folio' => $result['folio']->toArray(),
 				'items' => $items,
-			],
-		], 200 );
+			] );
 	}
 
 	/**
@@ -221,26 +201,17 @@ class FolioController {
 		$result = $this->folioService->addItem( $folioId, $data );
 
 		if ( $result instanceof FolioItem ) {
-			return new WP_REST_Response( [
-				'success' => true,
-				'message' => __( 'Item added to folio successfully.', 'nozule' ),
-				'data'    => $result->toPublicArray(),
-			], 201 );
+			return ResponseHelper::created( $result->toPublicArray(), __( 'Item added to folio successfully.', 'nozule' ) );
 		}
 
 		if ( isset( $result['folio_id'] ) ) {
-			return new WP_REST_Response( [
-				'success' => false,
-				'message' => $result['folio_id'][0],
-				'errors'  => $result,
-			], isset( $result['folio_id'] ) && strpos( $result['folio_id'][0], 'not found' ) !== false ? 404 : 422 );
+			$message    = is_array( $result['folio_id'] ) && isset( $result['folio_id'][0] ) ? $result['folio_id'][0] : __( 'Invalid folio.', 'nozule' );
+			$statusCode = isset( $result['http_status'] ) ? (int) $result['http_status'] : ( isset( $result['id'] ) ? 404 : 422 );
+
+			return ResponseHelper::error( $message, $statusCode, $result );
 		}
 
-		return new WP_REST_Response( [
-			'success' => false,
-			'message' => __( 'Validation failed.', 'nozule' ),
-			'errors'  => $result,
-		], 422 );
+		return ResponseHelper::error( __( 'Validation failed.', 'nozule' ), 422, $result );
 	}
 
 	/**
@@ -251,19 +222,12 @@ class FolioController {
 		$result = $this->folioService->removeItem( $itemId );
 
 		if ( $result === true ) {
-			return new WP_REST_Response( [
-				'success' => true,
-				'message' => __( 'Folio item removed successfully.', 'nozule' ),
-			], 200 );
+			return ResponseHelper::success( null, __( 'Folio item removed successfully.', 'nozule' ) );
 		}
 
 		$statusCode = isset( $result['id'] ) ? 404 : 422;
 
-		return new WP_REST_Response( [
-			'success' => false,
-			'message' => __( 'Failed to remove folio item.', 'nozule' ),
-			'errors'  => $result,
-		], $statusCode );
+		return ResponseHelper::error( __( 'Failed to remove folio item.', 'nozule' ), $statusCode, $result );
 	}
 
 	/**
@@ -274,26 +238,14 @@ class FolioController {
 		$result = $this->folioService->closeFolio( $id );
 
 		if ( $result instanceof Folio ) {
-			return new WP_REST_Response( [
-				'success' => true,
-				'message' => __( 'Folio closed successfully.', 'nozule' ),
-				'data'    => $result->toArray(),
-			], 200 );
+			return ResponseHelper::success( $result->toArray(), __( 'Folio closed successfully.', 'nozule' ) );
 		}
 
 		if ( isset( $result['id'] ) ) {
-			return new WP_REST_Response( [
-				'success' => false,
-				'message' => $result['id'][0],
-				'errors'  => $result,
-			], 404 );
+			return ResponseHelper::error( $result['id'][0], 404, $result );
 		}
 
-		return new WP_REST_Response( [
-			'success' => false,
-			'message' => __( 'Failed to close folio.', 'nozule' ),
-			'errors'  => $result,
-		], 422 );
+		return ResponseHelper::error( __( 'Failed to close folio.', 'nozule' ), 422, $result );
 	}
 
 	/**
@@ -304,26 +256,14 @@ class FolioController {
 		$result = $this->folioService->voidFolio( $id );
 
 		if ( $result instanceof Folio ) {
-			return new WP_REST_Response( [
-				'success' => true,
-				'message' => __( 'Folio voided successfully.', 'nozule' ),
-				'data'    => $result->toArray(),
-			], 200 );
+			return ResponseHelper::success( $result->toArray(), __( 'Folio voided successfully.', 'nozule' ) );
 		}
 
 		if ( isset( $result['id'] ) ) {
-			return new WP_REST_Response( [
-				'success' => false,
-				'message' => $result['id'][0],
-				'errors'  => $result,
-			], 404 );
+			return ResponseHelper::error( $result['id'][0], 404, $result );
 		}
 
-		return new WP_REST_Response( [
-			'success' => false,
-			'message' => __( 'Failed to void folio.', 'nozule' ),
-			'errors'  => $result,
-		], 422 );
+		return ResponseHelper::error( __( 'Failed to void folio.', 'nozule' ), 422, $result );
 	}
 
 	/**

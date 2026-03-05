@@ -2,6 +2,7 @@
 
 namespace Nozule\Modules\Reviews\Controllers;
 
+use Nozule\Core\ResponseHelper;
 use Nozule\Modules\Reviews\Models\ReviewRequest;
 use Nozule\Modules\Reviews\Repositories\ReviewRepository;
 use Nozule\Modules\Reviews\Services\ReviewService;
@@ -88,10 +89,7 @@ class ReviewController {
 	public function stats( \WP_REST_Request $request ): \WP_REST_Response {
 		$stats = $this->service->getStats();
 
-		return new \WP_REST_Response( [
-			'success' => true,
-			'data'    => $stats,
-		], 200 );
+		return ResponseHelper::success( $stats );
 	}
 
 	/**
@@ -109,16 +107,15 @@ class ReviewController {
 			'page'     => (int) ( $request->get_param( 'page' ) ?? 1 ),
 		] );
 
-		return new \WP_REST_Response( [
-			'success' => true,
-			'data'    => array_map( function ( ReviewRequest $r ) {
-				return $r->toArray();
-			}, $result['items'] ),
-			'meta'    => [
-				'total' => $result['total'],
-				'pages' => $result['pages'],
-			],
-		], 200 );
+		$page    = (int) ( $request->get_param( 'page' ) ?? 1 );
+		$perPage = (int) ( $request->get_param( 'per_page' ) ?? 20 );
+
+		return ResponseHelper::paginated(
+			array_map( fn( ReviewRequest $r ) => $r->toArray(), $result['items'] ),
+			$result['total'],
+			$page,
+			$perPage
+		);
 	}
 
 	/**
@@ -129,10 +126,7 @@ class ReviewController {
 	public function getSettings( \WP_REST_Request $request ): \WP_REST_Response {
 		$settings = $this->service->getSettings();
 
-		return new \WP_REST_Response( [
-			'success' => true,
-			'data'    => $settings,
-		], 200 );
+		return ResponseHelper::success( $settings );
 	}
 
 	/**
@@ -144,19 +138,12 @@ class ReviewController {
 		$data = $this->sanitizeSettingsInput( $request->get_params() );
 
 		if ( empty( $data ) ) {
-			return new \WP_REST_Response( [
-				'success' => false,
-				'message' => __( 'No valid settings provided.', 'nozule' ),
-			], 400 );
+			return ResponseHelper::error( __( 'No valid settings provided.', 'nozule' ), 400 );
 		}
 
 		$this->service->updateSettings( $data );
 
-		return new \WP_REST_Response( [
-			'success' => true,
-			'message' => __( 'Review settings updated.', 'nozule' ),
-			'data'    => $this->service->getSettings(),
-		], 200 );
+		return ResponseHelper::success( $this->service->getSettings(), __( 'Review settings updated.', 'nozule' ) );
 	}
 
 	/**

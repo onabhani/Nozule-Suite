@@ -2,6 +2,7 @@
 
 namespace Nozule\Modules\Rooms\Controllers;
 
+use Nozule\Core\ResponseHelper;
 use Nozule\Modules\Rooms\Services\AvailabilityService;
 use Nozule\Core\RateLimiter;
 use WP_REST_Request;
@@ -76,18 +77,12 @@ class AvailabilityController {
 
 		// Validate that check_out is after check_in.
 		if ( strtotime( $checkOut ) <= strtotime( $checkIn ) ) {
-			return new WP_REST_Response( [
-				'success' => false,
-				'message' => __( 'Check-out date must be after check-in date.', 'nozule' ),
-			], 422 );
+			return ResponseHelper::error( __( 'Check-out date must be after check-in date.', 'nozule' ), 422 );
 		}
 
 		// Validate that check_in is not in the past.
 		if ( strtotime( $checkIn ) < strtotime( 'today' ) ) {
-			return new WP_REST_Response( [
-				'success' => false,
-				'message' => __( 'Check-in date cannot be in the past.', 'nozule' ),
-			], 422 );
+			return ResponseHelper::error( __( 'Check-in date cannot be in the past.', 'nozule' ), 422 );
 		}
 
 		$results = $this->availabilityService->checkAvailability(
@@ -99,17 +94,13 @@ class AvailabilityController {
 
 		$nights = (int) ( new \DateTimeImmutable( $checkIn ) )->diff( new \DateTimeImmutable( $checkOut ) )->days;
 
-		return new WP_REST_Response( [
-			'success' => true,
-			'data'    => $results,
-			'meta'    => [
-				'check_in'  => $checkIn,
-				'check_out' => $checkOut,
-				'guests'    => $guests,
-				'nights'    => $nights,
-				'results'   => count( $results ),
-			],
-		], 200 );
+		return ResponseHelper::success( $results, null, [
+			'check_in'  => $checkIn,
+			'check_out' => $checkOut,
+			'guests'    => $guests,
+			'nights'    => $nights,
+			'results'   => count( $results ),
+		] );
 	}
 
 	/**
