@@ -5,6 +5,7 @@ namespace Nozule\Modules\Bookings\Controllers;
 use Nozule\Modules\Bookings\Exceptions\NoAvailabilityException;
 use Nozule\Modules\Bookings\Repositories\BookingRepository;
 use Nozule\Modules\Bookings\Services\BookingService;
+use Nozule\Core\RateLimiter;
 
 /**
  * REST controller for public-facing booking operations.
@@ -85,6 +86,9 @@ class BookingController {
 	 * Create a new booking from the public booking form.
 	 */
 	public function create( \WP_REST_Request $request ): \WP_REST_Response {
+		$limited = RateLimiter::middleware( $request, 'create_booking', 10, 3600 );
+		if ( $limited ) return $limited;
+
 		try {
 			$booking = $this->service->createBooking( $request->get_params() );
 

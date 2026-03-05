@@ -244,5 +244,25 @@ class Activator {
         if ( ! wp_next_scheduled( 'nzl_send_reminders' ) ) {
             wp_schedule_event( time(), 'hourly', 'nzl_send_reminders' );
         }
+
+        if ( ! wp_next_scheduled( 'nzl_cleanup_rate_limit_transients' ) ) {
+            wp_schedule_event( time(), 'daily', 'nzl_cleanup_rate_limit_transients' );
+        }
+
+    }
+
+    /**
+     * Register cron callbacks that must be attached on every request
+     * so WP-Cron can find them when the scheduled event fires.
+     */
+    public static function registerRuntimeHooks(): void {
+        add_action( 'nzl_cleanup_rate_limit_transients', static function () {
+            global $wpdb;
+            $wpdb->query(
+                "DELETE FROM {$wpdb->options}
+                 WHERE option_name LIKE '_transient_nzl_rl_%'
+                 OR option_name LIKE '_transient_timeout_nzl_rl_%'"
+            );
+        } );
     }
 }

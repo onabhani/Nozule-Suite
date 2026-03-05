@@ -3,7 +3,7 @@
  * Plugin Name:       Nozule
  * Plugin URI:        https://github.com/onabhani/Nozule-Suite
  * Description:       A comprehensive hotel booking management system for WordPress. Manage rooms, bookings, guests, pricing, channels, and reports.
- * Version:           1.9.2
+ * Version:           1.9.3
  * Author:            hdqah.com
  * Author URI:        https://hdqah.com
  * License:           GPL-2.0-or-later
@@ -21,7 +21,7 @@ if ( ! defined( 'ABSPATH' ) ) {
 }
 
 // Plugin constants
-define( 'NZL_VERSION', '1.9.2' );
+define( 'NZL_VERSION', '1.9.3' );
 define( 'NZL_PLUGIN_FILE', __FILE__ );
 define( 'NZL_PLUGIN_DIR', plugin_dir_path( __FILE__ ) );
 define( 'NZL_PLUGIN_URL', plugin_dir_url( __FILE__ ) );
@@ -81,6 +81,9 @@ register_deactivation_hook( __FILE__, function () {
 add_action( 'plugins_loaded', function () {
     nozule_manager()->boot();
 }, 10 );
+
+// Attach cron callbacks on every request so WP-Cron can find them.
+\Nozule\Core\Activator::registerRuntimeHooks();
 
 // Run pending migrations on version upgrade (after textdomain is available).
 add_action( 'init', function () {
