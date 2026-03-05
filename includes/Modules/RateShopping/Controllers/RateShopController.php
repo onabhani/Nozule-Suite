@@ -277,20 +277,19 @@ class RateShopController {
 			return ResponseHelper::created( $results, __( 'All rates recorded successfully.', 'nozule' ) );
 		}
 
-		return new WP_REST_Response( [
-			'success' => false,
-			'data'    => [
-				'successes' => $results,
-				'errors'    => $errors,
-			],
-			'message' => sprintf(
+		return ResponseHelper::error(
+			sprintf(
 				/* translators: 1: number of successful entries, 2: total entries */
 				__( '%1$d of %2$d rates recorded. Some entries had errors.', 'nozule' ),
 				count( $results ),
 				count( $entries )
 			),
-			'meta'    => [],
-		], 207 );
+			207,
+			[
+				'successes' => $results,
+				'errors'    => $errors,
+			]
+		);
 	}
 
 	/**
