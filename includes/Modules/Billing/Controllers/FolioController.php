@@ -2,8 +2,10 @@
 
 namespace Nozule\Modules\Billing\Controllers;
 
+use Nozule\Core\PropertyScope;
 use Nozule\Modules\Billing\Models\Folio;
 use Nozule\Modules\Billing\Models\FolioItem;
+use Nozule\Modules\Billing\Repositories\FolioRepository;
 use Nozule\Modules\Billing\Services\FolioService;
 use WP_REST_Request;
 use WP_REST_Response;
@@ -24,9 +26,13 @@ use WP_REST_Server;
 class FolioController {
 
 	private FolioService $folioService;
+	private FolioRepository $folioRepository;
+	private PropertyScope $propertyScope;
 
-	public function __construct( FolioService $folioService ) {
-		$this->folioService = $folioService;
+	public function __construct( FolioService $folioService, FolioRepository $folioRepository, PropertyScope $propertyScope ) {
+		$this->folioService    = $folioService;
+		$this->folioRepository = $folioRepository;
+		$this->propertyScope   = $propertyScope;
 	}
 
 	/**
@@ -117,7 +123,9 @@ class FolioController {
 		$bookingId = $request->get_param( 'booking_id' ) ? absint( $request->get_param( 'booking_id' ) ) : null;
 		$guestId   = $request->get_param( 'guest_id' ) ? absint( $request->get_param( 'guest_id' ) ) : null;
 
-		$folios = $this->folioService->getFolios( $status, $bookingId, $guestId );
+		$folios = $this->folioRepository
+			->scopeToProperty( $this->propertyScope->getActivePropertyId() )
+			->getAllFiltered( $status, $bookingId, $guestId );
 
 		$data = array_map(
 			fn( Folio $folio ) => $folio->toArray(),
@@ -182,6 +190,11 @@ class FolioController {
 				'success' => false,
 				'message' => __( 'Folio not found.', 'nozule' ),
 			], 404 );
+		}
+
+		$folio = $result['folio'];
+		if ( ! $this->propertyScope->canAccessAllProperties() && ( $folio->property_id ?? null ) !== $this->propertyScope->getActivePropertyId() ) {
+			return new WP_REST_Response( [ 'success' => false, 'message' => __( 'Forbidden', 'nozule' ) ], 403 );
 		}
 
 		$items = array_map(

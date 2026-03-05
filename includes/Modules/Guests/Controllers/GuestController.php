@@ -2,6 +2,7 @@
 
 namespace Nozule\Modules\Guests\Controllers;
 
+use Nozule\Core\PropertyScope;
 use Nozule\Modules\Guests\Services\GuestService;
 use Nozule\Modules\Guests\Repositories\GuestRepository;
 
@@ -14,10 +15,12 @@ class GuestController {
 
     private GuestService $service;
     private GuestRepository $repository;
+    private PropertyScope $propertyScope;
 
-    public function __construct( GuestService $service, GuestRepository $repository ) {
-        $this->service    = $service;
-        $this->repository = $repository;
+    public function __construct( GuestService $service, GuestRepository $repository, PropertyScope $propertyScope ) {
+        $this->service       = $service;
+        $this->repository    = $repository;
+        $this->propertyScope = $propertyScope;
     }
 
     /**
@@ -86,7 +89,7 @@ class GuestController {
     // Standard CRUD aliases (used by RestController admin routes)
 
     public function index( \WP_REST_Request $request ): \WP_REST_Response {
-        $result = $this->repository->list( [
+        $result = $this->repository->scopeToProperty( $this->propertyScope->getActivePropertyId() )->list( [
             'search'   => $request->get_param( 'search' ) ?? '',
             'orderby'  => $request->get_param( 'orderby' ) ?? 'created_at',
             'order'    => $request->get_param( 'order' ) ?? 'DESC',
@@ -120,7 +123,7 @@ class GuestController {
      * List guests with search and pagination.
      */
     public function listGuests( \WP_REST_Request $request ): \WP_REST_Response {
-        $result = $this->repository->list( [
+        $result = $this->repository->scopeToProperty( $this->propertyScope->getActivePropertyId() )->list( [
             'search'   => $request->get_param( 'search' ) ?? '',
             'orderby'  => $request->get_param( 'orderby' ) ?? 'created_at',
             'order'    => $request->get_param( 'order' ) ?? 'DESC',
@@ -154,6 +157,10 @@ class GuestController {
             );
         }
 
+        if ( ! $this->propertyScope->canAccessAllProperties() && ( $guest->property_id ?? null ) !== $this->propertyScope->getActivePropertyId() ) {
+            return new \WP_REST_Response( [ 'success' => false, 'message' => __( 'Forbidden', 'nozule' ) ], 403 );
+        }
+
         return new \WP_REST_Response( $guest->toArray(), 200 );
     }
 
@@ -179,6 +186,16 @@ class GuestController {
      */
     public function updateGuest( \WP_REST_Request $request ): \WP_REST_Response {
         $id   = (int) $request->get_param( 'id' );
+
+        $guest = $this->repository->find( $id );
+        if ( ! $guest ) {
+            return new \WP_REST_Response( [ 'message' => __( 'Guest not found.', 'nozule' ) ], 404 );
+        }
+
+        if ( ! $this->propertyScope->canAccessAllProperties() && ( $guest->property_id ?? null ) !== $this->propertyScope->getActivePropertyId() ) {
+            return new \WP_REST_Response( [ 'success' => false, 'message' => __( 'Forbidden', 'nozule' ) ], 403 );
+        }
+
         $data = $this->extractGuestData( $request );
 
         if ( empty( $data ) ) {

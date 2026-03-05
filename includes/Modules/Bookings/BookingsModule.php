@@ -5,6 +5,7 @@ namespace Nozule\Modules\Bookings;
 use Nozule\Core\BaseModule;
 use Nozule\Core\Container;
 use Nozule\Core\Database;
+use Nozule\Core\PropertyScope;
 use Nozule\Core\SettingsManager;
 use Nozule\Modules\Bookings\Controllers\AdminBookingController;
 use Nozule\Modules\Bookings\Controllers\BookingController;
@@ -81,7 +82,8 @@ class BookingsModule extends BaseModule {
 				$c->get( BookingService::class ),
 				$c->get( BookingRepository::class ),
 				$c->get( PaymentRepository::class ),
-				$c->get( BookingValidator::class )
+				$c->get( BookingValidator::class ),
+				$c->get( PropertyScope::class )
 			);
 		} );
 
