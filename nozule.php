@@ -1,7 +1,7 @@
 <?php
 /**
  * Plugin Name:       Nozule
- * Plugin URI:        https://github.com/onabhani/Rawaq-Suite
+ * Plugin URI:        https://github.com/onabhani/Nozule-Suite
  * Description:       A comprehensive hotel booking management system for WordPress. Manage rooms, bookings, guests, pricing, channels, and reports.
  * Version:           1.8.2
  * Author:            hdqah.com
@@ -12,7 +12,7 @@
  * Domain Path:       /languages
  * Requires at least: 6.0
  * Requires PHP:      8.0
- * GitHub Plugin URI: onabhani/Rawaq-Suite
+ * GitHub Plugin URI: onabhani/Nozule-Suite
  * Primary Branch:    main
  */
 
@@ -62,8 +62,13 @@ function nozule_manager(): \Nozule\Core\Plugin {
 
 // Activation hook
 register_activation_hook( __FILE__, function () {
-    require_once NZL_PLUGIN_DIR . 'includes/Core/Activator.php';
-    \Nozule\Core\Activator::activate();
+    ob_start();
+    try {
+        require_once NZL_PLUGIN_DIR . 'includes/Core/Activator.php';
+        \Nozule\Core\Activator::activate();
+    } finally {
+        ob_end_clean();
+    }
 } );
 
 // Deactivation hook
@@ -79,7 +84,12 @@ add_action( 'plugins_loaded', function () {
 
 // Run pending migrations on version upgrade (after textdomain is available).
 add_action( 'init', function () {
-    \Nozule\Core\Activator::maybeUpgrade();
+    ob_start();
+    try {
+        \Nozule\Core\Activator::maybeUpgrade();
+    } finally {
+        ob_end_clean();
+    }
 }, 0 );
 
 // Dev/debug WP-CLI commands (only when WP_DEBUG is on).
