@@ -228,7 +228,7 @@ class EmployeeController {
         // Prevent users from editing their own role or capabilities
         // (only WordPress administrators may do so).
         $is_self = ( (int) $employee->wp_user_id === get_current_user_id() );
-        if ( $is_self && ! current_user_can( 'manage_options' ) ) {
+        if ( $is_self && ! current_user_can( 'manage_options' ) && ! current_user_can( 'nzl_super_admin' ) ) {
             $requested_caps = $request->get_param( 'capabilities' );
             $requested_role = $request->get_param( 'role' );
             if ( $requested_caps !== null || ( $requested_role !== null && $requested_role !== '' ) ) {
