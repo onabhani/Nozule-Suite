@@ -2,6 +2,7 @@
 
 namespace Nozule\Modules\WhatsApp\Controllers;
 
+use Nozule\Core\ResponseHelper;
 use Nozule\Modules\WhatsApp\Models\WhatsAppLog;
 use Nozule\Modules\WhatsApp\Models\WhatsAppTemplate;
 use Nozule\Modules\WhatsApp\Repositories\WhatsAppLogRepository;
@@ -133,14 +134,10 @@ class WhatsAppController {
 			'page'          => (int) ( $request->get_param( 'page' ) ?? 1 ),
 		] );
 
-		return new \WP_REST_Response( [
-			'success' => true,
-			'data'    => array_map( fn( WhatsAppTemplate $t ) => $t->toArray(), $result['items'] ),
-			'meta'    => [
+		return ResponseHelper::success( array_map( fn( WhatsAppTemplate $t ) => $t->toArray(), $result['items'] ), null, [
 				'total' => $result['total'],
 				'pages' => $result['pages'],
-			],
-		], 200 );
+			] );
 	}
 
 	/**
@@ -152,34 +149,22 @@ class WhatsAppController {
 		$data = $this->sanitizeTemplateInput( $request->get_params() );
 
 		if ( empty( $data['name'] ) || empty( $data['slug'] ) || empty( $data['body'] ) ) {
-			return new \WP_REST_Response( [
-				'success' => false,
-				'message' => __( 'Name, slug, and body are required.', 'nozule' ),
-			], 400 );
+			return ResponseHelper::error( __( 'Name, slug, and body are required.', 'nozule' ), 400 );
 		}
 
 		// Check for duplicate slug.
 		$existing = $this->templateRepo->findBySlug( $data['slug'] );
 		if ( $existing ) {
-			return new \WP_REST_Response( [
-				'success' => false,
-				'message' => __( 'A template with this slug already exists.', 'nozule' ),
-			], 409 );
+			return ResponseHelper::error( __( 'A template with this slug already exists.', 'nozule' ), 409 );
 		}
 
 		$template = $this->templateRepo->create( $data );
 
 		if ( ! $template ) {
-			return new \WP_REST_Response( [
-				'success' => false,
-				'message' => __( 'Failed to create WhatsApp template.', 'nozule' ),
-			], 500 );
+			return ResponseHelper::error( __( 'Failed to create WhatsApp template.', 'nozule' ), 500 );
 		}
 
-		return new \WP_REST_Response( [
-			'success' => true,
-			'data'    => $template->toArray(),
-		], 201 );
+		return ResponseHelper::created( $template->toArray() );
 	}
 
 	/**
@@ -191,16 +176,10 @@ class WhatsAppController {
 		$template = $this->templateRepo->find( (int) $request->get_param( 'id' ) );
 
 		if ( ! $template ) {
-			return new \WP_REST_Response( [
-				'success' => false,
-				'message' => __( 'WhatsApp template not found.', 'nozule' ),
-			], 404 );
+			return ResponseHelper::notFound( __( 'WhatsApp template not found.', 'nozule' ) );
 		}
 
-		return new \WP_REST_Response( [
-			'success' => true,
-			'data'    => $template->toArray(),
-		], 200 );
+		return ResponseHelper::success( $template->toArray() );
 	}
 
 	/**
@@ -213,10 +192,7 @@ class WhatsAppController {
 		$template = $this->templateRepo->find( $id );
 
 		if ( ! $template ) {
-			return new \WP_REST_Response( [
-				'success' => false,
-				'message' => __( 'WhatsApp template not found.', 'nozule' ),
-			], 404 );
+			return ResponseHelper::notFound( __( 'WhatsApp template not found.', 'nozule' ) );
 		}
 
 		$data = $this->sanitizeTemplateInput( $request->get_params() );
@@ -226,26 +202,17 @@ class WhatsAppController {
 		if ( isset( $data['slug'] ) && $data['slug'] !== $template->slug ) {
 			$existing = $this->templateRepo->findBySlug( $data['slug'] );
 			if ( $existing ) {
-				return new \WP_REST_Response( [
-					'success' => false,
-					'message' => __( 'A template with this slug already exists.', 'nozule' ),
-				], 409 );
+				return ResponseHelper::error( __( 'A template with this slug already exists.', 'nozule' ), 409 );
 			}
 		}
 
 		$success = $this->templateRepo->update( $id, $data );
 
 		if ( ! $success ) {
-			return new \WP_REST_Response( [
-				'success' => false,
-				'message' => __( 'Failed to update WhatsApp template.', 'nozule' ),
-			], 500 );
+			return ResponseHelper::error( __( 'Failed to update WhatsApp template.', 'nozule' ), 500 );
 		}
 
-		return new \WP_REST_Response( [
-			'success' => true,
-			'data'    => $this->templateRepo->findOrFail( $id )->toArray(),
-		], 200 );
+		return ResponseHelper::success( $this->templateRepo->findOrFail( $id )->toArray() );
 	}
 
 	/**
@@ -258,25 +225,16 @@ class WhatsAppController {
 		$template = $this->templateRepo->find( $id );
 
 		if ( ! $template ) {
-			return new \WP_REST_Response( [
-				'success' => false,
-				'message' => __( 'WhatsApp template not found.', 'nozule' ),
-			], 404 );
+			return ResponseHelper::notFound( __( 'WhatsApp template not found.', 'nozule' ) );
 		}
 
 		$deleted = $this->templateRepo->delete( $id );
 
 		if ( ! $deleted ) {
-			return new \WP_REST_Response( [
-				'success' => false,
-				'message' => __( 'Failed to delete WhatsApp template.', 'nozule' ),
-			], 500 );
+			return ResponseHelper::error( __( 'Failed to delete WhatsApp template.', 'nozule' ), 500 );
 		}
 
-		return new \WP_REST_Response( [
-			'success' => true,
-			'message' => __( 'WhatsApp template deleted.', 'nozule' ),
-		], 200 );
+		return ResponseHelper::success( null, __( 'WhatsApp template deleted.', 'nozule' ) );
 	}
 
 	/**
@@ -289,10 +247,7 @@ class WhatsAppController {
 		$template = $this->templateRepo->find( $id );
 
 		if ( ! $template ) {
-			return new \WP_REST_Response( [
-				'success' => false,
-				'message' => __( 'WhatsApp template not found.', 'nozule' ),
-			], 404 );
+			return ResponseHelper::notFound( __( 'WhatsApp template not found.', 'nozule' ) );
 		}
 
 		// Get the test phone number from request or from WhatsApp settings.
@@ -303,30 +258,21 @@ class WhatsAppController {
 		}
 
 		if ( empty( $toPhone ) ) {
-			return new \WP_REST_Response( [
-				'success' => false,
-				'message' => __( 'No phone number provided for test. Please provide a phone number.', 'nozule' ),
-			], 400 );
+			return ResponseHelper::error( __( 'No phone number provided for test. Please provide a phone number.', 'nozule' ), 400 );
 		}
 
 		$variables = $this->getSampleVariables();
 		$sent      = $this->service->sendTemplate( $template->id, $variables, $toPhone );
 
 		if ( ! $sent ) {
-			return new \WP_REST_Response( [
-				'success' => false,
-				'message' => __( 'Failed to send test WhatsApp message.', 'nozule' ),
-			], 500 );
+			return ResponseHelper::error( __( 'Failed to send test WhatsApp message.', 'nozule' ), 500 );
 		}
 
-		return new \WP_REST_Response( [
-			'success' => true,
-			'message' => sprintf(
+		return ResponseHelper::success( null, sprintf(
 				/* translators: %s: recipient phone number */
 				__( 'Test WhatsApp message sent to %s.', 'nozule' ),
 				$toPhone
-			),
-		], 200 );
+			) );
 	}
 
 	// ── Message Log Endpoint ────────────────────────────────────────
@@ -346,14 +292,10 @@ class WhatsAppController {
 			'page'     => (int) ( $request->get_param( 'page' ) ?? 1 ),
 		] );
 
-		return new \WP_REST_Response( [
-			'success' => true,
-			'data'    => array_map( fn( WhatsAppLog $log ) => $log->toArray(), $result['items'] ),
-			'meta'    => [
+		return ResponseHelper::success( array_map( fn( WhatsAppLog $log ) => $log->toArray(), $result['items'] ), null, [
 				'total' => $result['total'],
 				'pages' => $result['pages'],
-			],
-		], 200 );
+			] );
 	}
 
 	// ── Settings Endpoints ──────────────────────────────────────────
@@ -381,10 +323,7 @@ class WhatsAppController {
 		// Never return the raw token over the API.
 		unset( $settings['access_token'] );
 
-		return new \WP_REST_Response( [
-			'success' => true,
-			'data'    => $settings,
-		], 200 );
+		return ResponseHelper::success( $settings );
 	}
 
 	/**
@@ -411,18 +350,12 @@ class WhatsAppController {
 		}
 
 		if ( empty( $data ) ) {
-			return new \WP_REST_Response( [
-				'success' => false,
-				'message' => __( 'No valid settings provided.', 'nozule' ),
-			], 400 );
+			return ResponseHelper::error( __( 'No valid settings provided.', 'nozule' ), 400 );
 		}
 
 		$this->service->updateSettings( $data );
 
-		return new \WP_REST_Response( [
-			'success' => true,
-			'message' => __( 'WhatsApp settings updated.', 'nozule' ),
-		], 200 );
+		return ResponseHelper::success( null, __( 'WhatsApp settings updated.', 'nozule' ) );
 	}
 
 	// ── Helpers ─────────────────────────────────────────────────────

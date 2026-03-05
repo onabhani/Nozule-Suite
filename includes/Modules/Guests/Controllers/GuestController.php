@@ -3,6 +3,7 @@
 namespace Nozule\Modules\Guests\Controllers;
 
 use Nozule\Core\PropertyScope;
+use Nozule\Core\ResponseHelper;
 use Nozule\Modules\Guests\Services\GuestService;
 use Nozule\Modules\Guests\Repositories\GuestRepository;
 
@@ -102,8 +103,7 @@ class GuestController {
             $result['guests']
         );
 
-        return new \WP_REST_Response( [
-            'data' => [
+        return ResponseHelper::success( [
                 'items'      => $guests,
                 'pagination' => [
                     'page'        => (int) ( $request->get_param( 'page' ) ?? 1 ),
@@ -111,8 +111,7 @@ class GuestController {
                     'total'       => $result['total'],
                     'total_pages' => $result['pages'],
                 ],
-            ],
-        ], 200 );
+            ] );
     }
 
     public function show( \WP_REST_Request $request ): \WP_REST_Response {
@@ -136,7 +135,7 @@ class GuestController {
             $result['guests']
         );
 
-        $response = new \WP_REST_Response( $guests, 200 );
+        $response = ResponseHelper::success( $guests );
         $response->header( 'X-WP-Total', (string) $result['total'] );
         $response->header( 'X-WP-TotalPages', (string) $result['pages'] );
 
@@ -151,17 +150,14 @@ class GuestController {
         $guest = $this->repository->find( $id );
 
         if ( ! $guest ) {
-            return new \WP_REST_Response(
-                [ 'message' => __( 'Guest not found.', 'nozule' ) ],
-                404
-            );
+            return ResponseHelper::notFound( __( 'Guest not found.', 'nozule' ) );
         }
 
         if ( ! $this->propertyScope->canAccessAllProperties() && ( $guest->property_id ?? null ) !== $this->propertyScope->getActivePropertyId() ) {
-            return new \WP_REST_Response( [ 'success' => false, 'message' => __( 'Forbidden', 'nozule' ) ], 403 );
+            return ResponseHelper::forbidden( __( 'Forbidden', 'nozule' ) );
         }
 
-        return new \WP_REST_Response( $guest->toArray(), 200 );
+        return ResponseHelper::success( $guest->toArray() );
     }
 
     /**
@@ -172,12 +168,9 @@ class GuestController {
 
         try {
             $guest = $this->service->createGuest( $data );
-            return new \WP_REST_Response( $guest->toArray(), 201 );
+            return ResponseHelper::created( $guest->toArray() );
         } catch ( \RuntimeException $e ) {
-            return new \WP_REST_Response(
-                [ 'message' => $e->getMessage() ],
-                400
-            );
+            return ResponseHelper::error( $e->getMessage(), 400 );
         }
     }
 
@@ -189,31 +182,25 @@ class GuestController {
 
         $guest = $this->repository->find( $id );
         if ( ! $guest ) {
-            return new \WP_REST_Response( [ 'message' => __( 'Guest not found.', 'nozule' ) ], 404 );
+            return ResponseHelper::notFound( __( 'Guest not found.', 'nozule' ) );
         }
 
         if ( ! $this->propertyScope->canAccessAllProperties() && ( $guest->property_id ?? null ) !== $this->propertyScope->getActivePropertyId() ) {
-            return new \WP_REST_Response( [ 'success' => false, 'message' => __( 'Forbidden', 'nozule' ) ], 403 );
+            return ResponseHelper::forbidden( __( 'Forbidden', 'nozule' ) );
         }
 
         $data = $this->extractGuestData( $request );
 
         if ( empty( $data ) ) {
-            return new \WP_REST_Response(
-                [ 'message' => __( 'No data provided for update.', 'nozule' ) ],
-                400
-            );
+            return ResponseHelper::error( __( 'No data provided for update.', 'nozule' ), 400 );
         }
 
         try {
             $guest = $this->service->updateGuestProfile( $id, $data );
-            return new \WP_REST_Response( $guest->toArray(), 200 );
+            return ResponseHelper::success( $guest->toArray() );
         } catch ( \RuntimeException $e ) {
             $code = str_contains( $e->getMessage(), 'not found' ) ? 404 : 400;
-            return new \WP_REST_Response(
-                [ 'message' => $e->getMessage() ],
-                $code
-            );
+            return ResponseHelper::error( $e->getMessage(), $code );
         }
     }
 
@@ -230,12 +217,9 @@ class GuestController {
             $response_data          = $history;
             $response_data['guest'] = $history['guest']->toArray();
 
-            return new \WP_REST_Response( $response_data, 200 );
+            return ResponseHelper::success( $response_data );
         } catch ( \RuntimeException $e ) {
-            return new \WP_REST_Response(
-                [ 'message' => $e->getMessage() ],
-                404
-            );
+            return ResponseHelper::notFound( $e->getMessage() );
         }
     }
 

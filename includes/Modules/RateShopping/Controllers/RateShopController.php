@@ -298,10 +298,7 @@ class RateShopController {
 
 		$report = $this->service->getParityReport( $dateFrom, $dateTo );
 
-		return new WP_REST_Response( [
-			'success' => true,
-			'data'    => $report,
-		], 200 );
+		return ResponseHelper::success( $report );
 	}
 
 	/**
@@ -318,18 +315,15 @@ class RateShopController {
 		$page   = (int) ( $request->get_param( 'page' ) ?? 1 );
 		$result = $this->service->getAlerts( $filters, $page );
 
-		return new WP_REST_Response( [
-			'success' => true,
-			'data'    => [
-				'items'      => $result['items'],
-				'pagination' => [
-					'page'        => $page,
-					'per_page'    => (int) ( $filters['per_page'] ),
-					'total'       => $result['total'],
-					'total_pages' => $result['pages'],
-				],
+		return ResponseHelper::success( [
+			'items'      => $result['items'],
+			'pagination' => [
+				'page'        => $page,
+				'per_page'    => (int) ( $filters['per_page'] ),
+				'total'       => $result['total'],
+				'total_pages' => $result['pages'],
 			],
-		], 200 );
+		] );
 	}
 
 	/**
@@ -341,19 +335,12 @@ class RateShopController {
 		$result = $this->service->resolveAlert( $id );
 
 		if ( $result === true ) {
-			return new WP_REST_Response( [
-				'success' => true,
-				'message' => __( 'Alert resolved successfully.', 'nozule' ),
-			], 200 );
+			return ResponseHelper::success( null, __( 'Alert resolved successfully.', 'nozule' ) );
 		}
 
 		$statusCode = isset( $result['id'] ) ? 404 : 422;
 
-		return new WP_REST_Response( [
-			'success' => false,
-			'message' => __( 'Failed to resolve alert.', 'nozule' ),
-			'errors'  => $result,
-		], $statusCode );
+		return ResponseHelper::error( __( 'Failed to resolve alert.', 'nozule' ), $statusCode, $result );
 	}
 
 	/**
@@ -363,10 +350,7 @@ class RateShopController {
 	public function stats( WP_REST_Request $request ): WP_REST_Response {
 		$stats = $this->service->getStats();
 
-		return new WP_REST_Response( [
-			'success' => true,
-			'data'    => $stats,
-		], 200 );
+		return ResponseHelper::success( $stats );
 	}
 
 	// ══════════════════════════════════════════════════════════════════

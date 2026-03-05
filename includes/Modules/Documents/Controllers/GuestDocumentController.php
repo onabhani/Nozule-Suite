@@ -2,6 +2,7 @@
 
 namespace Nozule\Modules\Documents\Controllers;
 
+use Nozule\Core\ResponseHelper;
 use Nozule\Modules\Documents\Models\GuestDocument;
 use Nozule\Modules\Documents\Services\GuestDocumentService;
 
@@ -135,9 +136,7 @@ class GuestDocumentController {
 			$documents
 		);
 
-		return new \WP_REST_Response( [
-			'data' => $items,
-		], 200 );
+		return ResponseHelper::success( $items );
 	}
 
 	/**
@@ -159,10 +158,7 @@ class GuestDocumentController {
 
 			if ( is_array( $upload_result ) ) {
 				// Upload failed — return errors.
-				return new \WP_REST_Response( [
-					'message' => __( 'File upload failed.', 'nozule' ),
-					'errors'  => $upload_result,
-				], 422 );
+				return ResponseHelper::error( __( 'File upload failed.', 'nozule' ), 422, $upload_result );
 			}
 
 			$data['file_path'] = $upload_result;
@@ -172,14 +168,11 @@ class GuestDocumentController {
 		$result = $this->service->createDocument( $data );
 
 		if ( $result instanceof GuestDocument ) {
-			return new \WP_REST_Response( $result->toArray(), 201 );
+			return ResponseHelper::created( $result->toArray() );
 		}
 
 		// Validation errors.
-		return new \WP_REST_Response( [
-			'message' => __( 'Validation failed.', 'nozule' ),
-			'errors'  => $result,
-		], 422 );
+		return ResponseHelper::error( __( 'Validation failed.', 'nozule' ), 422, $result );
 	}
 
 	/**
@@ -192,13 +185,10 @@ class GuestDocumentController {
 		$document = $this->service->getDocument( $id );
 
 		if ( ! $document ) {
-			return new \WP_REST_Response(
-				[ 'message' => __( 'Document not found.', 'nozule' ) ],
-				404
-			);
+			return ResponseHelper::notFound( __( 'Document not found.', 'nozule' ) );
 		}
 
-		return new \WP_REST_Response( $document->toArray(), 200 );
+		return ResponseHelper::success( $document->toArray() );
 	}
 
 	/**
@@ -211,30 +201,21 @@ class GuestDocumentController {
 		$data = $this->extractDocumentData( $request );
 
 		if ( empty( $data ) ) {
-			return new \WP_REST_Response(
-				[ 'message' => __( 'No data provided for update.', 'nozule' ) ],
-				400
-			);
+			return ResponseHelper::error( __( 'No data provided for update.', 'nozule' ), 400 );
 		}
 
 		$result = $this->service->updateDocument( $id, $data );
 
 		if ( $result instanceof GuestDocument ) {
-			return new \WP_REST_Response( $result->toArray(), 200 );
+			return ResponseHelper::success( $result->toArray() );
 		}
 
 		// Check if it's a "not found" error.
 		if ( isset( $result['general'] ) && str_contains( implode( '', $result['general'] ), 'not found' ) ) {
-			return new \WP_REST_Response( [
-				'message' => __( 'Document not found.', 'nozule' ),
-				'errors'  => $result,
-			], 404 );
+			return ResponseHelper::notFound( __( 'Document not found.', 'nozule' ) );
 		}
 
-		return new \WP_REST_Response( [
-			'message' => __( 'Validation failed.', 'nozule' ),
-			'errors'  => $result,
-		], 422 );
+		return ResponseHelper::error( __( 'Validation failed.', 'nozule' ), 422, $result );
 	}
 
 	/**
@@ -247,16 +228,10 @@ class GuestDocumentController {
 		$deleted = $this->service->deleteDocument( $id );
 
 		if ( ! $deleted ) {
-			return new \WP_REST_Response(
-				[ 'message' => __( 'Document not found.', 'nozule' ) ],
-				404
-			);
+			return ResponseHelper::notFound( __( 'Document not found.', 'nozule' ) );
 		}
 
-		return new \WP_REST_Response(
-			[ 'message' => __( 'Document deleted successfully.', 'nozule' ) ],
-			200
-		);
+		return ResponseHelper::success( null, __( 'Document deleted successfully.', 'nozule' ) );
 	}
 
 	/**
@@ -271,21 +246,15 @@ class GuestDocumentController {
 		$result = $this->service->verifyDocument( $id, $verified_by );
 
 		if ( $result instanceof GuestDocument ) {
-			return new \WP_REST_Response( $result->toArray(), 200 );
+			return ResponseHelper::success( $result->toArray() );
 		}
 
 		// Check for not found.
 		if ( isset( $result['general'] ) && str_contains( implode( '', $result['general'] ), 'not found' ) ) {
-			return new \WP_REST_Response( [
-				'message' => __( 'Document not found.', 'nozule' ),
-				'errors'  => $result,
-			], 404 );
+			return ResponseHelper::notFound( __( 'Document not found.', 'nozule' ) );
 		}
 
-		return new \WP_REST_Response( [
-			'message' => __( 'Failed to verify document.', 'nozule' ),
-			'errors'  => $result,
-		], 422 );
+		return ResponseHelper::error( __( 'Failed to verify document.', 'nozule' ), 422, $result );
 	}
 
 	/**
@@ -298,14 +267,12 @@ class GuestDocumentController {
 		$mrz_line2 = $request->get_param( 'mrz_line2' );
 
 		if ( empty( $mrz_line1 ) || empty( $mrz_line2 ) ) {
-			return new \WP_REST_Response( [
-				'message' => __( 'Both MRZ lines are required.', 'nozule' ),
-			], 400 );
+			return ResponseHelper::error( __( 'Both MRZ lines are required.', 'nozule' ), 400 );
 		}
 
 		$parsed = $this->service->parseMRZ( $mrz_line1, $mrz_line2 );
 
-		return new \WP_REST_Response( $parsed, 200 );
+		return ResponseHelper::success( $parsed );
 	}
 
 	/**

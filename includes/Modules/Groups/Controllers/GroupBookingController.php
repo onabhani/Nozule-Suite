@@ -2,6 +2,7 @@
 
 namespace Nozule\Modules\Groups\Controllers;
 
+use Nozule\Core\ResponseHelper;
 use Nozule\Modules\Groups\Models\GroupBooking;
 use Nozule\Modules\Groups\Services\GroupBookingService;
 
@@ -141,14 +142,10 @@ class GroupBookingController {
 			'page'      => (int) ( $request->get_param( 'page' ) ?? 1 ),
 		] );
 
-		return new \WP_REST_Response( [
-			'success' => true,
-			'data'    => array_map( fn( GroupBooking $g ) => $g->toArray(), $result['groups'] ),
-			'meta'    => [
+		return ResponseHelper::success( array_map( fn( GroupBooking $g ) => $g->toArray(), $result['groups'] ), null, [
 				'total' => $result['total'],
 				'pages' => $result['pages'],
-			],
-		], 200 );
+			] );
 	}
 
 	/**
@@ -160,20 +157,11 @@ class GroupBookingController {
 		try {
 			$group = $this->service->createGroup( $request->get_params() );
 
-			return new \WP_REST_Response( [
-				'success' => true,
-				'data'    => $group->toArray(),
-			], 201 );
+			return ResponseHelper::created( $group->toArray() );
 		} catch ( \InvalidArgumentException $e ) {
-			return new \WP_REST_Response( [
-				'success' => false,
-				'message' => $e->getMessage(),
-			], 400 );
+			return ResponseHelper::error( $e->getMessage(), 400 );
 		} catch ( \Throwable $e ) {
-			return new \WP_REST_Response( [
-				'success' => false,
-				'message' => __( 'Failed to create group booking.', 'nozule' ),
-			], 500 );
+			return ResponseHelper::error( __( 'Failed to create group booking.', 'nozule' ), 500 );
 		}
 	}
 
@@ -186,16 +174,10 @@ class GroupBookingController {
 		$data = $this->service->getGroupWithRooms( (int) $request->get_param( 'id' ) );
 
 		if ( ! $data ) {
-			return new \WP_REST_Response( [
-				'success' => false,
-				'message' => __( 'Group booking not found.', 'nozule' ),
-			], 404 );
+			return ResponseHelper::notFound( __( 'Group booking not found.', 'nozule' ) );
 		}
 
-		return new \WP_REST_Response( [
-			'success' => true,
-			'data'    => $data,
-		], 200 );
+		return ResponseHelper::success( $data );
 	}
 
 	/**
@@ -210,25 +192,13 @@ class GroupBookingController {
 				$request->get_params()
 			);
 
-			return new \WP_REST_Response( [
-				'success' => true,
-				'data'    => $group->toArray(),
-			], 200 );
+			return ResponseHelper::success( $group->toArray() );
 		} catch ( \InvalidArgumentException $e ) {
-			return new \WP_REST_Response( [
-				'success' => false,
-				'message' => $e->getMessage(),
-			], 400 );
+			return ResponseHelper::error( $e->getMessage(), 400 );
 		} catch ( \RuntimeException $e ) {
-			return new \WP_REST_Response( [
-				'success' => false,
-				'message' => $e->getMessage(),
-			], 404 );
+			return ResponseHelper::notFound( $e->getMessage() );
 		} catch ( \Throwable $e ) {
-			return new \WP_REST_Response( [
-				'success' => false,
-				'message' => __( 'Failed to update group booking.', 'nozule' ),
-			], 500 );
+			return ResponseHelper::error( __( 'Failed to update group booking.', 'nozule' ), 500 );
 		}
 	}
 
@@ -244,25 +214,13 @@ class GroupBookingController {
 				$request->get_param( 'reason' ) ?? ''
 			);
 
-			return new \WP_REST_Response( [
-				'success' => true,
-				'data'    => $group->toArray(),
-			], 200 );
+			return ResponseHelper::success( $group->toArray() );
 		} catch ( \InvalidArgumentException $e ) {
-			return new \WP_REST_Response( [
-				'success' => false,
-				'message' => $e->getMessage(),
-			], 409 );
+			return ResponseHelper::error( $e->getMessage(), 409 );
 		} catch ( \RuntimeException $e ) {
-			return new \WP_REST_Response( [
-				'success' => false,
-				'message' => $e->getMessage(),
-			], 404 );
+			return ResponseHelper::notFound( $e->getMessage() );
 		} catch ( \Throwable $e ) {
-			return new \WP_REST_Response( [
-				'success' => false,
-				'message' => __( 'Failed to cancel group booking.', 'nozule' ),
-			], 500 );
+			return ResponseHelper::error( __( 'Failed to cancel group booking.', 'nozule' ), 500 );
 		}
 	}
 
@@ -275,20 +233,11 @@ class GroupBookingController {
 		try {
 			$group = $this->service->confirmGroup( (int) $request->get_param( 'id' ) );
 
-			return new \WP_REST_Response( [
-				'success' => true,
-				'data'    => $group->toArray(),
-			], 200 );
+			return ResponseHelper::success( $group->toArray() );
 		} catch ( \InvalidArgumentException $e ) {
-			return new \WP_REST_Response( [
-				'success' => false,
-				'message' => $e->getMessage(),
-			], 409 );
+			return ResponseHelper::error( $e->getMessage(), 409 );
 		} catch ( \Throwable $e ) {
-			return new \WP_REST_Response( [
-				'success' => false,
-				'message' => __( 'Failed to confirm group booking.', 'nozule' ),
-			], 500 );
+			return ResponseHelper::error( __( 'Failed to confirm group booking.', 'nozule' ), 500 );
 		}
 	}
 
@@ -301,20 +250,11 @@ class GroupBookingController {
 		try {
 			$group = $this->service->bulkCheckIn( (int) $request->get_param( 'id' ) );
 
-			return new \WP_REST_Response( [
-				'success' => true,
-				'data'    => $group->toArray(),
-			], 200 );
+			return ResponseHelper::success( $group->toArray() );
 		} catch ( \InvalidArgumentException $e ) {
-			return new \WP_REST_Response( [
-				'success' => false,
-				'message' => $e->getMessage(),
-			], 409 );
+			return ResponseHelper::error( $e->getMessage(), 409 );
 		} catch ( \Throwable $e ) {
-			return new \WP_REST_Response( [
-				'success' => false,
-				'message' => __( 'Failed to check in group.', 'nozule' ),
-			], 500 );
+			return ResponseHelper::error( __( 'Failed to check in group.', 'nozule' ), 500 );
 		}
 	}
 
@@ -327,20 +267,11 @@ class GroupBookingController {
 		try {
 			$group = $this->service->bulkCheckOut( (int) $request->get_param( 'id' ) );
 
-			return new \WP_REST_Response( [
-				'success' => true,
-				'data'    => $group->toArray(),
-			], 200 );
+			return ResponseHelper::success( $group->toArray() );
 		} catch ( \InvalidArgumentException $e ) {
-			return new \WP_REST_Response( [
-				'success' => false,
-				'message' => $e->getMessage(),
-			], 409 );
+			return ResponseHelper::error( $e->getMessage(), 409 );
 		} catch ( \Throwable $e ) {
-			return new \WP_REST_Response( [
-				'success' => false,
-				'message' => __( 'Failed to check out group.', 'nozule' ),
-			], 500 );
+			return ResponseHelper::error( __( 'Failed to check out group.', 'nozule' ), 500 );
 		}
 	}
 
@@ -356,25 +287,13 @@ class GroupBookingController {
 				$request->get_params()
 			);
 
-			return new \WP_REST_Response( [
-				'success' => true,
-				'data'    => $room->toArray(),
-			], 201 );
+			return ResponseHelper::created( $room->toArray() );
 		} catch ( \InvalidArgumentException $e ) {
-			return new \WP_REST_Response( [
-				'success' => false,
-				'message' => $e->getMessage(),
-			], 400 );
+			return ResponseHelper::error( $e->getMessage(), 400 );
 		} catch ( \RuntimeException $e ) {
-			return new \WP_REST_Response( [
-				'success' => false,
-				'message' => $e->getMessage(),
-			], 404 );
+			return ResponseHelper::notFound( $e->getMessage() );
 		} catch ( \Throwable $e ) {
-			return new \WP_REST_Response( [
-				'success' => false,
-				'message' => __( 'Failed to add room to group.', 'nozule' ),
-			], 500 );
+			return ResponseHelper::error( __( 'Failed to add room to group.', 'nozule' ), 500 );
 		}
 	}
 
@@ -387,20 +306,11 @@ class GroupBookingController {
 		try {
 			$this->service->removeRoom( (int) $request->get_param( 'id' ) );
 
-			return new \WP_REST_Response( [
-				'success' => true,
-				'message' => __( 'Room allocation removed.', 'nozule' ),
-			], 200 );
+			return ResponseHelper::success( null, __( 'Room allocation removed.', 'nozule' ) );
 		} catch ( \RuntimeException $e ) {
-			return new \WP_REST_Response( [
-				'success' => false,
-				'message' => $e->getMessage(),
-			], 404 );
+			return ResponseHelper::notFound( $e->getMessage() );
 		} catch ( \Throwable $e ) {
-			return new \WP_REST_Response( [
-				'success' => false,
-				'message' => __( 'Failed to remove room from group.', 'nozule' ),
-			], 500 );
+			return ResponseHelper::error( __( 'Failed to remove room from group.', 'nozule' ), 500 );
 		}
 	}
 

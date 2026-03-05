@@ -3,6 +3,7 @@
 namespace Nozule\Modules\Pricing\Controllers;
 
 use Nozule\Core\EventDispatcher;
+use Nozule\Core\ResponseHelper;
 use Nozule\Modules\Pricing\Models\RateRestriction;
 use Nozule\Modules\Pricing\Repositories\RateRestrictionRepository;
 
@@ -116,15 +117,12 @@ class RateRestrictionController {
 			);
 		}
 
-		return new \WP_REST_Response( [
-			'success' => true,
-			'data'    => array_values( array_map(
+		return ResponseHelper::success( array_values( array_map(
 				function ( RateRestriction $r ) {
 					return $r->toArray();
 				},
 				$restrictions
-			) ),
-		] );
+			) ) );
 	}
 
 	/**
@@ -136,19 +134,10 @@ class RateRestrictionController {
 		$restriction = $this->repository->find( (int) $request->get_param( 'id' ) );
 
 		if ( ! $restriction ) {
-			return new \WP_REST_Response( [
-				'success' => false,
-				'error'   => [
-					'code'    => 'NOT_FOUND',
-					'message' => __( 'Rate restriction not found.', 'nozule' ),
-				],
-			], 404 );
+			return ResponseHelper::notFound( __( 'Rate restriction not found.', 'nozule' ) );
 		}
 
-		return new \WP_REST_Response( [
-			'success' => true,
-			'data'    => $restriction->toArray(),
-		] );
+		return ResponseHelper::success( $restriction->toArray() );
 	}
 
 	/**
@@ -162,35 +151,19 @@ class RateRestrictionController {
 		$errors = $this->validate( $data, false );
 
 		if ( ! empty( $errors ) ) {
-			return new \WP_REST_Response( [
-				'success' => false,
-				'error'   => [
-					'code'    => 'VALIDATION_ERROR',
-					'message' => implode( ' ', $errors ),
-					'fields'  => $errors,
-				],
-			], 422 );
+			return ResponseHelper::error( implode( ' ', $errors ), 422, $errors );
 		}
 
 		$sanitized   = $this->sanitizeData( $data );
 		$restriction = $this->repository->create( $sanitized );
 
 		if ( ! $restriction ) {
-			return new \WP_REST_Response( [
-				'success' => false,
-				'error'   => [
-					'code'    => 'CREATE_FAILED',
-					'message' => __( 'Failed to create rate restriction.', 'nozule' ),
-				],
-			], 500 );
+			return ResponseHelper::error( __( 'Failed to create rate restriction.', 'nozule' ), 500 );
 		}
 
 		$this->events->dispatch( 'pricing/restriction_created', $restriction );
 
-		return new \WP_REST_Response( [
-			'success' => true,
-			'data'    => $restriction->toArray(),
-		], 201 );
+		return ResponseHelper::created( $restriction->toArray() );
 	}
 
 	/**
@@ -203,27 +176,14 @@ class RateRestrictionController {
 		$restriction = $this->repository->find( $id );
 
 		if ( ! $restriction ) {
-			return new \WP_REST_Response( [
-				'success' => false,
-				'error'   => [
-					'code'    => 'NOT_FOUND',
-					'message' => __( 'Rate restriction not found.', 'nozule' ),
-				],
-			], 404 );
+			return ResponseHelper::notFound( __( 'Rate restriction not found.', 'nozule' ) );
 		}
 
 		$data   = $request->get_json_params();
 		$errors = $this->validate( $data, true );
 
 		if ( ! empty( $errors ) ) {
-			return new \WP_REST_Response( [
-				'success' => false,
-				'error'   => [
-					'code'    => 'VALIDATION_ERROR',
-					'message' => implode( ' ', $errors ),
-					'fields'  => $errors,
-				],
-			], 422 );
+			return ResponseHelper::error( implode( ' ', $errors ), 422, $errors );
 		}
 
 		$sanitized  = $this->sanitizeData( $data );
@@ -234,22 +194,13 @@ class RateRestrictionController {
 		$updated = $this->repository->update( $id, $updateData );
 
 		if ( ! $updated ) {
-			return new \WP_REST_Response( [
-				'success' => false,
-				'error'   => [
-					'code'    => 'UPDATE_FAILED',
-					'message' => __( 'Failed to update rate restriction.', 'nozule' ),
-				],
-			], 500 );
+			return ResponseHelper::error( __( 'Failed to update rate restriction.', 'nozule' ), 500 );
 		}
 
 		$restriction = $this->repository->find( $id );
 		$this->events->dispatch( 'pricing/restriction_updated', $restriction );
 
-		return new \WP_REST_Response( [
-			'success' => true,
-			'data'    => $restriction->toArray(),
-		] );
+		return ResponseHelper::success( $restriction->toArray() );
 	}
 
 	/**
@@ -262,33 +213,18 @@ class RateRestrictionController {
 		$restriction = $this->repository->find( $id );
 
 		if ( ! $restriction ) {
-			return new \WP_REST_Response( [
-				'success' => false,
-				'error'   => [
-					'code'    => 'NOT_FOUND',
-					'message' => __( 'Rate restriction not found.', 'nozule' ),
-				],
-			], 404 );
+			return ResponseHelper::notFound( __( 'Rate restriction not found.', 'nozule' ) );
 		}
 
 		$deleted = $this->repository->delete( $id );
 
 		if ( ! $deleted ) {
-			return new \WP_REST_Response( [
-				'success' => false,
-				'error'   => [
-					'code'    => 'DELETE_FAILED',
-					'message' => __( 'Failed to delete rate restriction.', 'nozule' ),
-				],
-			], 500 );
+			return ResponseHelper::error( __( 'Failed to delete rate restriction.', 'nozule' ), 500 );
 		}
 
 		$this->events->dispatch( 'pricing/restriction_deleted', $id, $restriction );
 
-		return new \WP_REST_Response( [
-			'success' => true,
-			'message' => __( 'Rate restriction deleted successfully.', 'nozule' ),
-		] );
+		return ResponseHelper::success( null, __( 'Rate restriction deleted successfully.', 'nozule' ) );
 	}
 
 	/**

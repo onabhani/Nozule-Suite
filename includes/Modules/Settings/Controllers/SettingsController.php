@@ -4,6 +4,7 @@ namespace Nozule\Modules\Settings\Controllers;
 
 use Nozule\Core\CacheManager;
 use Nozule\Core\CountryProfiles;
+use Nozule\Core\ResponseHelper;
 use Nozule\Core\SettingsManager;
 
 /**
@@ -121,7 +122,7 @@ class SettingsController {
             $data = $this->settings->getAll();
         }
 
-        return new \WP_REST_Response( $this->scrubSensitiveKeys( $data ), 200 );
+        return ResponseHelper::success( $this->scrubSensitiveKeys( $data ) );
     }
 
     /**
@@ -136,10 +137,7 @@ class SettingsController {
         $errors  = [];
 
         if ( empty( $body ) || ! is_array( $body ) ) {
-            return new \WP_REST_Response(
-                [ 'message' => __( 'Request body must be a JSON object with setting groups.', 'nozule' ) ],
-                400
-            );
+            return ResponseHelper::error( __( 'Request body must be a JSON object with setting groups.', 'nozule' ), 400 );
         }
 
         foreach ( $body as $group => $values ) {
@@ -188,21 +186,22 @@ class SettingsController {
         // Invalidate settings cache.
         $this->cache->invalidateTag( 'settings' );
 
-        $response = [
-            'message'  => sprintf(
-                /* translators: %d: number of updated settings */
-                __( '%d setting(s) updated successfully.', 'nozule' ),
-                count( $updated )
-            ),
+        $message = sprintf(
+            /* translators: %d: number of updated settings */
+            __( '%d setting(s) updated successfully.', 'nozule' ),
+            count( $updated )
+        );
+
+        $responseData = [
             'updated'  => $updated,
             'settings' => $this->scrubSensitiveKeys( $this->settings->getAll() ),
         ];
 
         if ( ! empty( $errors ) ) {
-            $response['errors'] = $errors;
+            $responseData['errors'] = $errors;
         }
 
-        return new \WP_REST_Response( $response, 200 );
+        return ResponseHelper::success( $responseData, $message );
     }
 
     /**
@@ -216,7 +215,7 @@ class SettingsController {
         $cached   = $this->cache->get( $cacheKey );
 
         if ( $cached !== false ) {
-            return new \WP_REST_Response( $cached, 200 );
+            return ResponseHelper::success( $cached );
         }
 
         $data = [];
@@ -227,7 +226,7 @@ class SettingsController {
         // Cache public settings for 10 minutes.
         $this->cache->set( $cacheKey, $data, 600 );
 
-        return new \WP_REST_Response( $data, 200 );
+        return ResponseHelper::success( $data );
     }
 
     /**
@@ -240,18 +239,12 @@ class SettingsController {
         $country = sanitize_text_field( $body['country'] ?? '' );
 
         if ( empty( $country ) ) {
-            return new \WP_REST_Response(
-                [ 'message' => __( 'Country code is required.', 'nozule' ) ],
-                400
-            );
+            return ResponseHelper::error( __( 'Country code is required.', 'nozule' ), 400 );
         }
 
         $profile = CountryProfiles::get( $country );
         if ( ! $profile ) {
-            return new \WP_REST_Response(
-                [ 'message' => __( 'Unsupported country code.', 'nozule' ) ],
-                400
-            );
+            return ResponseHelper::error( __( 'Unsupported country code.', 'nozule' ), 400 );
         }
 
         // Apply currency defaults.
@@ -266,16 +259,15 @@ class SettingsController {
 
         $this->cache->invalidateTag( 'settings' );
 
-        return new \WP_REST_Response( [
-            'message'      => sprintf(
-                /* translators: %s: country name */
-                __( 'Country profile "%s" applied. Currency, timezone, and %d tax(es) configured.', 'nozule' ),
-                $profile['label'],
-                $taxesSeeded
-            ),
+        return ResponseHelper::success( [
             'country'      => $country,
             'taxes_seeded' => $taxesSeeded,
-        ], 200 );
+        ], sprintf(
+            /* translators: %s: country name */
+            __( 'Country profile "%s" applied. Currency, timezone, and %d tax(es) configured.', 'nozule' ),
+            $profile['label'],
+            $taxesSeeded
+        ) );
     }
 
     /**

@@ -3,6 +3,7 @@
 namespace Nozule\Modules\Pricing\Controllers;
 
 use Nozule\Core\EventDispatcher;
+use Nozule\Core\ResponseHelper;
 use Nozule\Modules\Pricing\Models\RatePlan;
 use Nozule\Modules\Pricing\Repositories\RatePlanRepository;
 use Nozule\Modules\Pricing\Validators\RatePlanValidator;
@@ -88,13 +89,10 @@ class RatePlanController {
 			$plans = $this->repository->getAllOrdered();
 		}
 
-		return new \WP_REST_Response( [
-			'success' => true,
-			'data'    => array_map(
+		return ResponseHelper::success( array_map(
 				fn( RatePlan $plan ) => $plan->toPublicArray(),
 				$plans
-			),
-		] );
+			) );
 	}
 
 	/**
@@ -106,19 +104,10 @@ class RatePlanController {
 		$plan = $this->repository->find( (int) $request->get_param( 'id' ) );
 
 		if ( ! $plan ) {
-			return new \WP_REST_Response( [
-				'success' => false,
-				'error'   => [
-					'code'    => 'NOT_FOUND',
-					'message' => __( 'Rate plan not found.', 'nozule' ),
-				],
-			], 404 );
+			return ResponseHelper::notFound( __( 'Rate plan not found.', 'nozule' ) );
 		}
 
-		return new \WP_REST_Response( [
-			'success' => true,
-			'data'    => $plan->toPublicArray(),
-		] );
+		return ResponseHelper::success( $plan->toPublicArray() );
 	}
 
 	/**
@@ -130,35 +119,19 @@ class RatePlanController {
 		$data = $request->get_json_params();
 
 		if ( ! $this->validator->validateCreate( $data ) ) {
-			return new \WP_REST_Response( [
-				'success' => false,
-				'error'   => [
-					'code'    => 'VALIDATION_ERROR',
-					'message' => implode( ' ', $this->validator->getAllErrors() ),
-					'fields'  => $this->validator->getErrors(),
-				],
-			], 422 );
+			return ResponseHelper::error( implode( ' ', $this->validator->getAllErrors() ), 422, $this->validator->getErrors() );
 		}
 
 		$sanitized = $this->sanitizeRatePlanData( $data );
 		$plan      = $this->repository->create( $sanitized );
 
 		if ( ! $plan ) {
-			return new \WP_REST_Response( [
-				'success' => false,
-				'error'   => [
-					'code'    => 'CREATE_FAILED',
-					'message' => __( 'Failed to create rate plan.', 'nozule' ),
-				],
-			], 500 );
+			return ResponseHelper::error( __( 'Failed to create rate plan.', 'nozule' ), 500 );
 		}
 
 		$this->events->dispatch( 'pricing/rate_plan_created', $plan );
 
-		return new \WP_REST_Response( [
-			'success' => true,
-			'data'    => $plan->toPublicArray(),
-		], 201 );
+		return ResponseHelper::created( $plan->toPublicArray() );
 	}
 
 	/**
@@ -171,26 +144,13 @@ class RatePlanController {
 		$plan = $this->repository->find( $id );
 
 		if ( ! $plan ) {
-			return new \WP_REST_Response( [
-				'success' => false,
-				'error'   => [
-					'code'    => 'NOT_FOUND',
-					'message' => __( 'Rate plan not found.', 'nozule' ),
-				],
-			], 404 );
+			return ResponseHelper::notFound( __( 'Rate plan not found.', 'nozule' ) );
 		}
 
 		$data = $request->get_json_params();
 
 		if ( ! $this->validator->validateUpdate( $id, $data ) ) {
-			return new \WP_REST_Response( [
-				'success' => false,
-				'error'   => [
-					'code'    => 'VALIDATION_ERROR',
-					'message' => implode( ' ', $this->validator->getAllErrors() ),
-					'fields'  => $this->validator->getErrors(),
-				],
-			], 422 );
+			return ResponseHelper::error( implode( ' ', $this->validator->getAllErrors() ), 422, $this->validator->getErrors() );
 		}
 
 		$sanitized = $this->sanitizeRatePlanData( $data );
@@ -201,22 +161,13 @@ class RatePlanController {
 		$updated = $this->repository->update( $id, $updateData );
 
 		if ( ! $updated ) {
-			return new \WP_REST_Response( [
-				'success' => false,
-				'error'   => [
-					'code'    => 'UPDATE_FAILED',
-					'message' => __( 'Failed to update rate plan.', 'nozule' ),
-				],
-			], 500 );
+			return ResponseHelper::error( __( 'Failed to update rate plan.', 'nozule' ), 500 );
 		}
 
 		$plan = $this->repository->find( $id );
 		$this->events->dispatch( 'pricing/rate_plan_updated', $plan );
 
-		return new \WP_REST_Response( [
-			'success' => true,
-			'data'    => $plan->toPublicArray(),
-		] );
+		return ResponseHelper::success( $plan->toPublicArray() );
 	}
 
 	/**
@@ -229,33 +180,18 @@ class RatePlanController {
 		$plan = $this->repository->find( $id );
 
 		if ( ! $plan ) {
-			return new \WP_REST_Response( [
-				'success' => false,
-				'error'   => [
-					'code'    => 'NOT_FOUND',
-					'message' => __( 'Rate plan not found.', 'nozule' ),
-				],
-			], 404 );
+			return ResponseHelper::notFound( __( 'Rate plan not found.', 'nozule' ) );
 		}
 
 		$deleted = $this->repository->delete( $id );
 
 		if ( ! $deleted ) {
-			return new \WP_REST_Response( [
-				'success' => false,
-				'error'   => [
-					'code'    => 'DELETE_FAILED',
-					'message' => __( 'Failed to delete rate plan.', 'nozule' ),
-				],
-			], 500 );
+			return ResponseHelper::error( __( 'Failed to delete rate plan.', 'nozule' ), 500 );
 		}
 
 		$this->events->dispatch( 'pricing/rate_plan_deleted', $id, $plan );
 
-		return new \WP_REST_Response( [
-			'success' => true,
-			'message' => __( 'Rate plan deleted successfully.', 'nozule' ),
-		] );
+		return ResponseHelper::success( null, __( 'Rate plan deleted successfully.', 'nozule' ) );
 	}
 
 	/**

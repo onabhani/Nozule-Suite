@@ -213,22 +213,16 @@ class ChannelController {
         $mapping = $this->repository->find( $id );
 
         if ( ! $mapping ) {
-            return new \WP_REST_Response( [
-                'message' => __( 'Channel mapping not found.', 'nozule' ),
-            ], 404 );
+            return ResponseHelper::notFound( __( 'Channel mapping not found.', 'nozule' ) );
         }
 
         $deleted = $this->repository->delete( $id );
 
         if ( ! $deleted ) {
-            return new \WP_REST_Response( [
-                'message' => __( 'Failed to delete channel mapping.', 'nozule' ),
-            ], 500 );
+            return ResponseHelper::error( __( 'Failed to delete channel mapping.', 'nozule' ), 500 );
         }
 
-        return new \WP_REST_Response( [
-            'message' => __( 'Channel mapping deleted.', 'nozule' ),
-        ], 200 );
+        return ResponseHelper::success( null, __( 'Channel mapping deleted.', 'nozule' ) );
     }
 
     /**
@@ -245,15 +239,11 @@ class ChannelController {
         $mapping = $this->repository->find( $id );
 
         if ( ! $mapping ) {
-            return new \WP_REST_Response( [
-                'message' => __( 'Channel mapping not found.', 'nozule' ),
-            ], 404 );
+            return ResponseHelper::notFound( __( 'Channel mapping not found.', 'nozule' ) );
         }
 
         if ( ! $mapping->isActive() ) {
-            return new \WP_REST_Response( [
-                'message' => __( 'Channel mapping is not active. Activate it before syncing.', 'nozule' ),
-            ], 422 );
+            return ResponseHelper::error( __( 'Channel mapping is not active. Activate it before syncing.', 'nozule' ), 422 );
         }
 
         $results = [];
@@ -280,10 +270,7 @@ class ChannelController {
             ];
         }
 
-        return new \WP_REST_Response( [
-            'message' => __( 'Sync operation completed.', 'nozule' ),
-            'results' => $results,
-        ], 200 );
+        return ResponseHelper::success( ['results' => $results], __( 'Sync operation completed.', 'nozule' ) );
     }
 
     /**
@@ -297,17 +284,11 @@ class ChannelController {
         try {
             $success = $this->service->testConnection( $id );
 
-            return new \WP_REST_Response( [
-                'message' => $success
-                    ? __( 'Connection test succeeded.', 'nozule' )
-                    : __( 'Connection test failed.', 'nozule' ),
-                'success' => $success,
-            ], 200 );
+            return ResponseHelper::success( null, $success
+                ? __( 'Connection test succeeded.', 'nozule' )
+                : __( 'Connection test failed.', 'nozule' ) );
         } catch ( \RuntimeException $e ) {
-            return new \WP_REST_Response( [
-                'message' => $e->getMessage(),
-                'success' => false,
-            ], 404 );
+            return ResponseHelper::notFound( $e->getMessage() );
         }
     }
 
@@ -323,16 +304,12 @@ class ChannelController {
         $mapping = $this->repository->find( $id );
 
         if ( ! $mapping ) {
-            return new \WP_REST_Response( [
-                'message' => __( 'Channel mapping not found.', 'nozule' ),
-            ], 404 );
+            return ResponseHelper::notFound( __( 'Channel mapping not found.', 'nozule' ) );
         }
 
         $history = $this->service->getSyncHistory( $id, $limit );
 
-        return new \WP_REST_Response( [
-            'history' => $history,
-        ], 200 );
+        return ResponseHelper::success( ['history' => $history] );
     }
 
     // ------------------------------------------------------------------

@@ -2,6 +2,7 @@
 
 namespace Nozule\Modules\Integrations\Controllers;
 
+use Nozule\Core\ResponseHelper;
 use Nozule\Modules\Integrations\Services\IntegrationService;
 use Nozule\Modules\Integrations\Services\OdooConnector;
 use Nozule\Modules\Integrations\Services\WebhookConnector;
@@ -74,18 +75,20 @@ class IntegrationController {
 				];
 		}
 
-		$status = $result['success'] ? 200 : 422;
+		if ( $result['success'] ) {
+			return ResponseHelper::success( $result );
+		}
 
-		return new \WP_REST_Response( $result, $status );
+		return ResponseHelper::error( $result['message'] ?? __( 'Connection test failed.', 'nozule' ), 422 );
 	}
 
 	/**
 	 * GET /admin/integrations/status
 	 */
 	public function getStatus( \WP_REST_Request $request ): \WP_REST_Response {
-		return new \WP_REST_Response( [
+		return ResponseHelper::success( [
 			'enabled'  => $this->service->isEnabled(),
 			'provider' => $this->service->getProvider(),
-		], 200 );
+		] );
 	}
 }

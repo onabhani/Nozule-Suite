@@ -321,29 +321,20 @@ class LoyaltyController {
 		// Check if any members are in this tier.
 		$memberCount = $this->repository->getCount( [ 'tier_id' => $id ] );
 		if ( $memberCount > 0 ) {
-			return new WP_REST_Response( [
-				'success' => false,
-				'message' => sprintf(
-					/* translators: %d: Number of members */
-					__( 'Cannot delete tier: %d members are currently assigned to it.', 'nozule' ),
-					$memberCount
-				),
-			], 400 );
+			return ResponseHelper::error( sprintf(
+				/* translators: %d: Number of members */
+				__( 'Cannot delete tier: %d members are currently assigned to it.', 'nozule' ),
+				$memberCount
+			), 400 );
 		}
 
 		$result = $this->repository->deleteTier( $id );
 
 		if ( ! $result ) {
-			return new WP_REST_Response( [
-				'success' => false,
-				'message' => __( 'Failed to delete tier.', 'nozule' ),
-			], 500 );
+			return ResponseHelper::error( __( 'Failed to delete tier.', 'nozule' ), 500 );
 		}
 
-		return new WP_REST_Response( [
-			'success' => true,
-			'message' => __( 'Tier deleted successfully.', 'nozule' ),
-		], 200 );
+		return ResponseHelper::success( null, __( 'Tier deleted successfully.', 'nozule' ) );
 	}
 
 	// ==================================================================
@@ -356,15 +347,12 @@ class LoyaltyController {
 	public function listRewards( WP_REST_Request $request ): WP_REST_Response {
 		$rewards = $this->repository->getRewards();
 
-		return new WP_REST_Response( [
-			'success' => true,
-			'data'    => array_map(
-				function ( LoyaltyReward $reward ) {
-					return $reward->toArray();
-				},
-				$rewards
-			),
-		], 200 );
+		return ResponseHelper::success( array_map(
+			function ( LoyaltyReward $reward ) {
+				return $reward->toArray();
+			},
+			$rewards
+		) );
 	}
 
 	/**
@@ -385,24 +373,15 @@ class LoyaltyController {
 		];
 
 		if ( empty( $data['name'] ) ) {
-			return new WP_REST_Response( [
-				'success' => false,
-				'message' => __( 'Reward name is required.', 'nozule' ),
-			], 400 );
+			return ResponseHelper::error( __( 'Reward name is required.', 'nozule' ), 400 );
 		}
 
 		if ( $data['points_cost'] <= 0 ) {
-			return new WP_REST_Response( [
-				'success' => false,
-				'message' => __( 'Points cost must be greater than zero.', 'nozule' ),
-			], 400 );
+			return ResponseHelper::error( __( 'Points cost must be greater than zero.', 'nozule' ), 400 );
 		}
 
 		if ( ! in_array( $data['type'], LoyaltyReward::validTypes(), true ) ) {
-			return new WP_REST_Response( [
-				'success' => false,
-				'message' => __( 'Invalid reward type.', 'nozule' ),
-			], 400 );
+			return ResponseHelper::error( __( 'Invalid reward type.', 'nozule' ), 400 );
 		}
 
 		$id = $request->get_param( 'id' );
@@ -413,19 +392,12 @@ class LoyaltyController {
 		$reward = $this->repository->saveReward( $data );
 
 		if ( ! $reward ) {
-			return new WP_REST_Response( [
-				'success' => false,
-				'message' => __( 'Failed to save reward.', 'nozule' ),
-			], 500 );
+			return ResponseHelper::error( __( 'Failed to save reward.', 'nozule' ), 500 );
 		}
 
-		return new WP_REST_Response( [
-			'success' => true,
-			'message' => $id
-				? __( 'Reward updated successfully.', 'nozule' )
-				: __( 'Reward created successfully.', 'nozule' ),
-			'data'    => $reward->toArray(),
-		], $id ? 200 : 201 );
+		return $id
+			? ResponseHelper::success( $reward->toArray(), __( 'Reward updated successfully.', 'nozule' ) )
+			: ResponseHelper::created( $reward->toArray(), __( 'Reward created successfully.', 'nozule' ) );
 	}
 
 	/**
@@ -436,16 +408,10 @@ class LoyaltyController {
 		$result = $this->repository->deleteReward( $id );
 
 		if ( ! $result ) {
-			return new WP_REST_Response( [
-				'success' => false,
-				'message' => __( 'Failed to delete reward.', 'nozule' ),
-			], 500 );
+			return ResponseHelper::error( __( 'Failed to delete reward.', 'nozule' ), 500 );
 		}
 
-		return new WP_REST_Response( [
-			'success' => true,
-			'message' => __( 'Reward deleted successfully.', 'nozule' ),
-		], 200 );
+		return ResponseHelper::success( null, __( 'Reward deleted successfully.', 'nozule' ) );
 	}
 
 	// ==================================================================
@@ -458,10 +424,7 @@ class LoyaltyController {
 	public function getStats( WP_REST_Request $request ): WP_REST_Response {
 		$stats = $this->repository->getStats();
 
-		return new WP_REST_Response( [
-			'success' => true,
-			'data'    => $stats,
-		], 200 );
+		return ResponseHelper::success( $stats );
 	}
 
 	// ==================================================================
