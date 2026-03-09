@@ -52,6 +52,10 @@ class ResponseHelper {
 	 * @param int   $perPage Items per page.
 	 */
 	public static function paginated( array $items, int $total, int $page, int $perPage ): WP_REST_Response {
+		$total   = max( 0, $total );
+		$perPage = max( 1, $perPage );
+		$page    = max( 1, $page );
+
 		return new WP_REST_Response( [
 			'success' => true,
 			'data'    => $items,
@@ -60,7 +64,7 @@ class ResponseHelper {
 				'total'    => $total,
 				'page'     => $page,
 				'per_page' => $perPage,
-				'pages'    => $perPage > 0 ? (int) ceil( $total / $perPage ) : 0,
+				'pages'    => (int) ceil( $total / $perPage ),
 			],
 		], 200 );
 	}
