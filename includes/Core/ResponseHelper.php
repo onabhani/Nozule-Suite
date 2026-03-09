@@ -1,15 +1,6 @@
 <?php
+namespace NZL\Core;
 
-namespace Nozule\Core;
-
-use WP_REST_Response;
-
-/**
- * Standardized REST API response helper.
- *
- * Provides a consistent envelope for all API responses:
- *   { success: bool, data: mixed, message: string, meta: object }
- */
 class ResponseHelper {
 
 	/**
