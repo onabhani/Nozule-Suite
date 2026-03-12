@@ -82,6 +82,9 @@ class Activator {
 
         require_once NZL_PLUGIN_DIR . 'migrations/017_create_maintenance_orders.php';
         nzl_migration_017_create_maintenance_orders();
+
+        require_once NZL_PLUGIN_DIR . 'migrations/018_create_checkin_registrations.php';
+        nzl_migration_018_create_checkin_registrations();
     }
 
     /**

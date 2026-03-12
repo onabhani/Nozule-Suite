@@ -105,6 +105,7 @@ class Plugin {
             \Nozule\Modules\Employees\EmployeesModule::class,
             \Nozule\Modules\Property\PropertyModule::class,
             \Nozule\Modules\Maintenance\MaintenanceModule::class,
+            \Nozule\Modules\ContactlessCheckin\ContactlessCheckinModule::class,
         ];
 
         foreach ( $modules as $module_class ) {
