@@ -104,6 +104,7 @@ class Plugin {
             \Nozule\Modules\Branding\BrandingModule::class,
             \Nozule\Modules\Employees\EmployeesModule::class,
             \Nozule\Modules\Property\PropertyModule::class,
+            \Nozule\Modules\Maintenance\MaintenanceModule::class,
         ];
 
         foreach ( $modules as $module_class ) {

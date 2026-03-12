@@ -79,6 +79,9 @@ class Activator {
 
         require_once NZL_PLUGIN_DIR . 'migrations/016_add_property_scope.php';
         nzl_migration_016_add_property_scope();
+
+        require_once NZL_PLUGIN_DIR . 'migrations/017_create_maintenance_orders.php';
+        nzl_migration_017_create_maintenance_orders();
     }
 
     /**
