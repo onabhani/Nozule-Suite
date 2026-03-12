@@ -78,6 +78,33 @@ class GuestController {
                 ],
             ],
         ] );
+
+        // Cross-property guest lookup (super admin only).
+        register_rest_route( self::NAMESPACE, '/guests/cross-property/(?P<id>\d+)', [
+            'methods'             => \WP_REST_Server::READABLE,
+            'callback'            => [ $this, 'getCrossPropertyHistory' ],
+            'permission_callback' => fn() => current_user_can( 'nzl_super_admin' ),
+            'args'                => [
+                'id' => [
+                    'required'          => true,
+                    'validate_callback' => fn( $v ) => is_numeric( $v ) && (int) $v > 0,
+                    'sanitize_callback' => 'absint',
+                ],
+            ],
+        ] );
+
+        register_rest_route( self::NAMESPACE, '/guests/cross-property/search', [
+            'methods'             => \WP_REST_Server::READABLE,
+            'callback'            => [ $this, 'crossPropertySearch' ],
+            'permission_callback' => fn() => current_user_can( 'nzl_super_admin' ),
+            'args'                => [
+                'email' => [
+                    'required'          => true,
+                    'sanitize_callback' => 'sanitize_email',
+                    'validate_callback' => fn( $v ) => is_email( $v ),
+                ],
+            ],
+        ] );
     }
 
     /**
@@ -219,6 +246,36 @@ class GuestController {
         } catch ( \RuntimeException $e ) {
             return ResponseHelper::notFound( $e->getMessage() );
         }
+    }
+
+    /**
+     * GET /guests/cross-property/{id}
+     *
+     * Returns a guest's booking history across all properties.
+     */
+    public function getCrossPropertyHistory( \WP_REST_Request $request ): \WP_REST_Response {
+        $id   = (int) $request->get_param( 'id' );
+        $data = $this->service->getCrossPropertyHistory( $id );
+
+        if ( $data['guest'] === null ) {
+            return ResponseHelper::notFound( __( 'Guest not found.', 'nozule' ) );
+        }
+
+        return ResponseHelper::success( $data );
+    }
+
+    /**
+     * GET /guests/cross-property/search?email=...
+     *
+     * Find guest records across all properties by email.
+     */
+    public function crossPropertySearch( \WP_REST_Request $request ): \WP_REST_Response {
+        $email  = sanitize_email( $request->get_param( 'email' ) );
+        $guests = $this->service->findAllByEmail( $email );
+
+        $data = array_map( fn( $g ) => $g->toArray(), $guests );
+
+        return ResponseHelper::success( $data );
     }
 
     /**

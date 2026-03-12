@@ -127,22 +127,94 @@ class GuestRepository extends BaseRepository {
         $table  = $this->tableName();
         $offset = ( $page - 1 ) * $per_page;
 
+        $where  = 'WHERE nationality = %s';
+        $params = [ $nationality ];
+        $where  = $this->applyPropertyScope( $where, $params );
+
+        $count_params = $params;
         $total = (int) $this->db->getVar(
-            "SELECT COUNT(*) FROM {$table} WHERE nationality = %s",
-            $nationality
+            "SELECT COUNT(*) FROM {$table} {$where}",
+            ...$count_params
         );
 
+        $params[] = $per_page;
+        $params[] = $offset;
+
         $rows = $this->db->getResults(
-            "SELECT * FROM {$table} WHERE nationality = %s ORDER BY last_name ASC, first_name ASC LIMIT %d OFFSET %d",
-            $nationality,
-            $per_page,
-            $offset
+            "SELECT * FROM {$table} {$where} ORDER BY last_name ASC, first_name ASC LIMIT %d OFFSET %d",
+            ...$params
         );
 
         return [
             'guests' => Guest::fromRows( $rows ),
             'total'  => $total,
             'pages'  => (int) ceil( $total / $per_page ),
+        ];
+    }
+
+    /**
+     * Find guests across all properties by email (cross-property lookup).
+     *
+     * Bypasses property scope — for super admin cross-property guest view.
+     *
+     * @param string $email Email to search for.
+     * @return Guest[]
+     */
+    public function findAllByEmail( string $email ): array {
+        $table = $this->tableName();
+        $rows  = $this->db->getResults(
+            "SELECT * FROM {$table} WHERE email = %s ORDER BY created_at ASC",
+            $email
+        );
+
+        return Guest::fromRows( $rows );
+    }
+
+    /**
+     * Get cross-property guest history.
+     *
+     * Returns a single guest's bookings grouped by property.
+     * For super admin consolidated view.
+     *
+     * @param int $guestId Guest ID.
+     * @return array{ guest: array|null, properties: array }
+     */
+    public function getCrossPropertyHistory( int $guestId ): array {
+        $bookings = $this->db->table( 'bookings' );
+
+        $guest = $this->find( $guestId );
+        if ( ! $guest ) {
+            return [ 'guest' => null, 'properties' => [] ];
+        }
+
+        $rows = $this->db->getResults(
+            "SELECT
+                b.property_id,
+                COUNT( b.id ) AS booking_count,
+                SUM( b.total_price ) AS total_spent,
+                SUM( b.nights ) AS total_nights,
+                MAX( b.check_out ) AS last_stay
+            FROM {$bookings} b
+            WHERE b.guest_id = %d
+              AND b.status NOT IN ('cancelled')
+            GROUP BY b.property_id
+            ORDER BY total_spent DESC",
+            $guestId
+        );
+
+        $properties = array_map( function ( object $row ) {
+            return [
+                'property_id'   => (int) $row->property_id,
+                'booking_count' => (int) $row->booking_count,
+                'total_spent'   => (float) $row->total_spent,
+                'total_nights'  => (int) $row->total_nights,
+                'last_stay'     => $row->last_stay,
+            ];
+        }, $rows );
+
+        return [
+            'guest'      => $guest->toArray(),
+            'properties' => $properties,
         ];
     }
 

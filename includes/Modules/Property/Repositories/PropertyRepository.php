@@ -83,6 +83,20 @@ class PropertyRepository extends BaseRepository {
 	}
 
 	/**
+	 * Get all active properties.
+	 *
+	 * @return Property[]
+	 */
+	public function getActive(): array {
+		$table = $this->tableName();
+		$rows  = $this->db->getResults(
+			"SELECT * FROM {$table} WHERE status = 'active' ORDER BY id ASC"
+		);
+
+		return Property::fromRows( $rows );
+	}
+
+	/**
 	 * Create a new property.
 	 *
 	 * @return Property|false

@@ -175,6 +175,26 @@ class GuestService {
     }
 
     /**
+     * Find guest records across all properties by email.
+     *
+     * @param string $email Email to search.
+     * @return \Nozule\Modules\Guests\Models\Guest[]
+     */
+    public function findAllByEmail( string $email ): array {
+        return $this->repository->findAllByEmail( $email );
+    }
+
+    /**
+     * Get cross-property guest history (super admin view).
+     *
+     * @param int $guestId Guest ID.
+     * @return array{ guest: array|null, properties: array }
+     */
+    public function getCrossPropertyHistory( int $guestId ): array {
+        return $this->repository->getCrossPropertyHistory( $guestId );
+    }
+
+    /**
      * Increment the guest's booking count and total spent.
      *
      * Called when a new booking is confirmed for this guest.

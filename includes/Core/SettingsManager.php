@@ -15,6 +15,8 @@ class SettingsManager {
     public const SENSITIVE_KEYS = [
         'integrations.odoo_api_key',
         'integrations.webhook_secret',
+        'integrations.paypal_client_id',
+        'integrations.paypal_secret',
         'metasearch.partner_key',
     ];
 

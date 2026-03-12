@@ -6,6 +6,8 @@ use Nozule\Core\BaseModule;
 use Nozule\Core\CacheManager;
 use Nozule\Core\Container;
 use Nozule\Core\Database;
+use Nozule\Core\PropertyScope;
+use Nozule\Modules\Property\Repositories\PropertyRepository;
 use Nozule\Modules\Reports\Controllers\ReportController;
 use Nozule\Modules\Reports\Services\ExportService;
 use Nozule\Modules\Reports\Services\ReportService;
@@ -34,7 +36,8 @@ class ReportsModule extends BaseModule {
         $this->container->singleton( ReportService::class, function ( Container $c ) {
             return new ReportService(
                 $c->get( Database::class ),
-                $c->get( CacheManager::class )
+                $c->get( CacheManager::class ),
+                $c->get( PropertyScope::class )
             );
         } );
 
@@ -45,7 +48,8 @@ class ReportsModule extends BaseModule {
         $this->container->singleton( ReportController::class, function ( Container $c ) {
             return new ReportController(
                 $c->get( ReportService::class ),
-                $c->get( ExportService::class )
+                $c->get( ExportService::class ),
+                $c->get( PropertyRepository::class )
             );
         } );
     }

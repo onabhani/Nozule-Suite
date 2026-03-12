@@ -3,6 +3,7 @@
 namespace Nozule\Modules\Reports\Controllers;
 
 use Nozule\Core\ResponseHelper;
+use Nozule\Modules\Property\Repositories\PropertyRepository;
 use Nozule\Modules\Reports\Services\ReportService;
 use Nozule\Modules\Reports\Services\ExportService;
 
@@ -18,10 +19,12 @@ class ReportController {
 
     private ReportService $reportService;
     private ExportService $exportService;
+    private PropertyRepository $propertyRepository;
 
-    public function __construct( ReportService $reportService, ExportService $exportService ) {
-        $this->reportService = $reportService;
-        $this->exportService = $exportService;
+    public function __construct( ReportService $reportService, ExportService $exportService, PropertyRepository $propertyRepository ) {
+        $this->reportService      = $reportService;
+        $this->exportService      = $exportService;
+        $this->propertyRepository = $propertyRepository;
     }
 
     /**
@@ -98,6 +101,20 @@ class ReportController {
             'permission_callback' => [ $this, 'checkAdminPermission' ],
             'args'                => $this->getExportArgs(),
         ] );
+
+        // Consolidated cross-property reports (super admin only).
+        register_rest_route( self::NAMESPACE, '/admin/reports/consolidated/dashboard', [
+            'methods'             => \WP_REST_Server::READABLE,
+            'callback'            => [ $this, 'getConsolidatedDashboard' ],
+            'permission_callback' => [ $this, 'checkSuperAdminPermission' ],
+        ] );
+
+        register_rest_route( self::NAMESPACE, '/admin/reports/consolidated/revenue', [
+            'methods'             => \WP_REST_Server::READABLE,
+            'callback'            => [ $this, 'getConsolidatedRevenue' ],
+            'permission_callback' => [ $this, 'checkSuperAdminPermission' ],
+            'args'                => $this->getDateRangeArgs(),
+        ] );
     }
 
     /**
@@ -105,6 +122,13 @@ class ReportController {
      */
     public function checkAdminPermission(): bool {
         return current_user_can( 'nzl_admin' );
+    }
+
+    /**
+     * Permission check: current user must have 'nzl_super_admin' capability.
+     */
+    public function checkSuperAdminPermission(): bool {
+        return current_user_can( 'nzl_super_admin' );
     }
 
     /**
@@ -190,6 +214,45 @@ class ReportController {
      */
     public function getDashboardStats( \WP_REST_Request $request ): \WP_REST_Response {
         $data = $this->reportService->getDashboardStats();
+
+        return ResponseHelper::success( $data );
+    }
+
+    /**
+     * GET /admin/reports/consolidated/dashboard
+     *
+     * Returns per-property dashboard + totals across all active properties.
+     */
+    public function getConsolidatedDashboard( \WP_REST_Request $request ): \WP_REST_Response {
+        $properties  = $this->propertyRepository->getActive();
+        $propertyIds = array_map( fn( $p ) => $p->id, $properties );
+
+        if ( empty( $propertyIds ) ) {
+            return ResponseHelper::success( [ 'properties' => [], 'totals' => [] ] );
+        }
+
+        $data = $this->reportService->getConsolidatedDashboard( $propertyIds );
+
+        return ResponseHelper::success( $data );
+    }
+
+    /**
+     * GET /admin/reports/consolidated/revenue
+     *
+     * Returns per-property revenue summaries + cross-property totals.
+     */
+    public function getConsolidatedRevenue( \WP_REST_Request $request ): \WP_REST_Response {
+        $startDate = $request->get_param( 'start_date' );
+        $endDate   = $request->get_param( 'end_date' );
+
+        $properties  = $this->propertyRepository->getActive();
+        $propertyIds = array_map( fn( $p ) => $p->id, $properties );
+
+        if ( empty( $propertyIds ) ) {
+            return ResponseHelper::success( [ 'properties' => [], 'totals' => [] ] );
+        }
+
+        $data = $this->reportService->getConsolidatedRevenue( $propertyIds, $startDate, $endDate );
 
         return ResponseHelper::success( $data );
     }

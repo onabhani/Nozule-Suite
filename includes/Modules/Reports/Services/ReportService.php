@@ -4,6 +4,7 @@ namespace Nozule\Modules\Reports\Services;
 
 use Nozule\Core\Database;
 use Nozule\Core\CacheManager;
+use Nozule\Core\PropertyScope;
 
 /**
  * Service for generating hotel operational reports.
@@ -11,41 +12,39 @@ use Nozule\Core\CacheManager;
  * All report methods use raw SQL queries via the Database wrapper
  * for optimal performance on large datasets. Results are cached
  * with short TTLs to balance freshness and speed.
+ *
+ * Phase 2: All reports respect the active PropertyScope context.
+ * When a property filter is active, results are scoped to that property.
+ * Super admins with no filter see consolidated cross-property data.
  */
 class ReportService {
 
     private Database $db;
     private CacheManager $cache;
+    private PropertyScope $propertyScope;
 
     /**
      * Cache TTL for report data (5 minutes).
      */
     private const CACHE_TTL = 300;
 
-    public function __construct( Database $db, CacheManager $cache ) {
-        $this->db    = $db;
-        $this->cache = $cache;
+    public function __construct( Database $db, CacheManager $cache, PropertyScope $propertyScope ) {
+        $this->db            = $db;
+        $this->cache         = $cache;
+        $this->propertyScope = $propertyScope;
     }
 
     /**
      * Get daily occupancy report for a date range.
      *
-     * Returns one row per date with total rooms, booked rooms,
-     * occupancy percentage, and optional room-type breakdown.
-     *
      * @param string   $startDate   Start date (Y-m-d).
      * @param string   $endDate     End date (Y-m-d).
      * @param int|null $roomTypeId  Optional room type filter.
-     * @return array<int, array{
-     *     date: string,
-     *     total_rooms: int,
-     *     booked_rooms: int,
-     *     occupancy_pct: float,
-     *     room_type_id: int|null
-     * }>
+     * @param int|null $propertyId  Optional property override (null = use scope).
      */
-    public function getOccupancyReport( string $startDate, string $endDate, ?int $roomTypeId = null ): array {
-        $cacheKey = 'report_occupancy_' . md5( $startDate . $endDate . ( $roomTypeId ?? 'all' ) );
+    public function getOccupancyReport( string $startDate, string $endDate, ?int $roomTypeId = null, ?int $propertyId = null ): array {
+        $propId   = $propertyId ?? $this->propertyScope->getActivePropertyId();
+        $cacheKey = 'report_occupancy_' . md5( $startDate . $endDate . ( $roomTypeId ?? 'all' ) . ( $propId ?? 'all' ) );
         $cached   = $this->cache->get( $cacheKey );
 
         if ( $cached !== false ) {
@@ -56,8 +55,7 @@ class ReportService {
         $types     = $this->db->table( 'room_types' );
 
         if ( $roomTypeId ) {
-            $rows = $this->db->getResults(
-                "SELECT
+            $sql  = "SELECT
                     ri.date,
                     ri.room_type_id,
                     rt.name AS room_type_name,
@@ -72,15 +70,18 @@ class ReportService {
                 INNER JOIN {$types} rt ON rt.id = ri.room_type_id
                 WHERE ri.date >= %s
                   AND ri.date <= %s
-                  AND ri.room_type_id = %d
-                ORDER BY ri.date ASC",
-                $startDate,
-                $endDate,
-                $roomTypeId
-            );
+                  AND ri.room_type_id = %d";
+            $args = [ $startDate, $endDate, $roomTypeId ];
+
+            if ( $propId ) {
+                $sql   .= ' AND ri.property_id = %d';
+                $args[] = $propId;
+            }
+
+            $sql .= ' ORDER BY ri.date ASC';
+            $rows = $this->db->getResults( $sql, ...$args );
         } else {
-            $rows = $this->db->getResults(
-                "SELECT
+            $sql  = "SELECT
                     ri.date,
                     SUM( ri.total_rooms )  AS total_rooms,
                     SUM( ri.booked_rooms ) AS booked_rooms,
@@ -91,12 +92,16 @@ class ReportService {
                     END AS occupancy_pct
                 FROM {$inventory} ri
                 WHERE ri.date >= %s
-                  AND ri.date <= %s
-                GROUP BY ri.date
-                ORDER BY ri.date ASC",
-                $startDate,
-                $endDate
-            );
+                  AND ri.date <= %s";
+            $args = [ $startDate, $endDate ];
+
+            if ( $propId ) {
+                $sql   .= ' AND ri.property_id = %d';
+                $args[] = $propId;
+            }
+
+            $sql .= ' GROUP BY ri.date ORDER BY ri.date ASC';
+            $rows = $this->db->getResults( $sql, ...$args );
         }
 
         $result = array_map( function ( object $row ) use ( $roomTypeId ) {
@@ -140,16 +145,14 @@ class ReportService {
     /**
      * Get revenue report with breakdown by period.
      *
-     * Supports daily, weekly, and monthly grouping. Calculates ADR
-     * (Average Daily Rate) and RevPAR for each period.
-     *
-     * @param string $startDate Start date (Y-m-d).
-     * @param string $endDate   End date (Y-m-d).
-     * @param string $groupBy   Grouping: 'daily', 'weekly', or 'monthly'.
-     * @return array{data: array, summary: array}
+     * @param string   $startDate  Start date (Y-m-d).
+     * @param string   $endDate    End date (Y-m-d).
+     * @param string   $groupBy    Grouping: 'daily', 'weekly', or 'monthly'.
+     * @param int|null $propertyId Optional property override.
      */
-    public function getRevenueReport( string $startDate, string $endDate, string $groupBy = 'daily' ): array {
-        $cacheKey = 'report_revenue_' . md5( $startDate . $endDate . $groupBy );
+    public function getRevenueReport( string $startDate, string $endDate, string $groupBy = 'daily', ?int $propertyId = null ): array {
+        $propId   = $propertyId ?? $this->propertyScope->getActivePropertyId();
+        $cacheKey = 'report_revenue_' . md5( $startDate . $endDate . $groupBy . ( $propId ?? 'all' ) );
         $cached   = $this->cache->get( $cacheKey );
 
         if ( $cached !== false ) {
@@ -165,8 +168,7 @@ class ReportService {
             default   => 'b.check_in',
         };
 
-        $rows = $this->db->getResults(
-            "SELECT
+        $sql  = "SELECT
                 {$dateExpr} AS period,
                 COUNT( b.id ) AS booking_count,
                 SUM( b.nights ) AS room_nights,
@@ -180,20 +182,25 @@ class ReportService {
             FROM {$bookings} b
             WHERE b.check_in >= %s
               AND b.check_in <= %s
-              AND b.status NOT IN ('cancelled', 'no_show')
-            GROUP BY period
-            ORDER BY period ASC",
-            $startDate,
-            $endDate
-        );
+              AND b.status NOT IN ('cancelled', 'no_show')";
+        $args = [ $startDate, $endDate ];
+
+        if ( $propId ) {
+            $sql   .= ' AND b.property_id = %d';
+            $args[] = $propId;
+        }
+
+        $sql .= ' GROUP BY period ORDER BY period ASC';
+        $rows = $this->db->getResults( $sql, ...$args );
 
         // Get total available room-nights for RevPAR calculation.
-        $totalAvailable = (int) $this->db->getVar(
-            "SELECT SUM( total_rooms ) FROM {$inventory}
-            WHERE date >= %s AND date <= %s",
-            $startDate,
-            $endDate
-        );
+        $invSql  = "SELECT SUM( total_rooms ) FROM {$inventory} WHERE date >= %s AND date <= %s";
+        $invArgs = [ $startDate, $endDate ];
+        if ( $propId ) {
+            $invSql   .= ' AND property_id = %d';
+            $invArgs[] = $propId;
+        }
+        $totalAvailable = (int) $this->db->getVar( $invSql, ...$invArgs );
 
         $result = array_map( function ( object $row ) {
             $roomNights = (int) $row->room_nights;
@@ -245,15 +252,13 @@ class ReportService {
     /**
      * Get booking source breakdown report.
      *
-     * Aggregates bookings by source (direct, booking.com, expedia, etc.)
-     * showing count, revenue, and percentage of total.
-     *
-     * @param string $startDate Start date (Y-m-d).
-     * @param string $endDate   End date (Y-m-d).
-     * @return array{data: array, summary: array}
+     * @param string   $startDate  Start date (Y-m-d).
+     * @param string   $endDate    End date (Y-m-d).
+     * @param int|null $propertyId Optional property override.
      */
-    public function getSourceReport( string $startDate, string $endDate ): array {
-        $cacheKey = 'report_source_' . md5( $startDate . $endDate );
+    public function getSourceReport( string $startDate, string $endDate, ?int $propertyId = null ): array {
+        $propId   = $propertyId ?? $this->propertyScope->getActivePropertyId();
+        $cacheKey = 'report_source_' . md5( $startDate . $endDate . ( $propId ?? 'all' ) );
         $cached   = $this->cache->get( $cacheKey );
 
         if ( $cached !== false ) {
@@ -262,8 +267,7 @@ class ReportService {
 
         $bookings = $this->db->table( 'bookings' );
 
-        $rows = $this->db->getResults(
-            "SELECT
+        $sql  = "SELECT
                 b.source,
                 COUNT( b.id ) AS booking_count,
                 SUM( b.nights ) AS room_nights,
@@ -274,12 +278,16 @@ class ReportService {
             FROM {$bookings} b
             WHERE b.created_at >= %s
               AND b.created_at <= %s
-              AND b.status NOT IN ('cancelled')
-            GROUP BY b.source
-            ORDER BY total_revenue DESC",
-            $startDate . ' 00:00:00',
-            $endDate . ' 23:59:59'
-        );
+              AND b.status NOT IN ('cancelled')";
+        $args = [ $startDate . ' 00:00:00', $endDate . ' 23:59:59' ];
+
+        if ( $propId ) {
+            $sql   .= ' AND b.property_id = %d';
+            $args[] = $propId;
+        }
+
+        $sql .= ' GROUP BY b.source ORDER BY total_revenue DESC';
+        $rows = $this->db->getResults( $sql, ...$args );
 
         $grandTotal  = 0.0;
         $grandCount  = 0;
@@ -329,15 +337,13 @@ class ReportService {
     /**
      * Get guest statistics report.
      *
-     * Includes nationality breakdown, repeat guest analysis, and
-     * top spenders for the given period.
-     *
-     * @param string $startDate Start date (Y-m-d).
-     * @param string $endDate   End date (Y-m-d).
-     * @return array{nationalities: array, repeat_guests: array, top_spenders: array, summary: array}
+     * @param string   $startDate  Start date (Y-m-d).
+     * @param string   $endDate    End date (Y-m-d).
+     * @param int|null $propertyId Optional property override.
      */
-    public function getGuestReport( string $startDate, string $endDate ): array {
-        $cacheKey = 'report_guest_' . md5( $startDate . $endDate );
+    public function getGuestReport( string $startDate, string $endDate, ?int $propertyId = null ): array {
+        $propId   = $propertyId ?? $this->propertyScope->getActivePropertyId();
+        $cacheKey = 'report_guest_' . md5( $startDate . $endDate . ( $propId ?? 'all' ) );
         $cached   = $this->cache->get( $cacheKey );
 
         if ( $cached !== false ) {
@@ -347,7 +353,15 @@ class ReportService {
         $bookings = $this->db->table( 'bookings' );
         $guests   = $this->db->table( 'guests' );
 
+        $propFilter     = '';
+        $propFilterArgs = [];
+        if ( $propId ) {
+            $propFilter     = ' AND b.property_id = %d';
+            $propFilterArgs = [ $propId ];
+        }
+
         // Nationality breakdown.
+        $args = [ $startDate, $endDate, ...$propFilterArgs ];
         $nationalities = $this->db->getResults(
             "SELECT
                 COALESCE( g.nationality, 'Unknown' ) AS nationality,
@@ -359,10 +373,10 @@ class ReportService {
             WHERE b.check_in >= %s
               AND b.check_in <= %s
               AND b.status NOT IN ('cancelled')
+              {$propFilter}
             GROUP BY g.nationality
             ORDER BY guest_count DESC",
-            $startDate,
-            $endDate
+            ...$args
         );
 
         $nationalityData = array_map( function ( object $row ) {
@@ -375,6 +389,7 @@ class ReportService {
         }, $nationalities );
 
         // Repeat guests (more than 1 booking in the period).
+        $args = [ $startDate, $endDate, ...$propFilterArgs ];
         $repeatGuests = $this->db->getResults(
             "SELECT
                 g.id,
@@ -392,12 +407,12 @@ class ReportService {
             WHERE b.check_in >= %s
               AND b.check_in <= %s
               AND b.status NOT IN ('cancelled')
+              {$propFilter}
             GROUP BY g.id
             HAVING bookings_in_period > 1
             ORDER BY bookings_in_period DESC
             LIMIT 50",
-            $startDate,
-            $endDate
+            ...$args
         );
 
         $repeatData = array_map( function ( object $row ) {
@@ -415,6 +430,7 @@ class ReportService {
         }, $repeatGuests );
 
         // Top spenders.
+        $args = [ $startDate, $endDate, ...$propFilterArgs ];
         $topSpenders = $this->db->getResults(
             "SELECT
                 g.id,
@@ -429,11 +445,11 @@ class ReportService {
             WHERE b.check_in >= %s
               AND b.check_in <= %s
               AND b.status NOT IN ('cancelled')
+              {$propFilter}
             GROUP BY g.id
             ORDER BY total_revenue DESC
             LIMIT 20",
-            $startDate,
-            $endDate
+            ...$args
         );
 
         $topSpenderData = array_map( function ( object $row ) {
@@ -448,6 +464,7 @@ class ReportService {
         }, $topSpenders );
 
         // Summary stats.
+        $args = [ $startDate, $endDate, ...$propFilterArgs ];
         $summaryRow = $this->db->getRow(
             "SELECT
                 COUNT( DISTINCT b.guest_id ) AS unique_guests,
@@ -456,9 +473,9 @@ class ReportService {
             FROM {$bookings} b
             WHERE b.check_in >= %s
               AND b.check_in <= %s
-              AND b.status NOT IN ('cancelled')",
-            $startDate,
-            $endDate
+              AND b.status NOT IN ('cancelled')
+              {$propFilter}",
+            ...$args
         );
 
         $uniqueGuests  = $summaryRow ? (int) $summaryRow->unique_guests : 0;
@@ -489,15 +506,13 @@ class ReportService {
     /**
      * Get forward-looking forecast report.
      *
-     * Calculates projected occupancy and revenue based on existing
-     * confirmed/pending bookings for future dates.
-     *
-     * @param string $startDate Start date (Y-m-d).
-     * @param string $endDate   End date (Y-m-d).
-     * @return array{data: array, summary: array}
+     * @param string   $startDate  Start date (Y-m-d).
+     * @param string   $endDate    End date (Y-m-d).
+     * @param int|null $propertyId Optional property override.
      */
-    public function getForecastReport( string $startDate, string $endDate ): array {
-        $cacheKey = 'report_forecast_' . md5( $startDate . $endDate );
+    public function getForecastReport( string $startDate, string $endDate, ?int $propertyId = null ): array {
+        $propId   = $propertyId ?? $this->propertyScope->getActivePropertyId();
+        $cacheKey = 'report_forecast_' . md5( $startDate . $endDate . ( $propId ?? 'all' ) );
         $cached   = $this->cache->get( $cacheKey );
 
         if ( $cached !== false ) {
@@ -508,18 +523,16 @@ class ReportService {
         $inventory = $this->db->table( 'room_inventory' );
 
         // Get inventory per date.
-        $inventoryRows = $this->db->getResults(
-            "SELECT
-                date,
-                SUM( total_rooms ) AS total_rooms,
-                SUM( booked_rooms ) AS booked_rooms
-            FROM {$inventory}
-            WHERE date >= %s AND date <= %s
-            GROUP BY date
-            ORDER BY date ASC",
-            $startDate,
-            $endDate
-        );
+        $invSql  = "SELECT date, SUM( total_rooms ) AS total_rooms, SUM( booked_rooms ) AS booked_rooms
+            FROM {$inventory} WHERE date >= %s AND date <= %s";
+        $invArgs = [ $startDate, $endDate ];
+        if ( $propId ) {
+            $invSql   .= ' AND property_id = %d';
+            $invArgs[] = $propId;
+        }
+        $invSql .= ' GROUP BY date ORDER BY date ASC';
+
+        $inventoryRows = $this->db->getResults( $invSql, ...$invArgs );
 
         $inventoryByDate = [];
         foreach ( $inventoryRows as $row ) {
@@ -529,22 +542,19 @@ class ReportService {
             ];
         }
 
-        // Get expected revenue per check-in date from confirmed/pending bookings.
-        $revenueRows = $this->db->getResults(
-            "SELECT
-                check_in AS date,
-                COUNT( id ) AS booking_count,
-                SUM( total_price ) AS expected_revenue,
-                SUM( nights ) AS room_nights
+        // Get expected revenue per check-in date.
+        $revSql  = "SELECT check_in AS date, COUNT( id ) AS booking_count,
+                SUM( total_price ) AS expected_revenue, SUM( nights ) AS room_nights
             FROM {$bookings}
-            WHERE check_in >= %s
-              AND check_in <= %s
-              AND status IN ('confirmed', 'pending')
-            GROUP BY check_in
-            ORDER BY check_in ASC",
-            $startDate,
-            $endDate
-        );
+            WHERE check_in >= %s AND check_in <= %s AND status IN ('confirmed', 'pending')";
+        $revArgs = [ $startDate, $endDate ];
+        if ( $propId ) {
+            $revSql   .= ' AND property_id = %d';
+            $revArgs[] = $propId;
+        }
+        $revSql .= ' GROUP BY check_in ORDER BY check_in ASC';
+
+        $revenueRows = $this->db->getResults( $revSql, ...$revArgs );
 
         $revenueByDate = [];
         foreach ( $revenueRows as $row ) {
@@ -582,9 +592,9 @@ class ReportService {
             $current = $current->modify( '+1 day' );
         }
 
-        $totalRoomNights    = array_sum( array_column( $result, 'total_rooms' ) );
-        $totalBooked        = array_sum( array_column( $result, 'booked_rooms' ) );
-        $totalExpectedRev   = array_sum( array_column( $result, 'expected_revenue' ) );
+        $totalRoomNights  = array_sum( array_column( $result, 'total_rooms' ) );
+        $totalBooked      = array_sum( array_column( $result, 'booked_rooms' ) );
+        $totalExpectedRev = array_sum( array_column( $result, 'expected_revenue' ) );
 
         $data = [
             'data'    => $result,
@@ -613,15 +623,13 @@ class ReportService {
     /**
      * Get cancellation analysis report.
      *
-     * Breaks down cancelled bookings by reason, source, room type,
-     * and calculates the financial impact.
-     *
-     * @param string $startDate Start date (Y-m-d).
-     * @param string $endDate   End date (Y-m-d).
-     * @return array{by_reason: array, by_source: array, by_room_type: array, timeline: array, summary: array}
+     * @param string   $startDate  Start date (Y-m-d).
+     * @param string   $endDate    End date (Y-m-d).
+     * @param int|null $propertyId Optional property override.
      */
-    public function getCancellationReport( string $startDate, string $endDate ): array {
-        $cacheKey = 'report_cancel_' . md5( $startDate . $endDate );
+    public function getCancellationReport( string $startDate, string $endDate, ?int $propertyId = null ): array {
+        $propId   = $propertyId ?? $this->propertyScope->getActivePropertyId();
+        $cacheKey = 'report_cancel_' . md5( $startDate . $endDate . ( $propId ?? 'all' ) );
         $cached   = $this->cache->get( $cacheKey );
 
         if ( $cached !== false ) {
@@ -631,7 +639,22 @@ class ReportService {
         $bookings = $this->db->table( 'bookings' );
         $types    = $this->db->table( 'room_types' );
 
+        $propFilter     = '';
+        $propFilterArgs = [];
+        if ( $propId ) {
+            $propFilter     = ' AND property_id = %d';
+            $propFilterArgs = [ $propId ];
+        }
+
+        $propFilterB     = '';
+        $propFilterBArgs = [];
+        if ( $propId ) {
+            $propFilterB     = ' AND b.property_id = %d';
+            $propFilterBArgs = [ $propId ];
+        }
+
         // By cancellation reason.
+        $args = [ $startDate . ' 00:00:00', $endDate . ' 23:59:59', ...$propFilterArgs ];
         $byReason = $this->db->getResults(
             "SELECT
                 COALESCE( cancel_reason, 'Not specified' ) AS reason,
@@ -641,10 +664,10 @@ class ReportService {
             WHERE status = 'cancelled'
               AND cancelled_at >= %s
               AND cancelled_at <= %s
+              {$propFilter}
             GROUP BY cancel_reason
             ORDER BY cancel_count DESC",
-            $startDate . ' 00:00:00',
-            $endDate . ' 23:59:59'
+            ...$args
         );
 
         $reasonData = array_map( function ( object $row ) {
@@ -656,6 +679,7 @@ class ReportService {
         }, $byReason );
 
         // By source.
+        $args = [ $startDate . ' 00:00:00', $endDate . ' 23:59:59', ...$propFilterArgs ];
         $bySource = $this->db->getResults(
             "SELECT
                 source,
@@ -665,10 +689,10 @@ class ReportService {
             WHERE status = 'cancelled'
               AND cancelled_at >= %s
               AND cancelled_at <= %s
+              {$propFilter}
             GROUP BY source
             ORDER BY cancel_count DESC",
-            $startDate . ' 00:00:00',
-            $endDate . ' 23:59:59'
+            ...$args
         );
 
         $sourceData = array_map( function ( object $row ) {
@@ -680,6 +704,7 @@ class ReportService {
         }, $bySource );
 
         // By room type.
+        $args = [ $startDate . ' 00:00:00', $endDate . ' 23:59:59', ...$propFilterBArgs ];
         $byRoomType = $this->db->getResults(
             "SELECT
                 rt.name AS room_type_name,
@@ -691,10 +716,10 @@ class ReportService {
             WHERE b.status = 'cancelled'
               AND b.cancelled_at >= %s
               AND b.cancelled_at <= %s
+              {$propFilterB}
             GROUP BY b.room_type_id
             ORDER BY cancel_count DESC",
-            $startDate . ' 00:00:00',
-            $endDate . ' 23:59:59'
+            ...$args
         );
 
         $roomTypeData = array_map( function ( object $row ) {
@@ -707,6 +732,7 @@ class ReportService {
         }, $byRoomType );
 
         // Cancellation timeline (daily count).
+        $args = [ $startDate . ' 00:00:00', $endDate . ' 23:59:59', ...$propFilterArgs ];
         $timeline = $this->db->getResults(
             "SELECT
                 DATE( cancelled_at ) AS cancel_date,
@@ -716,10 +742,10 @@ class ReportService {
             WHERE status = 'cancelled'
               AND cancelled_at >= %s
               AND cancelled_at <= %s
+              {$propFilter}
             GROUP BY cancel_date
             ORDER BY cancel_date ASC",
-            $startDate . ' 00:00:00',
-            $endDate . ' 23:59:59'
+            ...$args
         );
 
         $timelineData = array_map( function ( object $row ) {
@@ -731,6 +757,7 @@ class ReportService {
         }, $timeline );
 
         // Summary.
+        $args = [ $startDate . ' 00:00:00', $endDate . ' 23:59:59', ...$propFilterArgs ];
         $summaryRow = $this->db->getRow(
             "SELECT
                 COUNT( id ) AS total_cancellations,
@@ -740,17 +767,18 @@ class ReportService {
             FROM {$bookings}
             WHERE status = 'cancelled'
               AND cancelled_at >= %s
-              AND cancelled_at <= %s",
-            $startDate . ' 00:00:00',
-            $endDate . ' 23:59:59'
+              AND cancelled_at <= %s
+              {$propFilter}",
+            ...$args
         );
 
-        // Total bookings in the same period to calculate cancellation rate.
+        // Total bookings to calculate cancellation rate.
+        $args = [ $startDate . ' 00:00:00', $endDate . ' 23:59:59', ...$propFilterArgs ];
         $totalBookings = (int) $this->db->getVar(
             "SELECT COUNT( id ) FROM {$bookings}
-            WHERE created_at >= %s AND created_at <= %s",
-            $startDate . ' 00:00:00',
-            $endDate . ' 23:59:59'
+            WHERE created_at >= %s AND created_at <= %s
+              {$propFilter}",
+            ...$args
         );
 
         $totalCancellations = $summaryRow ? (int) $summaryRow->total_cancellations : 0;
@@ -780,20 +808,11 @@ class ReportService {
     /**
      * Get dashboard summary statistics for today.
      *
-     * Returns at-a-glance metrics: arrivals, departures, in-house
-     * guests, current occupancy, and today's revenue.
-     *
-     * @return array{
-     *     today: string,
-     *     arrivals: array,
-     *     departures: array,
-     *     in_house: array,
-     *     occupancy: array,
-     *     revenue: array
-     * }
+     * @param int|null $propertyId Optional property override.
      */
-    public function getDashboardStats(): array {
-        $cacheKey = 'report_dashboard_' . wp_date( 'Y-m-d' );
+    public function getDashboardStats( ?int $propertyId = null ): array {
+        $propId   = $propertyId ?? $this->propertyScope->getActivePropertyId();
+        $cacheKey = 'report_dashboard_' . wp_date( 'Y-m-d' ) . '_' . ( $propId ?? 'all' );
         $cached   = $this->cache->get( $cacheKey );
 
         if ( $cached !== false ) {
@@ -805,7 +824,15 @@ class ReportService {
         $payments  = $this->db->table( 'payments' );
         $today     = wp_date( 'Y-m-d' );
 
-        // Today's arrivals: bookings checking in today.
+        $propFilter     = '';
+        $propFilterArgs = [];
+        if ( $propId ) {
+            $propFilter     = ' AND property_id = %d';
+            $propFilterArgs = [ $propId ];
+        }
+
+        // Today's arrivals.
+        $args = [ $today, ...$propFilterArgs ];
         $arrivals = $this->db->getRow(
             "SELECT
                 COUNT( id ) AS total,
@@ -813,11 +840,13 @@ class ReportService {
                 SUM( CASE WHEN status IN ('confirmed', 'pending') THEN 1 ELSE 0 END ) AS expected
             FROM {$bookings}
             WHERE check_in = %s
-              AND status NOT IN ('cancelled', 'no_show')",
-            $today
+              AND status NOT IN ('cancelled', 'no_show')
+              {$propFilter}",
+            ...$args
         );
 
-        // Today's departures: bookings checking out today.
+        // Today's departures.
+        $args = [ $today, ...$propFilterArgs ];
         $departures = $this->db->getRow(
             "SELECT
                 COUNT( id ) AS total,
@@ -825,11 +854,13 @@ class ReportService {
                 SUM( CASE WHEN status = 'checked_in' THEN 1 ELSE 0 END ) AS remaining
             FROM {$bookings}
             WHERE check_out = %s
-              AND status NOT IN ('cancelled', 'no_show')",
-            $today
+              AND status NOT IN ('cancelled', 'no_show')
+              {$propFilter}",
+            ...$args
         );
 
-        // In-house guests: currently checked in.
+        // In-house guests.
+        $args = [ $today, $today, ...$propFilterArgs ];
         $inHouse = $this->db->getRow(
             "SELECT
                 COUNT( id ) AS room_count,
@@ -839,49 +870,56 @@ class ReportService {
             FROM {$bookings}
             WHERE status = 'checked_in'
               AND check_in <= %s
-              AND check_out > %s",
-            $today,
-            $today
+              AND check_out > %s
+              {$propFilter}",
+            ...$args
         );
 
-        // Occupancy: from room inventory.
+        // Occupancy.
+        $args = [ $today, ...$propFilterArgs ];
         $occupancy = $this->db->getRow(
             "SELECT
                 SUM( total_rooms ) AS total_rooms,
                 SUM( booked_rooms ) AS booked_rooms
             FROM {$inventory}
-            WHERE date = %s",
-            $today
+            WHERE date = %s
+              {$propFilter}",
+            ...$args
         );
 
         $totalRooms  = $occupancy ? (int) $occupancy->total_rooms : 0;
         $bookedRooms = $occupancy ? (int) $occupancy->booked_rooms : 0;
 
         // Revenue: payments received today.
+        $args = [ $today, ...$propFilterArgs ];
         $revenue = $this->db->getRow(
             "SELECT
                 COUNT( id ) AS payment_count,
                 SUM( amount ) AS total_collected
             FROM {$payments}
             WHERE status = 'completed'
-              AND DATE( paid_at ) = %s",
-            $today
+              AND DATE( paid_at ) = %s
+              {$propFilter}",
+            ...$args
         );
 
         // Revenue from bookings created today.
+        $args = [ $today, ...$propFilterArgs ];
         $bookingRevenue = $this->db->getRow(
             "SELECT
                 COUNT( id ) AS booking_count,
                 SUM( total_price ) AS total_value
             FROM {$bookings}
             WHERE DATE( created_at ) = %s
-              AND status NOT IN ('cancelled')",
-            $today
+              AND status NOT IN ('cancelled')
+              {$propFilter}",
+            ...$args
         );
 
         $data = [
-            'today'      => $today,
-            'arrivals'   => [
+            'today'       => $today,
+            'property_id' => $propId,
+            'arrivals'    => [
                 'total'    => $arrivals ? (int) $arrivals->total : 0,
                 'arrived'  => $arrivals ? (int) $arrivals->arrived : 0,
                 'expected' => $arrivals ? (int) $arrivals->expected : 0,
@@ -920,5 +958,93 @@ class ReportService {
         $this->cache->set( $cacheKey, $data, 120 );
 
         return $data;
+    }
+
+    // =========================================================================
+    // Consolidated Cross-Property Reports (Phase 2)
+    // =========================================================================
+
+    /**
+     * Get consolidated dashboard across all properties.
+     *
+     * Returns per-property dashboard stats plus totals. Only available
+     * to super admins when viewing all properties.
+     *
+     * @param int[] $propertyIds List of property IDs to include.
+     * @return array{ properties: array, totals: array }
+     */
+    public function getConsolidatedDashboard( array $propertyIds ): array {
+        $properties = [];
+        $totals     = [
+            'arrivals_total'     => 0,
+            'arrivals_arrived'   => 0,
+            'departures_total'   => 0,
+            'departures_done'    => 0,
+            'in_house_rooms'     => 0,
+            'in_house_pax'       => 0,
+            'total_rooms'        => 0,
+            'booked_rooms'       => 0,
+            'payments_today'     => 0.0,
+            'new_bookings_value' => 0.0,
+        ];
+
+        foreach ( $propertyIds as $propId ) {
+            $stats        = $this->getDashboardStats( (int) $propId );
+            $properties[] = $stats;
+
+            $totals['arrivals_total']     += $stats['arrivals']['total'];
+            $totals['arrivals_arrived']   += $stats['arrivals']['arrived'];
+            $totals['departures_total']   += $stats['departures']['total'];
+            $totals['departures_done']    += $stats['departures']['departed'];
+            $totals['in_house_rooms']     += $stats['in_house']['room_count'];
+            $totals['in_house_pax']       += $stats['in_house']['total_pax'];
+            $totals['total_rooms']        += $stats['occupancy']['total_rooms'];
+            $totals['booked_rooms']       += $stats['occupancy']['booked_rooms'];
+            $totals['payments_today']     += $stats['revenue']['payments_today'];
+            $totals['new_bookings_value'] += $stats['revenue']['new_bookings_value'];
+        }
+
+        $totals['occupancy_pct'] = $totals['total_rooms'] > 0
+            ? round( ( $totals['booked_rooms'] / $totals['total_rooms'] ) * 100, 2 )
+            : 0.0;
+
+        return [
+            'properties' => $properties,
+            'totals'     => $totals,
+        ];
+    }
+
+    /**
+     * Get consolidated revenue comparison across properties.
+     *
+     * @param int[]  $propertyIds Property IDs to compare.
+     * @param string $startDate   Start date (Y-m-d).
+     * @param string $endDate     End date (Y-m-d).
+     * @return array{ properties: array, totals: array }
+     */
+    public function getConsolidatedRevenue( array $propertyIds, string $startDate, string $endDate ): array {
+        $properties  = [];
+        $totalRev    = 0.0;
+        $totalNights = 0;
+
+        foreach ( $propertyIds as $propId ) {
+            $report       = $this->getRevenueReport( $startDate, $endDate, 'daily', (int) $propId );
+            $properties[] = [
+                'property_id' => (int) $propId,
+                'summary'     => $report['summary'],
+            ];
+
+            $totalRev    += $report['summary']['total_revenue'];
+            $totalNights += $report['summary']['total_room_nights'];
+        }
+
+        return [
+            'properties' => $properties,
+            'totals'     => [
+                'total_revenue'     => $totalRev,
+                'total_room_nights' => $totalNights,
+                'adr'               => $totalNights > 0 ? round( $totalRev / $totalNights, 2 ) : 0.0,
+            ],
+        ];
     }
 }

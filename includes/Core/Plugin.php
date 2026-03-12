@@ -106,6 +106,7 @@ class Plugin {
             \Nozule\Modules\Property\PropertyModule::class,
             \Nozule\Modules\Maintenance\MaintenanceModule::class,
             \Nozule\Modules\ContactlessCheckin\ContactlessCheckinModule::class,
+            \Nozule\Modules\PayPal\PayPalModule::class,
         ];
 
         foreach ( $modules as $module_class ) {
