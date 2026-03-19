@@ -154,6 +154,7 @@ class BookingService {
 			] );
 
 			$this->bookingRepository->commit();
+			$this->availabilityService->flushPendingSideEffects();
 		} catch ( \Throwable $e ) {
 			$this->bookingRepository->rollback();
 			throw $e;
@@ -268,6 +269,7 @@ class BookingService {
 			] );
 
 			$this->bookingRepository->commit();
+			$this->availabilityService->flushPendingSideEffects();
 		} catch ( \Throwable $e ) {
 			$this->bookingRepository->rollback();
 			throw $e;
@@ -458,6 +460,7 @@ class BookingService {
 			}
 
 			$this->bookingRepository->commit();
+			$this->availabilityService->flushPendingSideEffects();
 		} catch ( \Throwable $e ) {
 			$this->bookingRepository->rollback();
 			do_action( 'nozule/log', 'error', 'Failed to mark no-shows', [

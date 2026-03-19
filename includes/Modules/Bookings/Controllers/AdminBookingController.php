@@ -258,6 +258,7 @@ class AdminBookingController {
 			$data['id'],
 			$data['booking_number'],
 			$data['status'],
+			$data['property_id'],
 			$data['created_at'],
 			$data['created_by'],
 			$data['confirmed_at'],

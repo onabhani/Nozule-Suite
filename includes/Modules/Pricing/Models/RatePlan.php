@@ -52,8 +52,33 @@ class RatePlan extends BaseModel {
 		'room_type_id' => 'int',
 		'min_stay' => 'int',
 		'max_stay' => 'int',
-		'price_modifier' => 'float',
+		'modifier_value' => 'float',
 	];
+
+	/**
+	 * Create from a database row, remapping DB column names to model attributes.
+	 *
+	 * DB uses: price_modifier, cancellation_hours, valid_to
+	 * Model uses: modifier_value, cancellation_policy, valid_until
+	 */
+	public static function fromRow( object $row ): static {
+		$data = (array) $row;
+
+		if ( array_key_exists( 'price_modifier', $data ) && ! array_key_exists( 'modifier_value', $data ) ) {
+			$data['modifier_value'] = $data['price_modifier'];
+			unset( $data['price_modifier'] );
+		}
+		if ( array_key_exists( 'cancellation_hours', $data ) && ! array_key_exists( 'cancellation_policy', $data ) ) {
+			$data['cancellation_policy'] = $data['cancellation_hours'];
+			unset( $data['cancellation_hours'] );
+		}
+		if ( array_key_exists( 'valid_to', $data ) && ! array_key_exists( 'valid_until', $data ) ) {
+			$data['valid_until'] = $data['valid_to'];
+			unset( $data['valid_to'] );
+		}
+
+		return new static( $data );
+	}
 
 	public function isActive(): bool {
 		return $this->status === 'active';

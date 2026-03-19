@@ -43,9 +43,12 @@ class AvailabilityService {
 	}
 
 	/**
-	 * Quick check: is at least $quantity rooms available for a room type across a date range?
+	 * Quick inventory-only availability check.
 	 *
-	 * Uses inventory-level minimum availability check (no per-night iteration).
+	 * Checks room count and stop-sell only. Does NOT enforce min_stay,
+	 * guest eligibility, or rate plan restrictions — those are handled
+	 * by PricingService::calculateStayPrice() in the full booking flow.
+	 * For complete availability with pricing, use checkAvailability().
 	 *
 	 * @param int    $roomTypeId Room type ID.
 	 * @param string $checkIn    Check-in date (Y-m-d).
@@ -203,18 +206,46 @@ class AvailabilityService {
 			return false;
 		}
 
-		// Invalidate availability cache for affected dates.
-		$this->invalidateAvailabilityCache( $checkIn, $checkOut );
-
-		$this->events->dispatch( 'rooms/inventory_deducted', $roomTypeId, $checkIn, $checkOut, $quantity );
-		$this->logger->info( 'Inventory deducted', [
+		// NOTE: Side effects (cache, events, logging) are deferred and run
+		// via onInventoryDeducted() after the caller commits the transaction.
+		// This prevents stale cache/events if the transaction rolls back.
+		$this->pendingDeductions[] = [
 			'room_type_id' => $roomTypeId,
 			'check_in'     => $checkIn,
 			'check_out'    => $checkOut,
 			'quantity'     => $quantity,
-		] );
+		];
 
 		return true;
+	}
+
+	/** @var array Pending deduction side effects to flush after commit. */
+	private array $pendingDeductions = [];
+
+	/** @var array Pending restoration side effects to flush after commit. */
+	private array $pendingRestorations = [];
+
+	/**
+	 * Flush deferred side effects after the caller commits the transaction.
+	 *
+	 * Call this after your transaction commits to invalidate cache,
+	 * dispatch events, and log the inventory changes.
+	 */
+	public function flushPendingSideEffects(): void {
+		foreach ( $this->pendingDeductions as $d ) {
+			$this->invalidateAvailabilityCache( $d['check_in'], $d['check_out'] );
+			$this->events->dispatch( 'rooms/inventory_deducted', $d['room_type_id'], $d['check_in'], $d['check_out'], $d['quantity'] );
+			$this->logger->info( 'Inventory deducted', $d );
+		}
+
+		foreach ( $this->pendingRestorations as $r ) {
+			$this->invalidateAvailabilityCache( $r['check_in'], $r['check_out'] );
+			$this->events->dispatch( 'rooms/inventory_restored', $r['room_type_id'], $r['check_in'], $r['check_out'], $r['quantity'] );
+			$this->logger->info( 'Inventory restored', $r );
+		}
+
+		$this->pendingDeductions  = [];
+		$this->pendingRestorations = [];
 	}
 
 	/**
@@ -254,16 +285,13 @@ class AvailabilityService {
 			return false;
 		}
 
-		// Invalidate availability cache for affected dates.
-		$this->invalidateAvailabilityCache( $checkIn, $checkOut );
-
-		$this->events->dispatch( 'rooms/inventory_restored', $roomTypeId, $checkIn, $checkOut, $quantity );
-		$this->logger->info( 'Inventory restored', [
+		// Defer side effects until the caller commits the transaction.
+		$this->pendingRestorations[] = [
 			'room_type_id' => $roomTypeId,
 			'check_in'     => $checkIn,
 			'check_out'    => $checkOut,
 			'quantity'     => $quantity,
-		] );
+		];
 
 		return true;
 	}

@@ -64,6 +64,8 @@ class PromoCode extends BaseModel {
 		'discount_value' => 'float',
 		'min_amount' => 'float',
 		'max_discount' => 'float',
+		'applicable_room_types' => 'array',
+		'applicable_sources' => 'array',
 	];
 
 	public static function validTypes(): array {

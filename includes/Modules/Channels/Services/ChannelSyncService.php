@@ -525,18 +525,7 @@ class ChannelSyncService {
 			$nights = (int) ( new \DateTimeImmutable( $checkIn ) )->diff( new \DateTimeImmutable( $checkOut ) )->days;
 		}
 
-		// Generate a booking number.
 		$bookingsTable = $this->db->table( 'bookings' );
-		$year    = (int) gmdate( 'Y' );
-		$prefix  = 'NZL';
-		$maxSeq  = $this->db->getVar(
-			"SELECT MAX( CAST( SUBSTRING_INDEX( booking_number, '-', -1 ) AS UNSIGNED ) )
-			 FROM {$bookingsTable}
-			 WHERE booking_number LIKE %s",
-			$prefix . '-' . $year . '-%'
-		);
-		$seq = $maxSeq !== null ? ( (int) $maxSeq + 1 ) : 1;
-		$bookingNumber = sprintf( '%s-%04d-%05d', $prefix, $year, $seq );
 
 		// Map source to valid enum values.
 		$sourceMap = [
@@ -547,7 +536,6 @@ class ChannelSyncService {
 		$source = $sourceMap[ $channelName ] ?? 'direct';
 
 		$bookingData = [
-			'booking_number'     => $bookingNumber,
 			'guest_id'           => $guestId,
 			'room_type_id'       => $localRoomTypeId,
 			'check_in'           => $checkIn,
@@ -570,6 +558,19 @@ class ChannelSyncService {
 		$this->db->beginTransaction();
 
 		try {
+			// Generate booking number atomically inside the transaction using FOR UPDATE.
+			$year   = (int) gmdate( 'Y' );
+			$prefix = 'NZL';
+			$maxSeq = $this->db->getVar(
+				"SELECT MAX( CAST( SUBSTRING_INDEX( booking_number, '-', -1 ) AS UNSIGNED ) )
+				 FROM {$bookingsTable}
+				 WHERE booking_number LIKE %s
+				 FOR UPDATE",
+				$prefix . '-' . $year . '-%'
+			);
+			$seq = $maxSeq !== null ? ( (int) $maxSeq + 1 ) : 1;
+			$bookingData['booking_number'] = sprintf( '%s-%04d-%05d', $prefix, $year, $seq );
+
 			$bookingId = $this->db->insert( 'bookings', $bookingData );
 
 			if ( $bookingId === false ) {
@@ -596,11 +597,11 @@ class ChannelSyncService {
 				);
 
 				if ( $deducted === false || (int) $deducted < $nights ) {
-					$this->logger->warning( 'Inventory deduction incomplete for channel booking.', [
-						'booking_id'   => $bookingId,
-						'expected'     => $nights,
-						'deducted'     => $deducted,
-					] );
+					throw new \RuntimeException( sprintf(
+						'Inventory deduction incomplete: expected %d nights, deducted %s.',
+						$nights,
+						$deducted === false ? 'false' : (string) $deducted
+					) );
 				}
 			}
 

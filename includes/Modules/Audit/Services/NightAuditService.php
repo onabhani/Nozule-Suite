@@ -62,8 +62,14 @@ class NightAuditService {
 	public function runAudit( ?string $date = null ): NightAudit|array {
 		$date = $date ?: wp_date( 'Y-m-d', strtotime( '-1 day' ) );
 
-		// 1. Check if audit already exists for this date.
-		if ( $this->repository->hasAuditForDate( $date ) ) {
+		// Scope the repository to the active property so existence checks
+		// and writes are per-property (prevents one property blocking another).
+		$repo = $this->propertyId !== null
+			? $this->repository->scopeToProperty( $this->propertyId )
+			: $this->repository;
+
+		// 1. Check if audit already exists for this date (property-scoped).
+		if ( $repo->hasAuditForDate( $date ) ) {
 			return [
 				'error'   => true,
 				'message' => sprintf(
@@ -74,7 +80,7 @@ class NightAuditService {
 			];
 		}
 
-		$this->repository->beginTransaction();
+		$repo->beginTransaction();
 
 		try {
 			// 2. Count rooms by status from nzl_rooms.
@@ -113,8 +119,8 @@ class NightAuditService {
 				? round( $roomRevenue / $totalRooms, 2 )
 				: 0.00;
 
-			// 10. Insert the night audit record.
-			$audit = $this->repository->create( [
+			// 10. Insert the night audit record (property-scoped).
+			$auditData = [
 				'audit_date'        => $date,
 				'total_rooms'       => $totalRooms,
 				'occupied_rooms'    => $occupiedRooms,
@@ -138,7 +144,13 @@ class NightAuditService {
 				'run_by'            => get_current_user_id() ?: null,
 				'run_at'            => current_time( 'mysql' ),
 				'status'            => NightAudit::STATUS_COMPLETED,
-			] );
+			];
+
+			if ( $this->propertyId !== null ) {
+				$auditData['property_id'] = $this->propertyId;
+			}
+
+			$audit = $repo->create( $auditData );
 
 			if ( ! $audit ) {
 				throw new \RuntimeException(
@@ -150,9 +162,9 @@ class NightAuditService {
 			//     AND status = confirmed → status = no_show.
 			$this->markNoShowBookings( $date );
 
-			$this->repository->commit();
+			$repo->commit();
 		} catch ( \Throwable $e ) {
-			$this->repository->rollback();
+			$repo->rollback();
 
 			$this->logger->error( 'Night audit failed', [
 				'date'  => $date,
@@ -471,12 +483,15 @@ class NightAuditService {
 	private function markNoShowBookings( string $date ): int {
 		$bookings = $this->db->table( 'bookings' );
 
-		// Fetch no-show candidates so we can restore their inventory.
+		// Build property-scoped candidate query.
+		$args     = [ $date ];
+		$propCond = $this->propertyCondition( '', $args );
+
 		$candidates = $this->db->getResults(
 			"SELECT id, room_type_id, check_in, check_out FROM {$bookings}
 			 WHERE check_in = %s
-			   AND status = 'confirmed'",
-			$date
+			   AND status = 'confirmed'{$propCond}",
+			...$args
 		);
 
 		if ( empty( $candidates ) ) {
@@ -486,24 +501,51 @@ class NightAuditService {
 		$count = 0;
 
 		foreach ( $candidates as $booking ) {
-			// Restore inventory that was deducted when this booking was created.
-			$this->availabilityService->restoreInventory(
-				(int) $booking->room_type_id,
-				$booking->check_in,
-				$booking->check_out
-			);
+			// Each no-show is atomic: UPDATE must succeed before inventory restore.
+			$this->db->beginTransaction();
 
-			$this->db->query(
-				"UPDATE {$bookings}
-				 SET status = 'no_show',
-				     updated_at = %s
-				 WHERE id = %d
-				   AND status = 'confirmed'",
-				current_time( 'mysql' ),
-				(int) $booking->id
-			);
+			try {
+				// Conditionally update status — affected rows confirms it was still 'confirmed'.
+				$affected = $this->db->query(
+					"UPDATE {$bookings}
+					 SET status = 'no_show',
+					     updated_at = %s
+					 WHERE id = %d
+					   AND status = 'confirmed'",
+					current_time( 'mysql' ),
+					(int) $booking->id
+				);
 
-			$count++;
+				if ( (int) $affected === 0 ) {
+					// Another process already changed the status — skip.
+					$this->db->rollback();
+					continue;
+				}
+
+				// Restore inventory only after confirming the status transition.
+				$restored = $this->availabilityService->restoreInventory(
+					(int) $booking->room_type_id,
+					$booking->check_in,
+					$booking->check_out
+				);
+
+				if ( ! $restored ) {
+					$this->db->rollback();
+					$this->logger->warning( 'Inventory restore failed for no-show booking', [
+						'booking_id' => $booking->id,
+					] );
+					continue;
+				}
+
+				$this->db->commit();
+				$count++;
+			} catch ( \Throwable $e ) {
+				$this->db->rollback();
+				$this->logger->warning( 'Failed to mark no-show for booking', [
+					'booking_id' => $booking->id,
+					'error'      => $e->getMessage(),
+				] );
+			}
 		}
 
 		if ( $count > 0 ) {

@@ -149,9 +149,12 @@ class POSRepository {
 
 		$table        = $this->db->table( 'pos_items' );
 		$placeholders = implode( ',', array_fill( 0, count( $ids ), '%d' ) );
-		$rows         = $this->db->getResults(
-			"SELECT * FROM {$table} WHERE id IN ({$placeholders})",
-			...$ids
+		$args         = $ids;
+		$propSql      = $this->applyPropertyScope( '', $args );
+
+		$rows = $this->db->getResults(
+			"SELECT * FROM {$table} WHERE id IN ({$placeholders}){$propSql}",
+			...$args
 		);
 
 		$items = [];

@@ -38,12 +38,7 @@ class LoyaltyMember extends BaseModel {
 			unset( $data['joined_at'] );
 		}
 
-		foreach ( static::$intFields as $field ) {
-			if ( isset( $data[ $field ] ) ) {
-				$data[ $field ] = (int) $data[ $field ];
-			}
-		}
-
+		// Type casting handled by BaseModel::fill() via static::$casts.
 		return new static( $data );
 	}
 }

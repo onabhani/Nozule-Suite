@@ -29,6 +29,7 @@ class BaseModel {
                     'int'   => (int) $value,
                     'float' => (float) $value,
                     'bool'  => (bool) $value,
+                    'array' => is_string( $value ) ? ( json_decode( $value, true ) ?: [] ) : (array) $value,
                     default => $value,
                 };
             }

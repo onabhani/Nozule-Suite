@@ -101,6 +101,10 @@ class Property extends BaseModel {
 		'year_renovated' => 'int',
 		'latitude' => 'float',
 		'longitude' => 'float',
+		'photos' => 'array',
+		'facilities' => 'array',
+		'policies' => 'array',
+		'social_links' => 'array',
 	];
 
 	public static function validTypes(): array {

@@ -230,12 +230,15 @@ class POSService {
 			return [ 'items' => [ __( 'At least one item is required.', 'nozule' ) ] ];
 		}
 
-		// Collect and validate item IDs upfront.
+		// Collect and validate item IDs upfront with strict type checking.
 		$itemIds = [];
 		foreach ( $items as $entry ) {
-			$itemId = (int) ( $entry['item_id'] ?? 0 );
-			$qty    = (int) ( $entry['quantity'] ?? 1 );
-			if ( $itemId <= 0 || $qty <= 0 ) {
+			if ( ! is_array( $entry ) ) {
+				return [ 'items' => [ __( 'Invalid item data.', 'nozule' ) ] ];
+			}
+			$itemId = filter_var( $entry['item_id'] ?? 0, FILTER_VALIDATE_INT, [ 'options' => [ 'min_range' => 1 ] ] );
+			$qty    = filter_var( $entry['quantity'] ?? 0, FILTER_VALIDATE_INT, [ 'options' => [ 'min_range' => 1 ] ] );
+			if ( $itemId === false || $qty === false ) {
 				return [ 'items' => [ __( 'Invalid item data.', 'nozule' ) ] ];
 			}
 			$itemIds[] = $itemId;

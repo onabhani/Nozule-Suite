@@ -163,8 +163,8 @@ class ReviewController {
 
 		// If a redirect URL is provided, redirect to the review platform.
 		// Only allow redirects to known review platform domains to prevent open redirect attacks.
-		if ( ! empty( $redirect ) ) {
-			$redirectUrl = esc_url_raw( urldecode( $redirect ) );
+		if ( ! empty( $redirect ) && is_string( $redirect ) ) {
+			$redirectUrl = esc_url_raw( $redirect );
 
 			$allowedHosts = [
 				'google.com', 'www.google.com', 'search.google.com', 'maps.google.com',

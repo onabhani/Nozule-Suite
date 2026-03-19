@@ -96,19 +96,21 @@ class HousekeepingRepository extends BaseRepository {
 	 * @return HousekeepingTask[]
 	 */
 	public function getTodaysTasks(): array {
-		$table = $this->tableName();
-		$today = current_time( 'Y-m-d' );
+		$table    = $this->tableName();
+		$today    = current_time( 'Y-m-d' );
 		$tomorrow = ( new \DateTimeImmutable( $today ) )->modify( '+1 day' )->format( 'Y-m-d' );
-		$rows  = $this->db->getResults(
-			"SELECT * FROM {$table}
-			WHERE (created_at >= %s AND created_at < %s)
-			   OR status IN ('dirty', 'clean')
+		$args     = [ $today, $tomorrow ];
+		$propCond = $this->applyPropertyScope( '', $args );
+
+		// Use WHERE 1=1 base so property scope AND-appends cleanly.
+		$sql = "SELECT * FROM {$table}
+			WHERE ((created_at >= %s AND created_at < %s)
+			   OR status IN ('dirty', 'clean')){$propCond}
 			ORDER BY
 				FIELD(priority, 'urgent', 'high', 'normal', 'low'),
-				created_at DESC",
-			$today,
-			$tomorrow
-		);
+				created_at DESC";
+
+		$rows = $this->db->getResults( $sql, ...$args );
 
 		return HousekeepingTask::fromRows( $rows );
 	}

@@ -136,10 +136,16 @@ class RoomTypeRepository extends BaseRepository {
 		$values[]     = $now;
 		$allIds       = array_merge( $values, $ids );
 
-		// Single query: UPDATE ... SET sort_order = CASE ... END WHERE id IN (...)
+		// Add property scope to prevent cross-property reordering.
+		$propArgs = [];
+		$propCond = $this->applyPropertyScope( '', $propArgs );
+
+		$allParams = array_merge( $allIds, $propArgs );
+
+		// Single query: UPDATE ... SET sort_order = CASE ... END WHERE id IN (...) [AND property_id = ...]
 		$result = $this->db->query(
-			"UPDATE {$table} SET sort_order = CASE {$caseStr} END, updated_at = %s WHERE id IN ({$placeholders})",
-			...$allIds
+			"UPDATE {$table} SET sort_order = CASE {$caseStr} END, updated_at = %s WHERE id IN ({$placeholders}){$propCond}",
+			...$allParams
 		);
 
 		return $result !== false;
