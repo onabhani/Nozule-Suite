@@ -313,7 +313,7 @@ class SettingsController {
         $table = $wpdb->prefix . 'nzl_taxes';
 
         // Check table exists.
-        if ( $wpdb->get_var( "SHOW TABLES LIKE '{$table}'" ) !== $table ) {
+        if ( $wpdb->get_var( $wpdb->prepare( "SHOW TABLES LIKE %s", $table ) ) !== $table ) {
             return 0;
         }
 

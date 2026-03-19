@@ -118,6 +118,12 @@ class BookingController {
 	 * their booking information without authentication.
 	 */
 	public function lookup( \WP_REST_Request $request ): \WP_REST_Response {
+		// Rate limit to prevent booking number + email enumeration.
+		$limited = RateLimiter::middleware( $request, 'booking_lookup', 10, 3600 );
+		if ( $limited ) {
+			return $limited;
+		}
+
 		$bookingNumber = $request->get_param( 'booking_number' );
 		$email         = $request->get_param( 'email' );
 

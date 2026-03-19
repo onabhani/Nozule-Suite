@@ -423,12 +423,18 @@ class BookingService {
 	 */
 	public function markNoShows(): int {
 		$candidates = $this->bookingRepository->getNoShowCandidates();
-		$count      = 0;
 
-		foreach ( $candidates as $booking ) {
-			$this->bookingRepository->beginTransaction();
+		if ( empty( $candidates ) ) {
+			return 0;
+		}
 
-			try {
+		$count = 0;
+
+		// Use a single transaction for all no-shows instead of one per booking.
+		$this->bookingRepository->beginTransaction();
+
+		try {
+			foreach ( $candidates as $booking ) {
 				// Restore inventory.
 				$this->availabilityService->restoreInventory(
 					$booking->room_type_id,
@@ -448,20 +454,22 @@ class BookingService {
 					'ip_address' => null,
 				] );
 
-				$this->bookingRepository->commit();
-
-				$this->notificationService->queue( $booking, 'booking_no_show' );
-
-				do_action( 'nozule/booking/no_show', $booking->id );
-
 				$count++;
-			} catch ( \Throwable $e ) {
-				$this->bookingRepository->rollback();
-				// Log and continue with next booking.
-				do_action( 'nozule/log', 'error', 'Failed to mark no-show for booking ' . $booking->id, [
-					'error' => $e->getMessage(),
-				] );
 			}
+
+			$this->bookingRepository->commit();
+		} catch ( \Throwable $e ) {
+			$this->bookingRepository->rollback();
+			do_action( 'nozule/log', 'error', 'Failed to mark no-shows', [
+				'error' => $e->getMessage(),
+			] );
+			return 0;
+		}
+
+		// Queue notifications outside the transaction (non-critical).
+		foreach ( $candidates as $booking ) {
+			$this->notificationService->queue( $booking, 'booking_no_show' );
+			do_action( 'nozule/booking/no_show', $booking->id );
 		}
 
 		return $count;

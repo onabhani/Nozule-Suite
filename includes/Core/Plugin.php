@@ -179,6 +179,17 @@ class Plugin {
      * Enqueue public-facing assets.
      */
     public function enqueuePublicAssets(): void {
+        // Only load assets on pages that use Nozule shortcodes to avoid
+        // unnecessary HTTP requests and SettingsManager DB query on every page.
+        global $post;
+        if ( ! is_a( $post, 'WP_Post' ) || (
+            ! has_shortcode( $post->post_content, 'nozule_booking' ) &&
+            ! has_shortcode( $post->post_content, 'nozule_rooms' ) &&
+            ! has_shortcode( $post->post_content, 'nozule_booking_form' )
+        ) ) {
+            return;
+        }
+
         wp_enqueue_style(
             'nozule-public',
             NZL_PLUGIN_URL . 'assets/css/public.css',

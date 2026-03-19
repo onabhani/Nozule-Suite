@@ -116,18 +116,27 @@ class AvailabilityService {
 			$roomTypes = $this->roomTypeRepository->getActive();
 		}
 
+		// Filter by guest occupancy first.
+		$eligibleTypes = array_filter(
+			$roomTypes,
+			fn( $rt ) => $rt->max_occupancy >= $guests
+		);
+
+		// Batch-fetch inventory for all eligible room types in one query (P3 fix).
+		$endDateForInventory = ( new \DateTimeImmutable( $checkOut ) )->modify( '-1 day' )->format( 'Y-m-d' );
+		$roomTypeIds = array_map( fn( $rt ) => $rt->id, $eligibleTypes );
+		$inventoryBatch = ! empty( $roomTypeIds )
+			? $this->inventoryRepository->getForDateRangeBatch( $roomTypeIds, $checkIn, $endDateForInventory )
+			: [];
+
 		$results = [];
 
-		foreach ( $roomTypes as $roomType ) {
-			// Filter by guest occupancy.
-			if ( $roomType->max_occupancy < $guests ) {
-				continue;
-			}
+		foreach ( $eligibleTypes as $roomType ) {
+			$inventory = $inventoryBatch[ $roomType->id ] ?? [];
 
-			$availability = $this->getRoomTypeAvailability(
+			$availability = $this->getRoomTypeAvailabilityFromInventory(
 				$roomType,
-				$checkIn,
-				$checkOut,
+				$inventory,
 				$nights,
 				$guests
 			);
@@ -267,6 +276,9 @@ class AvailabilityService {
 	 *
 	 * @return array|null Null if the room type is not available.
 	 */
+	/**
+	 * @deprecated Use getRoomTypeAvailabilityFromInventory() with batch-loaded inventory.
+	 */
 	private function getRoomTypeAvailability(
 		RoomType $roomType,
 		string $checkIn,
@@ -277,10 +289,27 @@ class AvailabilityService {
 		$inventory = $this->inventoryRepository->getForDateRange(
 			$roomType->id,
 			$checkIn,
-			// Inventory is checked for nights: check-in up to (but not including) check-out.
 			( new \DateTimeImmutable( $checkOut ) )->modify( '-1 day' )->format( 'Y-m-d' )
 		);
 
+		return $this->getRoomTypeAvailabilityFromInventory( $roomType, $inventory, $nights, $guests );
+	}
+
+	/**
+	 * Evaluate availability for a single room type given pre-loaded inventory.
+	 *
+	 * @param RoomType          $roomType  The room type to evaluate.
+	 * @param RoomInventory[]   $inventory Pre-loaded inventory records for the date range.
+	 * @param int               $nights    Number of nights in the stay.
+	 * @param int               $guests    Number of guests.
+	 * @return array|null Null if the room type is not available.
+	 */
+	private function getRoomTypeAvailabilityFromInventory(
+		RoomType $roomType,
+		array $inventory,
+		int $nights,
+		int $guests
+	): ?array {
 		// Must have inventory records for every night.
 		if ( count( $inventory ) < $nights ) {
 			return null;
