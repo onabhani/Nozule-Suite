@@ -39,6 +39,13 @@ abstract class BaseRepository {
     }
 
     /**
+     * Get the current property filter value.
+     */
+    public function getPropertyFilter(): ?int {
+        return $this->propertyFilter;
+    }
+
+    /**
      * Append a property_id filter to an existing SQL fragment.
      *
      * @param string   $sql    SQL string ending with a WHERE clause (or ready for AND).

@@ -126,7 +126,7 @@ class GroupBookingService {
 		// 2. Calculate nights.
 		$checkIn  = $data['check_in'];
 		$checkOut = $data['check_out'];
-		$nights   = (int) ( ( strtotime( $checkOut ) - strtotime( $checkIn ) ) / DAY_IN_SECONDS );
+		$nights   = (int) ( new \DateTimeImmutable( $checkIn ) )->diff( new \DateTimeImmutable( $checkOut ) )->days;
 
 		// 3. Generate group number.
 		$groupNumber = $this->groupRepo->generateGroupNumber();
@@ -226,7 +226,7 @@ class GroupBookingService {
 		$checkIn  = $data['check_in'] ?? $group->check_in;
 		$checkOut = $data['check_out'] ?? $group->check_out;
 		if ( isset( $data['check_in'] ) || isset( $data['check_out'] ) ) {
-			$data['nights'] = (int) ( ( strtotime( $checkOut ) - strtotime( $checkIn ) ) / DAY_IN_SECONDS );
+			$data['nights'] = (int) ( new \DateTimeImmutable( $checkIn ) )->diff( new \DateTimeImmutable( $checkOut ) )->days;
 		}
 
 		$success = $this->groupRepo->update( $id, $data );

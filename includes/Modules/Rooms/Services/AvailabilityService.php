@@ -92,9 +92,11 @@ class AvailabilityService {
 
 		$nights = (int) $checkInDate->diff( $checkOutDate )->days;
 
-		// Build cache key.
+		// Build cache key. Include property scope to prevent cross-property cache collisions.
+		$propertyId = $this->inventoryRepository->getPropertyFilter();
 		$cacheKey = sprintf(
-			'availability_%s_%s_%d_%d',
+			'availability_%d_%s_%s_%d_%d',
+			$propertyId ?? 0,
 			$checkIn,
 			$checkOut,
 			$guests,

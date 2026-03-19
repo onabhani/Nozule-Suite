@@ -864,8 +864,9 @@ class ReportService {
                 SUM( amount ) AS total_collected
             FROM {$payments}
             WHERE status = 'completed'
-              AND DATE( paid_at ) = %s",
-            $today
+              AND paid_at >= %s AND paid_at < %s",
+            $today,
+            ( new \DateTimeImmutable( $today ) )->modify( '+1 day' )->format( 'Y-m-d' )
         );
 
         // Revenue from bookings created today.
@@ -874,9 +875,10 @@ class ReportService {
                 COUNT( id ) AS booking_count,
                 SUM( total_price ) AS total_value
             FROM {$bookings}
-            WHERE DATE( created_at ) = %s
+            WHERE created_at >= %s AND created_at < %s
               AND status NOT IN ('cancelled')",
-            $today
+            $today,
+            ( new \DateTimeImmutable( $today ) )->modify( '+1 day' )->format( 'Y-m-d' )
         );
 
         $data = [

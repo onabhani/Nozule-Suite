@@ -98,14 +98,16 @@ class HousekeepingRepository extends BaseRepository {
 	public function getTodaysTasks(): array {
 		$table = $this->tableName();
 		$today = current_time( 'Y-m-d' );
+		$tomorrow = ( new \DateTimeImmutable( $today ) )->modify( '+1 day' )->format( 'Y-m-d' );
 		$rows  = $this->db->getResults(
 			"SELECT * FROM {$table}
-			WHERE DATE(created_at) = %s
+			WHERE (created_at >= %s AND created_at < %s)
 			   OR status IN ('dirty', 'clean')
 			ORDER BY
 				FIELD(priority, 'urgent', 'high', 'normal', 'low'),
 				created_at DESC",
-			$today
+			$today,
+			$tomorrow
 		);
 
 		return HousekeepingTask::fromRows( $rows );
