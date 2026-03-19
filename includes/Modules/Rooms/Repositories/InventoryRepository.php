@@ -79,6 +79,32 @@ class InventoryRepository extends BaseRepository {
 	public function deductRooms( int $roomTypeId, string $startDate, string $endDate, int $quantity = 1 ): bool {
 		$table = $this->tableName();
 		$now   = current_time( 'mysql', true );
+		$expectedNights = $this->countNightsBetween( $startDate, $endDate );
+
+		// Lock the inventory rows to prevent concurrent bookings from reading
+		// stale availability (TOCTOU race condition). The caller MUST have an
+		// active transaction for FOR UPDATE to be effective.
+		$locked = $this->db->getResults(
+			"SELECT id, available_rooms FROM {$table}
+			 WHERE room_type_id = %d
+			   AND date >= %s
+			   AND date < %s
+			 FOR UPDATE",
+			$roomTypeId,
+			$startDate,
+			$endDate
+		);
+
+		// Verify we have inventory records for every night and all have enough rooms.
+		if ( count( $locked ) < $expectedNights ) {
+			return false;
+		}
+
+		foreach ( $locked as $row ) {
+			if ( (int) $row->available_rooms < $quantity ) {
+				return false;
+			}
+		}
 
 		$result = $this->db->query(
 			"UPDATE {$table}
@@ -98,9 +124,6 @@ class InventoryRepository extends BaseRepository {
 			$endDate,
 			$quantity
 		);
-
-		// Verify that every night in the range was updated.
-		$expectedNights = $this->countNightsBetween( $startDate, $endDate );
 
 		return $result !== false && (int) $result === $expectedNights;
 	}
