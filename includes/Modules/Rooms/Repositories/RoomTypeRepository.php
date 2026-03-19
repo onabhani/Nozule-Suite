@@ -112,32 +112,37 @@ class RoomTypeRepository extends BaseRepository {
 	 * @param int[] $orderedIds List of room type IDs in their new sort order.
 	 */
 	public function reorder( array $orderedIds ): bool {
-		$this->beginTransaction();
-
-		try {
-			$table = $this->tableName();
-			$now   = current_time( 'mysql', true );
-
-			foreach ( $orderedIds as $position => $id ) {
-				$result = $this->db->query(
-					"UPDATE {$table} SET sort_order = %d, updated_at = %s WHERE id = %d",
-					$position,
-					$now,
-					(int) $id
-				);
-
-				if ( $result === false ) {
-					$this->rollback();
-					return false;
-				}
-			}
-
-			$this->commit();
+		if ( empty( $orderedIds ) ) {
 			return true;
-		} catch ( \Throwable $e ) {
-			$this->rollback();
-			return false;
 		}
+
+		$table = $this->tableName();
+		$now   = current_time( 'mysql', true );
+
+		// Build a single UPDATE with CASE expression instead of N queries.
+		$cases  = [];
+		$ids    = [];
+		$values = [];
+
+		foreach ( $orderedIds as $position => $id ) {
+			$ids[]    = (int) $id;
+			$cases[]  = "WHEN id = %d THEN %d";
+			$values[] = (int) $id;
+			$values[] = (int) $position;
+		}
+
+		$caseStr      = implode( ' ', $cases );
+		$placeholders = implode( ',', array_fill( 0, count( $ids ), '%d' ) );
+		$values[]     = $now;
+		$allIds       = array_merge( $values, $ids );
+
+		// Single query: UPDATE ... SET sort_order = CASE ... END WHERE id IN (...)
+		$result = $this->db->query(
+			"UPDATE {$table} SET sort_order = CASE {$caseStr} END, updated_at = %s WHERE id IN ({$placeholders})",
+			...$allIds
+		);
+
+		return $result !== false;
 	}
 
 	/**

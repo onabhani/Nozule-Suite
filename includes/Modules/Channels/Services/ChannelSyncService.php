@@ -121,23 +121,31 @@ class ChannelSyncService {
 				];
 			}
 
-			// Fetch inventory data.
+			// Batch-fetch inventory for all mapped room types in one query.
 			$inventoryTable = $this->db->table( 'room_inventory' );
-			$availData      = [];
+			$roomTypeIds    = array_unique( array_map( fn( $m ) => (int) $m->local_room_type_id, $mappings ) );
+			$placeholders   = implode( ',', array_fill( 0, count( $roomTypeIds ), '%d' ) );
+			$params         = array_merge( $roomTypeIds, [ $startDate, $endDate ] );
 
+			$allRows = $this->db->getResults(
+				"SELECT room_type_id, date, available_rooms, stop_sell, min_stay
+				 FROM {$inventoryTable}
+				 WHERE room_type_id IN ({$placeholders})
+				   AND date >= %s
+				   AND date <= %s
+				 ORDER BY room_type_id ASC, date ASC",
+				...$params
+			);
+
+			// Index by room_type_id for fast lookup.
+			$inventoryByType = [];
+			foreach ( $allRows as $row ) {
+				$inventoryByType[ (int) $row->room_type_id ][] = $row;
+			}
+
+			$availData = [];
 			foreach ( $mappings as $mapping ) {
-				$rows = $this->db->getResults(
-					"SELECT date, available_rooms, stop_sell, min_stay
-					 FROM {$inventoryTable}
-					 WHERE room_type_id = %d
-					   AND date >= %s
-					   AND date <= %s
-					 ORDER BY date ASC",
-					$mapping->local_room_type_id,
-					$startDate,
-					$endDate
-				);
-
+				$rows = $inventoryByType[ (int) $mapping->local_room_type_id ] ?? [];
 				foreach ( $rows as $row ) {
 					$availData[] = [
 						'channel_room_id' => $mapping->channel_room_id,
@@ -265,20 +273,30 @@ class ChannelSyncService {
 			);
 			$currency = $currency ?: 'USD';
 
-			foreach ( $mappings as $mapping ) {
-				$rows = $this->db->getResults(
-					"SELECT i.date, i.price_override, rt.base_price
-					 FROM {$inventoryTable} i
-					 JOIN {$roomTypeTable} rt ON rt.id = i.room_type_id
-					 WHERE i.room_type_id = %d
-					   AND i.date >= %s
-					   AND i.date <= %s
-					 ORDER BY i.date ASC",
-					$mapping->local_room_type_id,
-					$startDate,
-					$endDate
-				);
+			// Batch-fetch rates for all mapped room types in one query.
+			$roomTypeIds  = array_unique( array_map( fn( $m ) => (int) $m->local_room_type_id, $mappings ) );
+			$placeholders = implode( ',', array_fill( 0, count( $roomTypeIds ), '%d' ) );
+			$params       = array_merge( $roomTypeIds, [ $startDate, $endDate ] );
 
+			$allRows = $this->db->getResults(
+				"SELECT i.room_type_id, i.date, i.price_override, rt.base_price
+				 FROM {$inventoryTable} i
+				 JOIN {$roomTypeTable} rt ON rt.id = i.room_type_id
+				 WHERE i.room_type_id IN ({$placeholders})
+				   AND i.date >= %s
+				   AND i.date <= %s
+				 ORDER BY i.room_type_id ASC, i.date ASC",
+				...$params
+			);
+
+			// Index by room_type_id.
+			$ratesByType = [];
+			foreach ( $allRows as $row ) {
+				$ratesByType[ (int) $row->room_type_id ][] = $row;
+			}
+
+			foreach ( $mappings as $mapping ) {
+				$rows = $ratesByType[ (int) $mapping->local_room_type_id ] ?? [];
 				foreach ( $rows as $row ) {
 					$price = ! empty( $row->price_override ) ? (float) $row->price_override : (float) $row->base_price;
 

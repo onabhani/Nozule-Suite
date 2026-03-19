@@ -137,6 +137,32 @@ class POSRepository {
 	}
 
 	/**
+	 * Get multiple items by IDs in a single query.
+	 *
+	 * @param int[] $ids Item IDs.
+	 * @return array<int, POSItem> Keyed by item ID.
+	 */
+	public function getItemsByIds( array $ids ): array {
+		if ( empty( $ids ) ) {
+			return [];
+		}
+
+		$table        = $this->db->table( 'pos_items' );
+		$placeholders = implode( ',', array_fill( 0, count( $ids ), '%d' ) );
+		$rows         = $this->db->getResults(
+			"SELECT * FROM {$table} WHERE id IN ({$placeholders})",
+			...$ids
+		);
+
+		$items = [];
+		foreach ( POSItem::fromRows( $rows ) as $item ) {
+			$items[ $item->id ] = $item;
+		}
+
+		return $items;
+	}
+
+	/**
 	 * Create or update an item.
 	 *
 	 * @return POSItem|false
