@@ -92,12 +92,8 @@ class RestController {
             'permission_callback' => '__return_true',
         ] );
 
-        // POST /bookings
-        register_rest_route( self::NAMESPACE, '/bookings', [
-            'methods'             => 'POST',
-            'callback'            => fn( WP_REST_Request $r ) => $this->container->get( BookingController::class )->store( $r ),
-            'permission_callback' => '__return_true',
-        ] );
+        // NOTE: POST /bookings is registered by BookingController::registerRoutes()
+        // with full validation args. Do NOT duplicate it here without args.
 
         // GET /bookings/<booking_number>  (public look-up, requires email param)
         register_rest_route( self::NAMESPACE, '/bookings/(?P<booking_number>[A-Z0-9-]+)', [

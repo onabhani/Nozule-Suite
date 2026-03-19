@@ -600,22 +600,25 @@ class BookingService {
 	 * then falls back to REMOTE_ADDR.
 	 */
 	public static function getClientIP(): string {
-		// Cloudflare passes the real IP via this header.
-		if ( ! empty( $_SERVER['HTTP_CF_CONNECTING_IP'] ) ) {
-			return sanitize_text_field( wp_unslash( $_SERVER['HTTP_CF_CONNECTING_IP'] ) );
+		$remoteAddr = sanitize_text_field( wp_unslash( $_SERVER['REMOTE_ADDR'] ?? '' ) );
+
+		// Only trust proxy/CDN headers when the direct client is a configured trusted proxy.
+		$trustedProxies = apply_filters( 'nzl_trusted_proxies', [] );
+		$isTrustedProxy = is_array( $trustedProxies ) && in_array( $remoteAddr, $trustedProxies, true );
+
+		if ( $isTrustedProxy ) {
+			// Cloudflare passes the real IP via this header.
+			if ( ! empty( $_SERVER['HTTP_CF_CONNECTING_IP'] ) ) {
+				return sanitize_text_field( wp_unslash( $_SERVER['HTTP_CF_CONNECTING_IP'] ) );
+			}
+
+			// Standard proxy header (may contain multiple IPs, take the first).
+			if ( ! empty( $_SERVER['HTTP_X_FORWARDED_FOR'] ) ) {
+				$ips = explode( ',', sanitize_text_field( wp_unslash( $_SERVER['HTTP_X_FORWARDED_FOR'] ) ) );
+				return trim( $ips[0] );
+			}
 		}
 
-		// Standard proxy header (may contain multiple IPs, take the first).
-		if ( ! empty( $_SERVER['HTTP_X_FORWARDED_FOR'] ) ) {
-			$ips = explode( ',', sanitize_text_field( wp_unslash( $_SERVER['HTTP_X_FORWARDED_FOR'] ) ) );
-			return trim( $ips[0] );
-		}
-
-		// Direct connection.
-		if ( ! empty( $_SERVER['REMOTE_ADDR'] ) ) {
-			return sanitize_text_field( wp_unslash( $_SERVER['REMOTE_ADDR'] ) );
-		}
-
-		return '';
+		return $remoteAddr;
 	}
 }

@@ -162,7 +162,7 @@ class SettingsManager {
             try {
                 return CredentialVault::encrypt( [ 'value' => $value ] );
             } catch ( \RuntimeException $e ) {
-                error_log( 'SettingsManager: CredentialVault encrypt failed for ' . $key . ': ' . $e->getMessage() );
+                error_log( 'SettingsManager: CredentialVault encrypt failed for a sensitive key: ' . $e->getMessage() );
             }
         }
 

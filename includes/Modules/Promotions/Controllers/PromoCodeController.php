@@ -185,7 +185,11 @@ class PromoCodeController {
 		$code     = sanitize_text_field( $request->get_param( 'code' ) ?? '' );
 		$subtotal = (float) ( $request->get_param( 'subtotal' ) ?? 0 );
 		$nights   = (int) ( $request->get_param( 'nights' ) ?? 1 );
-		$guestId  = $request->get_param( 'guest_id' ) ? (int) $request->get_param( 'guest_id' ) : null;
+
+		// guest_id removed from public endpoint to prevent guest record enumeration.
+		// Per-guest promo limits should be checked server-side after booking creation
+		// when the guest identity is known via authenticated context.
+		$guestId  = null;
 
 		if ( empty( $code ) ) {
 			return ResponseHelper::error( __( 'Promo code is required.', 'nozule' ), 400 );
