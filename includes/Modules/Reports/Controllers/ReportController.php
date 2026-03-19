@@ -104,7 +104,7 @@ class ReportController {
      * Permission check: current user must have 'nzl_admin' capability.
      */
     public function checkAdminPermission(): bool {
-        return current_user_can( 'nzl_admin' );
+        return current_user_can( 'manage_options' ) || current_user_can( 'nzl_admin' );
     }
 
     /**

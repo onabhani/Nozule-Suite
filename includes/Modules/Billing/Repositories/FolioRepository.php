@@ -137,12 +137,16 @@ class FolioRepository extends BaseRepository {
 		$table = $this->tableName();
 		$year  = gmdate( 'Y' );
 
-		$count = (int) $this->db->getVar(
-			"SELECT COUNT(*) FROM {$table} WHERE folio_number LIKE %s",
+		// Use MAX to extract the highest sequence number rather than COUNT,
+		// which avoids duplicate numbers when folios are deleted.
+		$maxSeq = $this->db->getVar(
+			"SELECT MAX( CAST( SUBSTRING_INDEX( folio_number, '-', -1 ) AS UNSIGNED ) )
+			 FROM {$table}
+			 WHERE folio_number LIKE %s",
 			'INV-' . $year . '-%'
 		);
 
-		$next = $count + 1;
+		$next = $maxSeq !== null ? ( (int) $maxSeq + 1 ) : 1;
 
 		return sprintf( 'INV-%s-%05d', $year, $next );
 	}

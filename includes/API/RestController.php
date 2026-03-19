@@ -127,6 +127,11 @@ class RestController {
                     'validate_callback' => fn( $v ) => (bool) preg_match( '/^[A-Z0-9-]+$/', $v ),
                     'sanitize_callback' => 'sanitize_text_field',
                 ],
+                'email' => [
+                    'required'          => true,
+                    'validate_callback' => fn( $v ) => is_email( $v ),
+                    'sanitize_callback' => 'sanitize_email',
+                ],
             ],
         ] );
 

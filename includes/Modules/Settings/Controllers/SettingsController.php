@@ -103,7 +103,7 @@ class SettingsController {
      * Permission check: current user must have 'nzl_admin' capability.
      */
     public function checkAdminPermission(): bool {
-        return current_user_can( 'nzl_admin' );
+        return current_user_can( 'manage_options' ) || current_user_can( 'nzl_admin' );
     }
 
     /**
@@ -419,9 +419,9 @@ class SettingsController {
             return sanitize_text_field( $value );
         }
 
-        // Arrays and objects stay as-is (will be JSON-encoded by SettingsManager).
+        // Recursively sanitize array values before JSON-encoding by SettingsManager.
         if ( is_array( $value ) ) {
-            return $value;
+            return map_deep( $value, 'sanitize_text_field' );
         }
 
         // Default: sanitize as text.

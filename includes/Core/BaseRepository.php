@@ -56,10 +56,15 @@ abstract class BaseRepository {
 
     /**
      * Find a record by ID.
+     *
+     * Respects property scope when set, preventing cross-property data access.
      */
     public function find( int $id ): ?BaseModel {
         $table = $this->tableName();
-        $row   = $this->db->getRow( "SELECT * FROM {$table} WHERE id = %d", $id );
+        $args  = [ $id ];
+        $sql   = "SELECT * FROM {$table} WHERE id = %d";
+        $sql   = $this->applyPropertyScope( $sql, $args );
+        $row   = $this->db->getRow( $sql, ...$args );
         return $row ? $this->model::fromRow( $row ) : null;
     }
 
@@ -69,7 +74,7 @@ abstract class BaseRepository {
     public function findOrFail( int $id ): BaseModel {
         $result = $this->find( $id );
         if ( ! $result ) {
-            throw new \RuntimeException( "Record not found in {$this->table} with ID {$id}" );
+            throw new \RuntimeException( __( 'Record not found.', 'nozule' ) );
         }
         return $result;
     }
@@ -123,6 +128,10 @@ abstract class BaseRepository {
             $conditions = [];
             $values     = [];
             foreach ( $where as $col => $val ) {
+                // Sanitize column name to prevent SQL injection via array keys.
+                if ( ! preg_match( '/^[a-zA-Z_][a-zA-Z0-9_]*$/', $col ) ) {
+                    throw new \InvalidArgumentException( "Invalid column name in where clause." );
+                }
                 $conditions[] = "`{$col}` = %s";
                 $values[]     = $val;
             }

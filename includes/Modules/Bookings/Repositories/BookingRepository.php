@@ -126,12 +126,16 @@ class BookingRepository extends BaseRepository {
 		$table   = $this->tableName();
 		$pattern = $prefix . '-' . $year . '-%';
 
-		$count = (int) $this->db->getVar(
-			"SELECT COUNT(*) FROM {$table} WHERE booking_number LIKE %s",
+		// Use MAX to extract the highest sequence number rather than COUNT,
+		// which avoids duplicate numbers when bookings are deleted.
+		$maxSeq = $this->db->getVar(
+			"SELECT MAX( CAST( SUBSTRING_INDEX( booking_number, '-', -1 ) AS UNSIGNED ) )
+			 FROM {$table}
+			 WHERE booking_number LIKE %s",
 			$pattern
 		);
 
-		return $count + 1;
+		return $maxSeq !== null ? ( (int) $maxSeq + 1 ) : 1;
 	}
 
 	// ── CRUD ────────────────────────────────────────────────────────

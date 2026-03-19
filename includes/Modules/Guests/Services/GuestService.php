@@ -27,6 +27,20 @@ class GuestService {
     }
 
     /**
+     * Find a guest by email address.
+     *
+     * @param string $email Email address to search for.
+     * @return Guest|null The guest if found, null otherwise.
+     */
+    public function findByEmail( string $email ): ?Guest {
+        if ( empty( $email ) ) {
+            return null;
+        }
+
+        return $this->repository->findByEmail( $email );
+    }
+
+    /**
      * Find an existing guest by email, or create a new guest profile.
      *
      * If the guest exists and a different phone number is provided,

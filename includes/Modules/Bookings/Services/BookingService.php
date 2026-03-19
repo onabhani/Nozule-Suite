@@ -79,12 +79,12 @@ class BookingService {
 		// 2. Calculate nights.
 		$checkIn  = $data['check_in'];
 		$checkOut = $data['check_out'];
-		$nights   = (int) ( ( strtotime( $checkOut ) - strtotime( $checkIn ) ) / DAY_IN_SECONDS );
+		$nights   = (int) ( new \DateTimeImmutable( $checkIn ) )->diff( new \DateTimeImmutable( $checkOut ) )->days;
 
 		// 3. Check availability.
 		$roomTypeId = (int) $data['room_type_id'];
 
-		if ( ! $this->availabilityService->isAvailable( $roomTypeId, $checkIn, $checkOut ) ) {
+		if ( ! $this->availabilityService->isAvailable( $roomTypeId, $checkIn, $checkOut, 1 ) ) {
 			throw new NoAvailabilityException(
 				__( 'No rooms available for the selected room type and dates.', 'nozule' )
 			);
@@ -96,7 +96,7 @@ class BookingService {
 		// 5. Calculate pricing.
 		$adults   = (int) ( $data['adults'] ?? 1 );
 		$children = (int) ( $data['children'] ?? 0 );
-		$pricing  = $this->pricingService->calculate( $roomTypeId, $checkIn, $checkOut, $adults, $children );
+		$pricing  = $this->pricingService->calculateStayPrice( $roomTypeId, $checkIn, $checkOut, $adults, $children );
 
 		// 6. Generate booking number.
 		$bookingNumber = $this->generateBookingNumber();
@@ -124,7 +124,7 @@ class BookingService {
 				'children'            => $children,
 				'status'              => Booking::STATUS_PENDING,
 				'source'              => $data['source'] ?? Booking::SOURCE_DIRECT,
-				'total_amount'        => $pricing['total'],
+				'total_amount'        => $pricing->total,
 				'paid_amount'         => 0,
 				'currency'            => $currency,
 				'special_requests'    => sanitize_textarea_field( $data['special_requests'] ?? '' ),
@@ -138,7 +138,7 @@ class BookingService {
 			}
 
 			// Increment guest booking count.
-			$this->guestService->incrementBookingCount( $guestId, $pricing['total'] );
+			$this->guestService->incrementBookingCount( $guestId, $pricing->total );
 
 			// Audit log.
 			$this->bookingRepository->createLog( [
@@ -146,7 +146,7 @@ class BookingService {
 				'action'     => BookingLog::ACTION_CREATED,
 				'details'    => wp_json_encode( [
 					'source'       => $booking->source,
-					'total_amount' => $pricing['total'],
+					'total_amount' => $pricing->total,
 					'nights'       => $nights,
 				] ),
 				'user_id'    => get_current_user_id() ?: null,
