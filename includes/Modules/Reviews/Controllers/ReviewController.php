@@ -162,11 +162,29 @@ class ReviewController {
 		$this->service->trackClick( $id, $platform );
 
 		// If a redirect URL is provided, redirect to the review platform.
+		// Only allow redirects to known review platform domains to prevent open redirect attacks.
 		if ( ! empty( $redirect ) ) {
 			$redirectUrl = esc_url_raw( urldecode( $redirect ) );
 
-			if ( ! empty( $redirectUrl ) ) {
-				// Return a redirect response.
+			$allowedHosts = [
+				'google.com', 'www.google.com', 'search.google.com', 'maps.google.com',
+				'tripadvisor.com', 'www.tripadvisor.com',
+				'booking.com', 'www.booking.com',
+				'expedia.com', 'www.expedia.com',
+				'agoda.com', 'www.agoda.com',
+				'trustpilot.com', 'www.trustpilot.com',
+			];
+
+			/**
+			 * Filter the allowed redirect hosts for review tracking links.
+			 *
+			 * @param string[] $allowedHosts List of allowed hostnames.
+			 */
+			$allowedHosts = apply_filters( 'nozule/reviews/allowed_redirect_hosts', $allowedHosts );
+
+			$parsedHost = wp_parse_url( $redirectUrl, PHP_URL_HOST );
+
+			if ( ! empty( $redirectUrl ) && $parsedHost && in_array( $parsedHost, $allowedHosts, true ) ) {
 				$response = new \WP_REST_Response( null, 302 );
 				$response->header( 'Location', $redirectUrl );
 				$response->header( 'Cache-Control', 'no-cache, no-store, must-revalidate' );

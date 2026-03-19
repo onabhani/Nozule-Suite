@@ -186,7 +186,11 @@ class CurrencyService {
 
 		$rate = $this->getExchangeRate( $from, $to, $date );
 
-		return $amount * $rate;
+		// Round to target currency's decimal places for precision.
+		$toCurrency = $this->repository->findByCode( $to );
+		$decimals   = $toCurrency ? (int) $toCurrency->decimal_places : 2;
+
+		return round( $amount * $rate, $decimals );
 	}
 
 	/**

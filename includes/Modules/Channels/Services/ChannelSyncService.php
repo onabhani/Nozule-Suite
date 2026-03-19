@@ -497,30 +497,102 @@ class ChannelSyncService {
 		$guestId = $this->findOrCreateGuest( $reservation );
 
 		// Create the booking.
-		$now         = current_time( 'mysql', true );
+		$now     = current_time( 'mysql', true );
+		$checkIn = $reservation['check_in'] ?? '';
+		$checkOut = $reservation['check_out'] ?? '';
+
+		// Calculate nights using DST-safe date diff.
+		$nights = 0;
+		if ( $checkIn && $checkOut ) {
+			$nights = (int) ( new \DateTimeImmutable( $checkIn ) )->diff( new \DateTimeImmutable( $checkOut ) )->days;
+		}
+
+		// Generate a booking number.
+		$bookingsTable = $this->db->table( 'bookings' );
+		$year    = (int) gmdate( 'Y' );
+		$prefix  = 'NZL';
+		$maxSeq  = $this->db->getVar(
+			"SELECT MAX( CAST( SUBSTRING_INDEX( booking_number, '-', -1 ) AS UNSIGNED ) )
+			 FROM {$bookingsTable}
+			 WHERE booking_number LIKE %s",
+			$prefix . '-' . $year . '-%'
+		);
+		$seq = $maxSeq !== null ? ( (int) $maxSeq + 1 ) : 1;
+		$bookingNumber = sprintf( '%s-%04d-%05d', $prefix, $year, $seq );
+
+		// Map source to valid enum values.
+		$sourceMap = [
+			'booking_com' => 'booking_com',
+			'expedia'     => 'expedia',
+			'airbnb'      => 'airbnb',
+		];
+		$source = $sourceMap[ $channelName ] ?? 'direct';
+
 		$bookingData = [
+			'booking_number'     => $bookingNumber,
 			'guest_id'           => $guestId,
 			'room_type_id'       => $localRoomTypeId,
-			'check_in'           => $reservation['check_in'] ?? '',
-			'check_out'          => $reservation['check_out'] ?? '',
-			'num_guests'         => (int) ( $reservation['num_guests'] ?? 1 ),
+			'check_in'           => $checkIn,
+			'check_out'          => $checkOut,
+			'nights'             => $nights,
+			'adults'             => (int) ( $reservation['adults'] ?? $reservation['num_guests'] ?? 1 ),
+			'children'           => (int) ( $reservation['children'] ?? 0 ),
 			'total_amount'       => (float) ( $reservation['total_amount'] ?? 0 ),
+			'paid_amount'        => 0,
 			'currency'           => $reservation['currency'] ?? 'USD',
 			'status'             => 'confirmed',
-			'source'             => $channelName,
+			'source'             => $source,
 			'channel_name'       => $channelName,
 			'channel_booking_id' => $externalId,
-			'special_requests'   => $reservation['special_requests'] ?? '',
+			'special_requests'   => sanitize_textarea_field( $reservation['special_requests'] ?? '' ),
 			'created_at'         => $now,
 			'updated_at'         => $now,
 		];
 
-		$bookingId = $this->db->insert( 'bookings', $bookingData );
+		$this->db->beginTransaction();
 
-		if ( $bookingId === false ) {
+		try {
+			$bookingId = $this->db->insert( 'bookings', $bookingData );
+
+			if ( $bookingId === false ) {
+				throw new \RuntimeException( 'Insert failed.' );
+			}
+
+			// Deduct inventory to prevent overbooking.
+			if ( $localRoomTypeId && $checkIn && $checkOut ) {
+				$inventoryTable = $this->db->table( 'room_inventory' );
+				$deducted = $this->db->query(
+					"UPDATE {$inventoryTable}
+					 SET available_rooms = available_rooms - 1,
+					     booked_rooms = booked_rooms + 1,
+					     updated_at = %s
+					 WHERE room_type_id = %d
+					   AND date >= %s
+					   AND date < %s
+					   AND available_rooms >= 1
+					   AND stop_sell = 0",
+					$now,
+					$localRoomTypeId,
+					$checkIn,
+					$checkOut
+				);
+
+				if ( $deducted === false || (int) $deducted < $nights ) {
+					$this->logger->warning( 'Inventory deduction incomplete for channel booking.', [
+						'booking_id'   => $bookingId,
+						'expected'     => $nights,
+						'deducted'     => $deducted,
+					] );
+				}
+			}
+
+			$this->db->commit();
+		} catch ( \Throwable $e ) {
+			$this->db->rollback();
 			$this->logger->error( 'Failed to create local booking from channel reservation.', [
 				'external_id' => $externalId,
 				'channel'     => $channelName,
+				'error'       => $e->getMessage(),
 			] );
 			return false;
 		}

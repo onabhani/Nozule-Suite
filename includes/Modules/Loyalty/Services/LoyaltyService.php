@@ -90,10 +90,6 @@ class LoyaltyService {
 			);
 		}
 
-		$balance  = $this->repository->getMemberPointsBalance( $memberId );
-		$newBalance = $balance + $points;
-
-		// Get current member to calculate new lifetime points.
 		$memberRow = $this->repository->getMember( $memberId );
 		if ( ! $memberRow ) {
 			throw new \RuntimeException(
@@ -101,7 +97,17 @@ class LoyaltyService {
 			);
 		}
 
-		$newLifetime = ( (int) $memberRow['lifetime_points'] ) + $points;
+		// Use atomic SQL increment to prevent race conditions.
+		$updated = $this->repository->atomicAdjustPoints( $memberId, $points, true );
+
+		if ( ! $updated ) {
+			throw new \RuntimeException(
+				__( 'Failed to update points balance.', 'nozule' )
+			);
+		}
+
+		// Read back the new balance for the transaction log.
+		$newBalance = $this->repository->getMemberPointsBalance( $memberId );
 
 		$transaction = $this->repository->addTransaction( [
 			'member_id'     => $memberId,
@@ -123,8 +129,6 @@ class LoyaltyService {
 				__( 'Failed to record points transaction.', 'nozule' )
 			);
 		}
-
-		$this->repository->updateMemberPoints( $memberId, $newBalance, $newLifetime );
 
 		// Check for tier upgrade.
 		$this->evaluateTierUpgrade( $memberId );
@@ -156,8 +160,12 @@ class LoyaltyService {
 			);
 		}
 
-		$balance = $this->repository->getMemberPointsBalance( $memberId );
-		if ( $balance < $reward->points_cost ) {
+		// Use atomic SQL decrement to prevent race conditions.
+		// atomicAdjustPoints checks balance >= cost before deducting.
+		$updated = $this->repository->atomicAdjustPoints( $memberId, -$reward->points_cost, false );
+
+		if ( ! $updated ) {
+			$balance = $this->repository->getMemberPointsBalance( $memberId );
 			throw new \RuntimeException(
 				sprintf(
 					/* translators: 1: Required points, 2: Current balance */
@@ -168,7 +176,7 @@ class LoyaltyService {
 			);
 		}
 
-		$newBalance = $balance - $reward->points_cost;
+		$newBalance = $this->repository->getMemberPointsBalance( $memberId );
 
 		$transaction = $this->repository->addTransaction( [
 			'member_id'     => $memberId,
@@ -190,12 +198,6 @@ class LoyaltyService {
 				__( 'Failed to process redemption.', 'nozule' )
 			);
 		}
-
-		// Get current lifetime (doesn't change on redeem).
-		$memberRow = $this->repository->getMember( $memberId );
-		$lifetime  = $memberRow ? (int) $memberRow['lifetime_points'] : 0;
-
-		$this->repository->updateMemberPoints( $memberId, $newBalance, $lifetime );
 
 		$this->events->dispatch( 'loyalty/reward_redeemed', $memberId, $rewardId );
 
@@ -221,10 +223,18 @@ class LoyaltyService {
 			);
 		}
 
-		$balance    = $this->repository->getMemberPointsBalance( $memberId );
-		$newBalance = $balance + $points;
+		$memberRow = $this->repository->getMember( $memberId );
+		if ( ! $memberRow ) {
+			throw new \RuntimeException(
+				sprintf( __( 'Loyalty member with ID %d not found.', 'nozule' ), $memberId )
+			);
+		}
 
-		if ( $newBalance < 0 ) {
+		// Use atomic SQL adjustment to prevent race conditions.
+		$updated = $this->repository->atomicAdjustPoints( $memberId, $points, $points > 0 );
+
+		if ( ! $updated ) {
+			$balance = $this->repository->getMemberPointsBalance( $memberId );
 			throw new \RuntimeException(
 				sprintf(
 					/* translators: 1: Current balance */
@@ -234,18 +244,7 @@ class LoyaltyService {
 			);
 		}
 
-		$memberRow = $this->repository->getMember( $memberId );
-		if ( ! $memberRow ) {
-			throw new \RuntimeException(
-				sprintf( __( 'Loyalty member with ID %d not found.', 'nozule' ), $memberId )
-			);
-		}
-
-		// Only increase lifetime if adding points.
-		$newLifetime = (int) $memberRow['lifetime_points'];
-		if ( $points > 0 ) {
-			$newLifetime += $points;
-		}
+		$newBalance = $this->repository->getMemberPointsBalance( $memberId );
 
 		$transaction = $this->repository->addTransaction( [
 			'member_id'     => $memberId,
@@ -261,8 +260,6 @@ class LoyaltyService {
 				__( 'Failed to record points adjustment.', 'nozule' )
 			);
 		}
-
-		$this->repository->updateMemberPoints( $memberId, $newBalance, $newLifetime );
 
 		// Check for tier upgrade if points were added.
 		if ( $points > 0 ) {
