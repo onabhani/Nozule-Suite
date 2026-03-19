@@ -230,19 +230,32 @@ class POSService {
 			return [ 'items' => [ __( 'At least one item is required.', 'nozule' ) ] ];
 		}
 
+		// Collect and validate item IDs upfront with strict type checking.
+		$itemIds = [];
+		foreach ( $items as $entry ) {
+			if ( ! is_array( $entry ) ) {
+				return [ 'items' => [ __( 'Invalid item data.', 'nozule' ) ] ];
+			}
+			$itemId = filter_var( $entry['item_id'] ?? 0, FILTER_VALIDATE_INT, [ 'options' => [ 'min_range' => 1 ] ] );
+			$qty    = filter_var( $entry['quantity'] ?? 0, FILTER_VALIDATE_INT, [ 'options' => [ 'min_range' => 1 ] ] );
+			if ( $itemId === false || $qty === false ) {
+				return [ 'items' => [ __( 'Invalid item data.', 'nozule' ) ] ];
+			}
+			$itemIds[] = $itemId;
+		}
+
+		// Batch-fetch all items in one query instead of N queries.
+		$posItems = $this->repository->getItemsByIds( $itemIds );
+
 		// Validate and resolve each item.
 		$resolvedItems = [];
 		$subtotal      = 0.0;
 
 		foreach ( $items as $entry ) {
-			$itemId  = (int) ( $entry['item_id'] ?? 0 );
-			$qty     = (int) ( $entry['quantity'] ?? 1 );
+			$itemId = (int) $entry['item_id'];
+			$qty    = (int) ( $entry['quantity'] ?? 1 );
 
-			if ( $itemId <= 0 || $qty <= 0 ) {
-				return [ 'items' => [ __( 'Invalid item data.', 'nozule' ) ] ];
-			}
-
-			$posItem = $this->repository->getItem( $itemId );
+			$posItem = $posItems[ $itemId ] ?? null;
 			if ( ! $posItem ) {
 				return [ 'items' => [ sprintf(
 					/* translators: %d: item ID */

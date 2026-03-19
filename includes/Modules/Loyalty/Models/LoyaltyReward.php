@@ -26,11 +26,6 @@ class LoyaltyReward extends BaseModel {
 	public const TYPE_UPGRADE    = 'upgrade';
 	public const TYPE_AMENITY    = 'amenity';
 
-	protected static array $intFields = [
-		'id',
-		'points_cost',
-	];
-
 	protected static array $boolFields = [
 		'is_active',
 	];
@@ -40,6 +35,12 @@ class LoyaltyReward extends BaseModel {
 	 *
 	 * @return string[]
 	 */
+
+	protected static array $casts = [
+		'id' => 'int',
+		'points_cost' => 'int',
+	];
+
 	public static function validTypes(): array {
 		return [
 			self::TYPE_DISCOUNT,
@@ -47,26 +48,5 @@ class LoyaltyReward extends BaseModel {
 			self::TYPE_UPGRADE,
 			self::TYPE_AMENITY,
 		];
-	}
-
-	/**
-	 * Create from a database row with type casting.
-	 */
-	public static function fromRow( object $row ): static {
-		$data = (array) $row;
-
-		foreach ( static::$intFields as $field ) {
-			if ( isset( $data[ $field ] ) ) {
-				$data[ $field ] = (int) $data[ $field ];
-			}
-		}
-
-		foreach ( static::$boolFields as $field ) {
-			if ( isset( $data[ $field ] ) ) {
-				$data[ $field ] = (bool) (int) $data[ $field ];
-			}
-		}
-
-		return new static( $data );
 	}
 }

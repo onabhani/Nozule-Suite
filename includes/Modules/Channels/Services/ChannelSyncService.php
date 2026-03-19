@@ -121,23 +121,31 @@ class ChannelSyncService {
 				];
 			}
 
-			// Fetch inventory data.
+			// Batch-fetch inventory for all mapped room types in one query.
 			$inventoryTable = $this->db->table( 'room_inventory' );
-			$availData      = [];
+			$roomTypeIds    = array_unique( array_map( fn( $m ) => (int) $m->local_room_type_id, $mappings ) );
+			$placeholders   = implode( ',', array_fill( 0, count( $roomTypeIds ), '%d' ) );
+			$params         = array_merge( $roomTypeIds, [ $startDate, $endDate ] );
 
+			$allRows = $this->db->getResults(
+				"SELECT room_type_id, date, available_rooms, stop_sell, min_stay
+				 FROM {$inventoryTable}
+				 WHERE room_type_id IN ({$placeholders})
+				   AND date >= %s
+				   AND date <= %s
+				 ORDER BY room_type_id ASC, date ASC",
+				...$params
+			);
+
+			// Index by room_type_id for fast lookup.
+			$inventoryByType = [];
+			foreach ( $allRows as $row ) {
+				$inventoryByType[ (int) $row->room_type_id ][] = $row;
+			}
+
+			$availData = [];
 			foreach ( $mappings as $mapping ) {
-				$rows = $this->db->getResults(
-					"SELECT date, available_rooms, stop_sell, min_stay
-					 FROM {$inventoryTable}
-					 WHERE room_type_id = %d
-					   AND date >= %s
-					   AND date <= %s
-					 ORDER BY date ASC",
-					$mapping->local_room_type_id,
-					$startDate,
-					$endDate
-				);
-
+				$rows = $inventoryByType[ (int) $mapping->local_room_type_id ] ?? [];
 				foreach ( $rows as $row ) {
 					$availData[] = [
 						'channel_room_id' => $mapping->channel_room_id,
@@ -265,20 +273,30 @@ class ChannelSyncService {
 			);
 			$currency = $currency ?: 'USD';
 
-			foreach ( $mappings as $mapping ) {
-				$rows = $this->db->getResults(
-					"SELECT i.date, i.price_override, rt.base_price
-					 FROM {$inventoryTable} i
-					 JOIN {$roomTypeTable} rt ON rt.id = i.room_type_id
-					 WHERE i.room_type_id = %d
-					   AND i.date >= %s
-					   AND i.date <= %s
-					 ORDER BY i.date ASC",
-					$mapping->local_room_type_id,
-					$startDate,
-					$endDate
-				);
+			// Batch-fetch rates for all mapped room types in one query.
+			$roomTypeIds  = array_unique( array_map( fn( $m ) => (int) $m->local_room_type_id, $mappings ) );
+			$placeholders = implode( ',', array_fill( 0, count( $roomTypeIds ), '%d' ) );
+			$params       = array_merge( $roomTypeIds, [ $startDate, $endDate ] );
 
+			$allRows = $this->db->getResults(
+				"SELECT i.room_type_id, i.date, i.price_override, rt.base_price
+				 FROM {$inventoryTable} i
+				 JOIN {$roomTypeTable} rt ON rt.id = i.room_type_id
+				 WHERE i.room_type_id IN ({$placeholders})
+				   AND i.date >= %s
+				   AND i.date <= %s
+				 ORDER BY i.room_type_id ASC, i.date ASC",
+				...$params
+			);
+
+			// Index by room_type_id.
+			$ratesByType = [];
+			foreach ( $allRows as $row ) {
+				$ratesByType[ (int) $row->room_type_id ][] = $row;
+			}
+
+			foreach ( $mappings as $mapping ) {
+				$rows = $ratesByType[ (int) $mapping->local_room_type_id ] ?? [];
 				foreach ( $rows as $row ) {
 					$price = ! empty( $row->price_override ) ? (float) $row->price_override : (float) $row->base_price;
 
@@ -497,30 +515,103 @@ class ChannelSyncService {
 		$guestId = $this->findOrCreateGuest( $reservation );
 
 		// Create the booking.
-		$now         = current_time( 'mysql', true );
+		$now     = current_time( 'mysql', true );
+		$checkIn = $reservation['check_in'] ?? '';
+		$checkOut = $reservation['check_out'] ?? '';
+
+		// Calculate nights using DST-safe date diff.
+		$nights = 0;
+		if ( $checkIn && $checkOut ) {
+			$nights = (int) ( new \DateTimeImmutable( $checkIn ) )->diff( new \DateTimeImmutable( $checkOut ) )->days;
+		}
+
+		$bookingsTable = $this->db->table( 'bookings' );
+
+		// Map source to valid enum values.
+		$sourceMap = [
+			'booking_com' => 'booking_com',
+			'expedia'     => 'expedia',
+			'airbnb'      => 'airbnb',
+		];
+		$source = $sourceMap[ $channelName ] ?? 'direct';
+
 		$bookingData = [
 			'guest_id'           => $guestId,
 			'room_type_id'       => $localRoomTypeId,
-			'check_in'           => $reservation['check_in'] ?? '',
-			'check_out'          => $reservation['check_out'] ?? '',
-			'num_guests'         => (int) ( $reservation['num_guests'] ?? 1 ),
+			'check_in'           => $checkIn,
+			'check_out'          => $checkOut,
+			'nights'             => $nights,
+			'adults'             => (int) ( $reservation['adults'] ?? $reservation['num_guests'] ?? 1 ),
+			'children'           => (int) ( $reservation['children'] ?? 0 ),
 			'total_amount'       => (float) ( $reservation['total_amount'] ?? 0 ),
+			'paid_amount'        => 0,
 			'currency'           => $reservation['currency'] ?? 'USD',
 			'status'             => 'confirmed',
-			'source'             => $channelName,
+			'source'             => $source,
 			'channel_name'       => $channelName,
 			'channel_booking_id' => $externalId,
-			'special_requests'   => $reservation['special_requests'] ?? '',
+			'special_requests'   => sanitize_textarea_field( $reservation['special_requests'] ?? '' ),
 			'created_at'         => $now,
 			'updated_at'         => $now,
 		];
 
-		$bookingId = $this->db->insert( 'bookings', $bookingData );
+		$this->db->beginTransaction();
 
-		if ( $bookingId === false ) {
+		try {
+			// Generate booking number atomically inside the transaction using FOR UPDATE.
+			$year   = (int) gmdate( 'Y' );
+			$prefix = 'NZL';
+			$maxSeq = $this->db->getVar(
+				"SELECT MAX( CAST( SUBSTRING_INDEX( booking_number, '-', -1 ) AS UNSIGNED ) )
+				 FROM {$bookingsTable}
+				 WHERE booking_number LIKE %s
+				 FOR UPDATE",
+				$prefix . '-' . $year . '-%'
+			);
+			$seq = $maxSeq !== null ? ( (int) $maxSeq + 1 ) : 1;
+			$bookingData['booking_number'] = sprintf( '%s-%04d-%05d', $prefix, $year, $seq );
+
+			$bookingId = $this->db->insert( 'bookings', $bookingData );
+
+			if ( $bookingId === false ) {
+				throw new \RuntimeException( 'Insert failed.' );
+			}
+
+			// Deduct inventory to prevent overbooking.
+			if ( $localRoomTypeId && $checkIn && $checkOut ) {
+				$inventoryTable = $this->db->table( 'room_inventory' );
+				$deducted = $this->db->query(
+					"UPDATE {$inventoryTable}
+					 SET available_rooms = available_rooms - 1,
+					     booked_rooms = booked_rooms + 1,
+					     updated_at = %s
+					 WHERE room_type_id = %d
+					   AND date >= %s
+					   AND date < %s
+					   AND available_rooms >= 1
+					   AND stop_sell = 0",
+					$now,
+					$localRoomTypeId,
+					$checkIn,
+					$checkOut
+				);
+
+				if ( $deducted === false || (int) $deducted < $nights ) {
+					throw new \RuntimeException( sprintf(
+						'Inventory deduction incomplete: expected %d nights, deducted %s.',
+						$nights,
+						$deducted === false ? 'false' : (string) $deducted
+					) );
+				}
+			}
+
+			$this->db->commit();
+		} catch ( \Throwable $e ) {
+			$this->db->rollback();
 			$this->logger->error( 'Failed to create local booking from channel reservation.', [
 				'external_id' => $externalId,
 				'channel'     => $channelName,
+				'error'       => $e->getMessage(),
 			] );
 			return false;
 		}

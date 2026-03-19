@@ -23,31 +23,14 @@ use Nozule\Core\CredentialVault;
 class ChannelConnection extends BaseModel {
 
 	/**
-	 * @var string[]
-	 */
-	protected static array $intFields = [
-		'id',
-		'is_active',
-	];
-
-	/**
-	 * Create from a database row with type casting.
-	 */
-	public static function fromRow( object $row ): static {
-		$data = (array) $row;
-
-		foreach ( static::$intFields as $field ) {
-			if ( isset( $data[ $field ] ) ) {
-				$data[ $field ] = (int) $data[ $field ];
-			}
-		}
-
-		return new static( $data );
-	}
-
-	/**
 	 * Check whether this connection is active.
 	 */
+
+	protected static array $casts = [
+		'id' => 'int',
+		'is_active' => 'int',
+	];
+
 	public function isActive(): bool {
 		return (bool) $this->is_active;
 	}

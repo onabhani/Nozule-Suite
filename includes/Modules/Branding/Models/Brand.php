@@ -27,15 +27,6 @@ use Nozule\Core\BaseModel;
 class Brand extends BaseModel {
 
 	/**
-	 * Fields that should be cast to integers.
-	 *
-	 * @var string[]
-	 */
-	protected static array $intFields = [
-		'id',
-	];
-
-	/**
 	 * Fields that should be cast to booleans.
 	 *
 	 * @var string[]
@@ -54,29 +45,13 @@ class Brand extends BaseModel {
 	public const DEFAULT_TEXT_COLOR      = '#1e293b';
 
 	/**
-	 * Create from a database row with type casting.
-	 */
-	public static function fromRow( object $row ): static {
-		$data = (array) $row;
-
-		foreach ( static::$intFields as $field ) {
-			if ( isset( $data[ $field ] ) ) {
-				$data[ $field ] = (int) $data[ $field ];
-			}
-		}
-
-		foreach ( static::$boolFields as $field ) {
-			if ( isset( $data[ $field ] ) ) {
-				$data[ $field ] = (bool) (int) $data[ $field ];
-			}
-		}
-
-		return new static( $data );
-	}
-
-	/**
 	 * Check whether this brand is the default.
 	 */
+
+	protected static array $casts = [
+		'id' => 'int',
+	];
+
 	public function isDefault(): bool {
 		return (bool) $this->is_default;
 	}

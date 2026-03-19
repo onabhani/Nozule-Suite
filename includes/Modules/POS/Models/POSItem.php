@@ -26,22 +26,20 @@ class POSItem extends BaseModel {
 	public const STATUS_INACTIVE = 'inactive';
 
 	/** @var string[] */
-	protected static array $intFields = [
-		'id',
-		'outlet_id',
-		'sort_order',
-	];
-
 	/** @var string[] */
-	protected static array $floatFields = [
-		'price',
-	];
-
 	/**
 	 * All valid statuses.
 	 *
 	 * @return string[]
 	 */
+
+	protected static array $casts = [
+		'id' => 'int',
+		'outlet_id' => 'int',
+		'sort_order' => 'int',
+		'price' => 'float',
+	];
+
 	public static function validStatuses(): array {
 		return [
 			self::STATUS_ACTIVE,

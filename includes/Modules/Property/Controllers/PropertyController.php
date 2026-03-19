@@ -205,10 +205,31 @@ class PropertyController {
 			'currency', 'status',
 		];
 
+		$urlFields = [ 'website', 'logo_url', 'cover_image_url' ];
+		$emailFields = [ 'email' ];
+		$intFields = [ 'star_rating', 'total_rooms', 'total_floors', 'year_built', 'year_renovated' ];
+		$jsonFields = [ 'photos', 'facilities', 'policies', 'social_links' ];
+
 		$data = [];
 		foreach ( $fields as $field ) {
-			if ( $request->has_param( $field ) ) {
-				$data[ $field ] = $request->get_param( $field );
+			if ( ! $request->has_param( $field ) ) {
+				continue;
+			}
+
+			$value = $request->get_param( $field );
+
+			if ( in_array( $field, $urlFields, true ) ) {
+				$data[ $field ] = esc_url_raw( $value );
+			} elseif ( in_array( $field, $emailFields, true ) ) {
+				$data[ $field ] = sanitize_email( $value );
+			} elseif ( in_array( $field, $intFields, true ) ) {
+				$data[ $field ] = absint( $value );
+			} elseif ( in_array( $field, $jsonFields, true ) ) {
+				$data[ $field ] = is_array( $value ) ? map_deep( $value, 'sanitize_text_field' ) : $value;
+			} elseif ( $field === 'latitude' || $field === 'longitude' ) {
+				$data[ $field ] = (float) $value;
+			} else {
+				$data[ $field ] = sanitize_text_field( $value );
 			}
 		}
 

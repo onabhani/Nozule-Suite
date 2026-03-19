@@ -43,6 +43,30 @@ class AvailabilityService {
 	}
 
 	/**
+	 * Quick inventory-only availability check.
+	 *
+	 * Checks room count and stop-sell only. Does NOT enforce min_stay,
+	 * guest eligibility, or rate plan restrictions — those are handled
+	 * by PricingService::calculateStayPrice() in the full booking flow.
+	 * For complete availability with pricing, use checkAvailability().
+	 *
+	 * @param int    $roomTypeId Room type ID.
+	 * @param string $checkIn    Check-in date (Y-m-d).
+	 * @param string $checkOut   Check-out date (Y-m-d).
+	 * @param int    $quantity   Number of rooms needed (default 1).
+	 * @return bool True if at least $quantity rooms are available on every night.
+	 */
+	public function isAvailable( int $roomTypeId, string $checkIn, string $checkOut, int $quantity = 1 ): bool {
+		if ( $this->inventoryRepository->hasStopSell( $roomTypeId, $checkIn, $checkOut ) ) {
+			return false;
+		}
+
+		$minAvailable = $this->inventoryRepository->getMinAvailability( $roomTypeId, $checkIn, $checkOut );
+
+		return $minAvailable >= $quantity;
+	}
+
+	/**
 	 * Check availability for a date range.
 	 *
 	 * Returns an array of room types that have availability for every night
@@ -71,9 +95,11 @@ class AvailabilityService {
 
 		$nights = (int) $checkInDate->diff( $checkOutDate )->days;
 
-		// Build cache key.
+		// Build cache key. Include property scope to prevent cross-property cache collisions.
+		$propertyId = $this->inventoryRepository->getPropertyFilter();
 		$cacheKey = sprintf(
-			'availability_%s_%s_%d_%d',
+			'availability_%d_%s_%s_%d_%d',
+			$propertyId ?? 0,
 			$checkIn,
 			$checkOut,
 			$guests,
@@ -93,18 +119,27 @@ class AvailabilityService {
 			$roomTypes = $this->roomTypeRepository->getActive();
 		}
 
+		// Filter by guest occupancy first.
+		$eligibleTypes = array_filter(
+			$roomTypes,
+			fn( $rt ) => $rt->max_occupancy >= $guests
+		);
+
+		// Batch-fetch inventory for all eligible room types in one query (P3 fix).
+		$endDateForInventory = ( new \DateTimeImmutable( $checkOut ) )->modify( '-1 day' )->format( 'Y-m-d' );
+		$roomTypeIds = array_map( fn( $rt ) => $rt->id, $eligibleTypes );
+		$inventoryBatch = ! empty( $roomTypeIds )
+			? $this->inventoryRepository->getForDateRangeBatch( $roomTypeIds, $checkIn, $endDateForInventory )
+			: [];
+
 		$results = [];
 
-		foreach ( $roomTypes as $roomType ) {
-			// Filter by guest occupancy.
-			if ( $roomType->max_occupancy < $guests ) {
-				continue;
-			}
+		foreach ( $eligibleTypes as $roomType ) {
+			$inventory = $inventoryBatch[ $roomType->id ] ?? [];
 
-			$availability = $this->getRoomTypeAvailability(
+			$availability = $this->getRoomTypeAvailabilityFromInventory(
 				$roomType,
-				$checkIn,
-				$checkOut,
+				$inventory,
 				$nights,
 				$guests
 			);
@@ -137,6 +172,10 @@ class AvailabilityService {
 	 * This is an atomic operation: either all nights are deducted or none.
 	 * Uses database-level checks to prevent overbooking.
 	 *
+	 * NOTE: This method does NOT manage its own transaction. The caller
+	 * (e.g. BookingService::createBooking) must wrap the call in a
+	 * transaction to ensure atomicity with the booking record creation.
+	 *
 	 * @param int    $roomTypeId Room type ID.
 	 * @param string $checkIn    Check-in date (Y-m-d).
 	 * @param string $checkOut   Check-out date (Y-m-d).
@@ -150,53 +189,71 @@ class AvailabilityService {
 		string $checkOut,
 		int $quantity = 1
 	): bool {
-		$this->inventoryRepository->beginTransaction();
+		$success = $this->inventoryRepository->deductRooms(
+			$roomTypeId,
+			$checkIn,
+			$checkOut,
+			$quantity
+		);
 
-		try {
-			$success = $this->inventoryRepository->deductRooms(
-				$roomTypeId,
-				$checkIn,
-				$checkOut,
-				$quantity
-			);
-
-			if ( ! $success ) {
-				$this->inventoryRepository->rollback();
-				$this->logger->warning( 'Inventory deduction failed - insufficient availability', [
-					'room_type_id' => $roomTypeId,
-					'check_in'     => $checkIn,
-					'check_out'    => $checkOut,
-					'quantity'     => $quantity,
-				] );
-				return false;
-			}
-
-			$this->inventoryRepository->commit();
-
-			// Invalidate availability cache for affected dates.
-			$this->invalidateAvailabilityCache( $checkIn, $checkOut );
-
-			$this->events->dispatch( 'rooms/inventory_deducted', $roomTypeId, $checkIn, $checkOut, $quantity );
-			$this->logger->info( 'Inventory deducted', [
+		if ( ! $success ) {
+			$this->logger->warning( 'Inventory deduction failed - insufficient availability', [
 				'room_type_id' => $roomTypeId,
 				'check_in'     => $checkIn,
 				'check_out'    => $checkOut,
 				'quantity'     => $quantity,
 			] );
-
-			return true;
-		} catch ( \Throwable $e ) {
-			$this->inventoryRepository->rollback();
-			$this->logger->error( 'Inventory deduction error', [
-				'room_type_id' => $roomTypeId,
-				'error'        => $e->getMessage(),
-			] );
 			return false;
 		}
+
+		// NOTE: Side effects (cache, events, logging) are deferred and run
+		// via onInventoryDeducted() after the caller commits the transaction.
+		// This prevents stale cache/events if the transaction rolls back.
+		$this->pendingDeductions[] = [
+			'room_type_id' => $roomTypeId,
+			'check_in'     => $checkIn,
+			'check_out'    => $checkOut,
+			'quantity'     => $quantity,
+		];
+
+		return true;
+	}
+
+	/** @var array Pending deduction side effects to flush after commit. */
+	private array $pendingDeductions = [];
+
+	/** @var array Pending restoration side effects to flush after commit. */
+	private array $pendingRestorations = [];
+
+	/**
+	 * Flush deferred side effects after the caller commits the transaction.
+	 *
+	 * Call this after your transaction commits to invalidate cache,
+	 * dispatch events, and log the inventory changes.
+	 */
+	public function flushPendingSideEffects(): void {
+		foreach ( $this->pendingDeductions as $d ) {
+			$this->invalidateAvailabilityCache( $d['check_in'], $d['check_out'] );
+			$this->events->dispatch( 'rooms/inventory_deducted', $d['room_type_id'], $d['check_in'], $d['check_out'], $d['quantity'] );
+			$this->logger->info( 'Inventory deducted', $d );
+		}
+
+		foreach ( $this->pendingRestorations as $r ) {
+			$this->invalidateAvailabilityCache( $r['check_in'], $r['check_out'] );
+			$this->events->dispatch( 'rooms/inventory_restored', $r['room_type_id'], $r['check_in'], $r['check_out'], $r['quantity'] );
+			$this->logger->info( 'Inventory restored', $r );
+		}
+
+		$this->pendingDeductions  = [];
+		$this->pendingRestorations = [];
 	}
 
 	/**
 	 * Restore inventory when a booking is cancelled or modified.
+	 *
+	 * NOTE: This method does NOT manage its own transaction. The caller
+	 * (e.g. BookingService::cancelBooking) must wrap the call in a
+	 * transaction to ensure atomicity with the booking status change.
 	 *
 	 * @param int    $roomTypeId Room type ID.
 	 * @param string $checkIn    Check-in date (Y-m-d).
@@ -211,49 +268,32 @@ class AvailabilityService {
 		string $checkOut,
 		int $quantity = 1
 	): bool {
-		$this->inventoryRepository->beginTransaction();
+		$success = $this->inventoryRepository->restoreRooms(
+			$roomTypeId,
+			$checkIn,
+			$checkOut,
+			$quantity
+		);
 
-		try {
-			$success = $this->inventoryRepository->restoreRooms(
-				$roomTypeId,
-				$checkIn,
-				$checkOut,
-				$quantity
-			);
-
-			if ( ! $success ) {
-				$this->inventoryRepository->rollback();
-				$this->logger->warning( 'Inventory restoration failed', [
-					'room_type_id' => $roomTypeId,
-					'check_in'     => $checkIn,
-					'check_out'    => $checkOut,
-					'quantity'     => $quantity,
-				] );
-				return false;
-			}
-
-			$this->inventoryRepository->commit();
-
-			// Invalidate availability cache for affected dates.
-			$this->invalidateAvailabilityCache( $checkIn, $checkOut );
-
-			$this->events->dispatch( 'rooms/inventory_restored', $roomTypeId, $checkIn, $checkOut, $quantity );
-			$this->logger->info( 'Inventory restored', [
+		if ( ! $success ) {
+			$this->logger->warning( 'Inventory restoration failed', [
 				'room_type_id' => $roomTypeId,
 				'check_in'     => $checkIn,
 				'check_out'    => $checkOut,
 				'quantity'     => $quantity,
 			] );
-
-			return true;
-		} catch ( \Throwable $e ) {
-			$this->inventoryRepository->rollback();
-			$this->logger->error( 'Inventory restoration error', [
-				'room_type_id' => $roomTypeId,
-				'error'        => $e->getMessage(),
-			] );
 			return false;
 		}
+
+		// Defer side effects until the caller commits the transaction.
+		$this->pendingRestorations[] = [
+			'room_type_id' => $roomTypeId,
+			'check_in'     => $checkIn,
+			'check_out'    => $checkOut,
+			'quantity'     => $quantity,
+		];
+
+		return true;
 	}
 
 	/**
@@ -263,6 +303,9 @@ class AvailabilityService {
 	 * ensures minimum availability across the entire stay.
 	 *
 	 * @return array|null Null if the room type is not available.
+	 */
+	/**
+	 * @deprecated Use getRoomTypeAvailabilityFromInventory() with batch-loaded inventory.
 	 */
 	private function getRoomTypeAvailability(
 		RoomType $roomType,
@@ -274,10 +317,27 @@ class AvailabilityService {
 		$inventory = $this->inventoryRepository->getForDateRange(
 			$roomType->id,
 			$checkIn,
-			// Inventory is checked for nights: check-in up to (but not including) check-out.
 			( new \DateTimeImmutable( $checkOut ) )->modify( '-1 day' )->format( 'Y-m-d' )
 		);
 
+		return $this->getRoomTypeAvailabilityFromInventory( $roomType, $inventory, $nights, $guests );
+	}
+
+	/**
+	 * Evaluate availability for a single room type given pre-loaded inventory.
+	 *
+	 * @param RoomType          $roomType  The room type to evaluate.
+	 * @param RoomInventory[]   $inventory Pre-loaded inventory records for the date range.
+	 * @param int               $nights    Number of nights in the stay.
+	 * @param int               $guests    Number of guests.
+	 * @return array|null Null if the room type is not available.
+	 */
+	private function getRoomTypeAvailabilityFromInventory(
+		RoomType $roomType,
+		array $inventory,
+		int $nights,
+		int $guests
+	): ?array {
 		// Must have inventory records for every night.
 		if ( count( $inventory ) < $nights ) {
 			return null;

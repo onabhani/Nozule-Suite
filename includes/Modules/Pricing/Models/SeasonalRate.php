@@ -38,29 +38,17 @@ class SeasonalRate extends BaseModel {
 	];
 
 	/**
-	 * Fields that should be cast to integers.
-	 *
-	 * @var string[]
-	 */
-	protected static array $intFields = [
-		'id',
-		'room_type_id',
-		'rate_plan_id',
-		'priority',
-	];
-
-	/**
-	 * Fields that should be cast to floats.
-	 *
-	 * @var string[]
-	 */
-	protected static array $floatFields = [
-		'price_modifier',
-	];
-
-	/**
 	 * Create from a database row, decoding JSON fields automatically.
 	 */
+
+	protected static array $casts = [
+		'id' => 'int',
+		'room_type_id' => 'int',
+		'rate_plan_id' => 'int',
+		'priority' => 'int',
+		'price_modifier' => 'float',
+	];
+
 	public static function fromRow( object $row ): static {
 		$data = (array) $row;
 

@@ -125,13 +125,18 @@ class BookingRepository extends BaseRepository {
 	public function getNextSequence( string $prefix, int $year ): int {
 		$table   = $this->tableName();
 		$pattern = $prefix . '-' . $year . '-%';
+		$args    = [ $pattern ];
 
-		$count = (int) $this->db->getVar(
-			"SELECT COUNT(*) FROM {$table} WHERE booking_number LIKE %s",
-			$pattern
-		);
+		// Use MAX to extract the highest sequence number rather than COUNT,
+		// which avoids duplicate numbers when bookings are deleted.
+		$sql = "SELECT MAX( CAST( SUBSTRING_INDEX( booking_number, '-', -1 ) AS UNSIGNED ) )
+			 FROM {$table}
+			 WHERE booking_number LIKE %s";
+		$sql = $this->applyPropertyScope( $sql, $args );
 
-		return $count + 1;
+		$maxSeq = $this->db->getVar( $sql, ...$args );
+
+		return $maxSeq !== null ? ( (int) $maxSeq + 1 ) : 1;
 	}
 
 	// ── CRUD ────────────────────────────────────────────────────────

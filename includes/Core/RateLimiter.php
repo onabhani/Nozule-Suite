@@ -48,7 +48,7 @@ class RateLimiter {
     }
 
     private static function getIdentifier( \WP_REST_Request $request ): string {
-        $remote_addr = $_SERVER['REMOTE_ADDR'] ?? 'unknown';
+        $remote_addr = sanitize_text_field( $_SERVER['REMOTE_ADDR'] ?? 'unknown' );
 
         // Only trust forwarded headers when the direct client is a configured trusted proxy.
         $trusted_proxies = apply_filters( 'nzl_trusted_proxies', [] );

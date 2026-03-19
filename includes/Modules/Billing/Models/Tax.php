@@ -37,30 +37,18 @@ class Tax extends BaseModel {
 	public const APPLIES_SERVICE = 'service';
 
 	/**
-	 * Fields that should be cast to integers.
-	 *
-	 * @var string[]
-	 */
-	protected static array $intFields = [
-		'id',
-		'is_active',
-		'sort_order',
-	];
-
-	/**
-	 * Fields that should be cast to floats.
-	 *
-	 * @var string[]
-	 */
-	protected static array $floatFields = [
-		'rate',
-	];
-
-	/**
 	 * All valid type values.
 	 *
 	 * @return string[]
 	 */
+
+	protected static array $casts = [
+		'id' => 'int',
+		'is_active' => 'int',
+		'sort_order' => 'int',
+		'rate' => 'float',
+	];
+
 	public static function validTypes(): array {
 		return [
 			self::TYPE_PERCENTAGE,
@@ -80,27 +68,6 @@ class Tax extends BaseModel {
 			self::APPLIES_EXTRA,
 			self::APPLIES_SERVICE,
 		];
-	}
-
-	/**
-	 * Create from a database row with type casting.
-	 */
-	public static function fromRow( object $row ): static {
-		$data = (array) $row;
-
-		foreach ( static::$intFields as $field ) {
-			if ( isset( $data[ $field ] ) ) {
-				$data[ $field ] = (int) $data[ $field ];
-			}
-		}
-
-		foreach ( static::$floatFields as $field ) {
-			if ( isset( $data[ $field ] ) ) {
-				$data[ $field ] = (float) $data[ $field ];
-			}
-		}
-
-		return new static( $data );
 	}
 
 	/**

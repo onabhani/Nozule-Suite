@@ -175,6 +175,8 @@ class SSEController {
      * Send an SSE event.
      */
     private function sendEvent( string $type, array $data, int $id ): void {
+        // Sanitize event type to prevent injection into the SSE stream.
+        $type = sanitize_key( $type );
         echo "id: {$id}\n";
         echo "event: {$type}\n";
         echo 'data: ' . wp_json_encode( $data ) . "\n\n";

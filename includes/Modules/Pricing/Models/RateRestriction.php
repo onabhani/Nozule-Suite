@@ -27,19 +27,6 @@ use Nozule\Core\BaseModel;
 class RateRestriction extends BaseModel {
 
 	/**
-	 * Fields that should be cast to integers.
-	 *
-	 * @var string[]
-	 */
-	protected static array $intFields = [
-		'id',
-		'room_type_id',
-		'rate_plan_id',
-		'value',
-		'is_active',
-	];
-
-	/**
 	 * Map of short day names to PHP date('N') ISO day numbers.
 	 *
 	 * @var array<string, int>
@@ -57,21 +44,18 @@ class RateRestriction extends BaseModel {
 	/**
 	 * Create from a database row, casting fields automatically.
 	 */
-	public static function fromRow( object $row ): static {
-		$data = (array) $row;
-
-		foreach ( static::$intFields as $field ) {
-			if ( isset( $data[ $field ] ) ) {
-				$data[ $field ] = (int) $data[ $field ];
-			}
-		}
-
-		return new static( $data );
-	}
-
 	/**
 	 * Check whether this restriction is active.
 	 */
+
+	protected static array $casts = [
+		'id' => 'int',
+		'room_type_id' => 'int',
+		'rate_plan_id' => 'int',
+		'value' => 'int',
+		'is_active' => 'int',
+	];
+
 	public function isActive(): bool {
 		return (int) $this->is_active === 1;
 	}

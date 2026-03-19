@@ -34,27 +34,6 @@ use Nozule\Core\BaseModel;
 class RatePlan extends BaseModel {
 
 	/**
-	 * Fields that should be cast to integers.
-	 *
-	 * @var string[]
-	 */
-	protected static array $intFields = [
-		'id',
-		'room_type_id',
-		'min_stay',
-		'max_stay',
-	];
-
-	/**
-	 * Fields that should be cast to floats.
-	 *
-	 * @var string[]
-	 */
-	protected static array $floatFields = [
-		'price_modifier',
-	];
-
-	/**
 	 * Fields that should be cast to booleans.
 	 *
 	 * @var string[]
@@ -65,35 +44,42 @@ class RatePlan extends BaseModel {
 	];
 
 	/**
-	 * Create from a database row with type casting.
+	 * Check whether this rate plan is currently active.
+	 */
+
+	protected static array $casts = [
+		'id' => 'int',
+		'room_type_id' => 'int',
+		'min_stay' => 'int',
+		'max_stay' => 'int',
+		'modifier_value' => 'float',
+	];
+
+	/**
+	 * Create from a database row, remapping DB column names to model attributes.
+	 *
+	 * DB uses: price_modifier, cancellation_hours, valid_to
+	 * Model uses: modifier_value, cancellation_policy, valid_until
 	 */
 	public static function fromRow( object $row ): static {
 		$data = (array) $row;
 
-		foreach ( static::$intFields as $field ) {
-			if ( isset( $data[ $field ] ) ) {
-				$data[ $field ] = (int) $data[ $field ];
-			}
+		if ( array_key_exists( 'price_modifier', $data ) && ! array_key_exists( 'modifier_value', $data ) ) {
+			$data['modifier_value'] = $data['price_modifier'];
+			unset( $data['price_modifier'] );
 		}
-
-		foreach ( static::$floatFields as $field ) {
-			if ( isset( $data[ $field ] ) ) {
-				$data[ $field ] = (float) $data[ $field ];
-			}
+		if ( array_key_exists( 'cancellation_hours', $data ) && ! array_key_exists( 'cancellation_policy', $data ) ) {
+			$data['cancellation_policy'] = $data['cancellation_hours'];
+			unset( $data['cancellation_hours'] );
 		}
-
-		foreach ( static::$boolFields as $field ) {
-			if ( isset( $data[ $field ] ) ) {
-				$data[ $field ] = (bool) $data[ $field ];
-			}
+		if ( array_key_exists( 'valid_to', $data ) && ! array_key_exists( 'valid_until', $data ) ) {
+			$data['valid_until'] = $data['valid_to'];
+			unset( $data['valid_to'] );
 		}
 
 		return new static( $data );
 	}
 
-	/**
-	 * Check whether this rate plan is currently active.
-	 */
 	public function isActive(): bool {
 		return $this->status === 'active';
 	}

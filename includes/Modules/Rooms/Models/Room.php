@@ -33,6 +33,13 @@ class Room extends BaseModel {
 	 *
 	 * @return string[]
 	 */
+
+	protected static array $casts = [
+		'id' => 'int',
+		'room_type_id' => 'int',
+		'floor' => 'int',
+	];
+
 	public static function validStatuses(): array {
 		return [
 			self::STATUS_AVAILABLE,
@@ -40,30 +47,6 @@ class Room extends BaseModel {
 			self::STATUS_MAINTENANCE,
 			self::STATUS_OUT_OF_ORDER,
 		];
-	}
-
-	/**
-	 * @var string[]
-	 */
-	protected static array $intFields = [
-		'id',
-		'room_type_id',
-		'floor',
-	];
-
-	/**
-	 * Create from a database row with type casting.
-	 */
-	public static function fromRow( object $row ): static {
-		$data = (array) $row;
-
-		foreach ( static::$intFields as $field ) {
-			if ( isset( $data[ $field ] ) ) {
-				$data[ $field ] = (int) $data[ $field ];
-			}
-		}
-
-		return new static( $data );
 	}
 
 	/**

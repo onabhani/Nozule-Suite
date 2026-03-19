@@ -201,7 +201,7 @@ class FolioService {
 		// For discounts and payments, store as positive amounts.
 		if ( in_array( $category, [ FolioItem::CAT_DISCOUNT, FolioItem::CAT_PAYMENT ], true ) ) {
 			$subtotal = abs( $subtotal );
-			$total    = abs( $subtotal );
+			$total    = abs( $subtotal + $taxTotal );
 		}
 
 		$itemData = [

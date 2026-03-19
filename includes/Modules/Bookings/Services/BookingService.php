@@ -79,12 +79,12 @@ class BookingService {
 		// 2. Calculate nights.
 		$checkIn  = $data['check_in'];
 		$checkOut = $data['check_out'];
-		$nights   = (int) ( ( strtotime( $checkOut ) - strtotime( $checkIn ) ) / DAY_IN_SECONDS );
+		$nights   = (int) ( new \DateTimeImmutable( $checkIn ) )->diff( new \DateTimeImmutable( $checkOut ) )->days;
 
 		// 3. Check availability.
 		$roomTypeId = (int) $data['room_type_id'];
 
-		if ( ! $this->availabilityService->isAvailable( $roomTypeId, $checkIn, $checkOut ) ) {
+		if ( ! $this->availabilityService->isAvailable( $roomTypeId, $checkIn, $checkOut, 1 ) ) {
 			throw new NoAvailabilityException(
 				__( 'No rooms available for the selected room type and dates.', 'nozule' )
 			);
@@ -96,7 +96,7 @@ class BookingService {
 		// 5. Calculate pricing.
 		$adults   = (int) ( $data['adults'] ?? 1 );
 		$children = (int) ( $data['children'] ?? 0 );
-		$pricing  = $this->pricingService->calculate( $roomTypeId, $checkIn, $checkOut, $adults, $children );
+		$pricing  = $this->pricingService->calculateStayPrice( $roomTypeId, $checkIn, $checkOut, $adults, $children );
 
 		// 6. Generate booking number.
 		$bookingNumber = $this->generateBookingNumber();
@@ -124,7 +124,7 @@ class BookingService {
 				'children'            => $children,
 				'status'              => Booking::STATUS_PENDING,
 				'source'              => $data['source'] ?? Booking::SOURCE_DIRECT,
-				'total_amount'        => $pricing['total'],
+				'total_amount'        => $pricing->total,
 				'paid_amount'         => 0,
 				'currency'            => $currency,
 				'special_requests'    => sanitize_textarea_field( $data['special_requests'] ?? '' ),
@@ -138,7 +138,7 @@ class BookingService {
 			}
 
 			// Increment guest booking count.
-			$this->guestService->incrementBookingCount( $guestId, $pricing['total'] );
+			$this->guestService->incrementBookingCount( $guestId, $pricing->total );
 
 			// Audit log.
 			$this->bookingRepository->createLog( [
@@ -146,7 +146,7 @@ class BookingService {
 				'action'     => BookingLog::ACTION_CREATED,
 				'details'    => wp_json_encode( [
 					'source'       => $booking->source,
-					'total_amount' => $pricing['total'],
+					'total_amount' => $pricing->total,
 					'nights'       => $nights,
 				] ),
 				'user_id'    => get_current_user_id() ?: null,
@@ -154,6 +154,7 @@ class BookingService {
 			] );
 
 			$this->bookingRepository->commit();
+			$this->availabilityService->flushPendingSideEffects();
 		} catch ( \Throwable $e ) {
 			$this->bookingRepository->rollback();
 			throw $e;
@@ -268,6 +269,7 @@ class BookingService {
 			] );
 
 			$this->bookingRepository->commit();
+			$this->availabilityService->flushPendingSideEffects();
 		} catch ( \Throwable $e ) {
 			$this->bookingRepository->rollback();
 			throw $e;
@@ -423,12 +425,18 @@ class BookingService {
 	 */
 	public function markNoShows(): int {
 		$candidates = $this->bookingRepository->getNoShowCandidates();
-		$count      = 0;
 
-		foreach ( $candidates as $booking ) {
-			$this->bookingRepository->beginTransaction();
+		if ( empty( $candidates ) ) {
+			return 0;
+		}
 
-			try {
+		$count = 0;
+
+		// Use a single transaction for all no-shows instead of one per booking.
+		$this->bookingRepository->beginTransaction();
+
+		try {
+			foreach ( $candidates as $booking ) {
 				// Restore inventory.
 				$this->availabilityService->restoreInventory(
 					$booking->room_type_id,
@@ -448,20 +456,23 @@ class BookingService {
 					'ip_address' => null,
 				] );
 
-				$this->bookingRepository->commit();
-
-				$this->notificationService->queue( $booking, 'booking_no_show' );
-
-				do_action( 'nozule/booking/no_show', $booking->id );
-
 				$count++;
-			} catch ( \Throwable $e ) {
-				$this->bookingRepository->rollback();
-				// Log and continue with next booking.
-				do_action( 'nozule/log', 'error', 'Failed to mark no-show for booking ' . $booking->id, [
-					'error' => $e->getMessage(),
-				] );
 			}
+
+			$this->bookingRepository->commit();
+			$this->availabilityService->flushPendingSideEffects();
+		} catch ( \Throwable $e ) {
+			$this->bookingRepository->rollback();
+			do_action( 'nozule/log', 'error', 'Failed to mark no-shows', [
+				'error' => $e->getMessage(),
+			] );
+			return 0;
+		}
+
+		// Queue notifications outside the transaction (non-critical).
+		foreach ( $candidates as $booking ) {
+			$this->notificationService->queue( $booking, 'booking_no_show' );
+			do_action( 'nozule/booking/no_show', $booking->id );
 		}
 
 		return $count;
@@ -592,22 +603,25 @@ class BookingService {
 	 * then falls back to REMOTE_ADDR.
 	 */
 	public static function getClientIP(): string {
-		// Cloudflare passes the real IP via this header.
-		if ( ! empty( $_SERVER['HTTP_CF_CONNECTING_IP'] ) ) {
-			return sanitize_text_field( wp_unslash( $_SERVER['HTTP_CF_CONNECTING_IP'] ) );
+		$remoteAddr = sanitize_text_field( wp_unslash( $_SERVER['REMOTE_ADDR'] ?? '' ) );
+
+		// Only trust proxy/CDN headers when the direct client is a configured trusted proxy.
+		$trustedProxies = apply_filters( 'nzl_trusted_proxies', [] );
+		$isTrustedProxy = is_array( $trustedProxies ) && in_array( $remoteAddr, $trustedProxies, true );
+
+		if ( $isTrustedProxy ) {
+			// Cloudflare passes the real IP via this header.
+			if ( ! empty( $_SERVER['HTTP_CF_CONNECTING_IP'] ) ) {
+				return sanitize_text_field( wp_unslash( $_SERVER['HTTP_CF_CONNECTING_IP'] ) );
+			}
+
+			// Standard proxy header (may contain multiple IPs, take the first).
+			if ( ! empty( $_SERVER['HTTP_X_FORWARDED_FOR'] ) ) {
+				$ips = explode( ',', sanitize_text_field( wp_unslash( $_SERVER['HTTP_X_FORWARDED_FOR'] ) ) );
+				return trim( $ips[0] );
+			}
 		}
 
-		// Standard proxy header (may contain multiple IPs, take the first).
-		if ( ! empty( $_SERVER['HTTP_X_FORWARDED_FOR'] ) ) {
-			$ips = explode( ',', sanitize_text_field( wp_unslash( $_SERVER['HTTP_X_FORWARDED_FOR'] ) ) );
-			return trim( $ips[0] );
-		}
-
-		// Direct connection.
-		if ( ! empty( $_SERVER['REMOTE_ADDR'] ) ) {
-			return sanitize_text_field( wp_unslash( $_SERVER['REMOTE_ADDR'] ) );
-		}
-
-		return '';
+		return $remoteAddr;
 	}
 }

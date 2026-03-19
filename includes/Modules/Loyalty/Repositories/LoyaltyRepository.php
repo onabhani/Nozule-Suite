@@ -337,6 +337,53 @@ class LoyaltyRepository {
 	}
 
 	/**
+	 * Atomically adjust points balance and lifetime points using SQL arithmetic.
+	 *
+	 * Prevents race conditions from concurrent read-modify-write patterns.
+	 *
+	 * @param int  $memberId        Loyalty member ID.
+	 * @param int  $pointsDelta     Points to add (positive) or subtract (negative).
+	 * @param bool $affectsLifetime Whether positive deltas also increase lifetime_points.
+	 * @return bool True if the update succeeded.
+	 */
+	public function atomicAdjustPoints( int $memberId, int $pointsDelta, bool $affectsLifetime = true ): bool {
+		$table = $this->db->table( 'loyalty_members' );
+		$now   = current_time( 'mysql' );
+
+		$lifetimeClause = '';
+		if ( $affectsLifetime && $pointsDelta > 0 ) {
+			$lifetimeClause = ', lifetime_points = lifetime_points + ' . absint( $pointsDelta );
+		}
+
+		if ( $pointsDelta >= 0 ) {
+			$result = $this->db->query(
+				"UPDATE {$table}
+				 SET points_balance = points_balance + %d{$lifetimeClause},
+				     updated_at = %s
+				 WHERE id = %d",
+				$pointsDelta,
+				$now,
+				$memberId
+			);
+		} else {
+			// Prevent negative balance.
+			$result = $this->db->query(
+				"UPDATE {$table}
+				 SET points_balance = GREATEST( points_balance + %d, 0 ){$lifetimeClause},
+				     updated_at = %s
+				 WHERE id = %d
+				   AND points_balance >= %d",
+				$pointsDelta,
+				$now,
+				$memberId,
+				abs( $pointsDelta )
+			);
+		}
+
+		return $result !== false && (int) $result > 0;
+	}
+
+	/**
 	 * Update a member's tier.
 	 */
 	public function updateMemberTier( int $memberId, int $tierId ): bool {

@@ -6,6 +6,7 @@ use Nozule\Core\Database;
 use Nozule\Core\Logger;
 use Nozule\Modules\Audit\Models\NightAudit;
 use Nozule\Modules\Audit\Repositories\NightAuditRepository;
+use Nozule\Modules\Rooms\Services\AvailabilityService;
 
 /**
  * Night Audit business-logic service.
@@ -20,15 +21,18 @@ class NightAuditService {
 	private NightAuditRepository $repository;
 	private Database $db;
 	private Logger $logger;
+	private AvailabilityService $availabilityService;
 
 	public function __construct(
 		NightAuditRepository $repository,
 		Database $db,
-		Logger $logger
+		Logger $logger,
+		AvailabilityService $availabilityService
 	) {
-		$this->repository = $repository;
-		$this->db         = $db;
-		$this->logger     = $logger;
+		$this->repository          = $repository;
+		$this->db                  = $db;
+		$this->logger              = $logger;
+		$this->availabilityService = $availabilityService;
 	}
 
 	// ── Main Audit Process ─────────────────────────────────────────
@@ -43,11 +47,29 @@ class NightAuditService {
 	 * @param string|null $date Audit date in Y-m-d format. Defaults to yesterday.
 	 * @return NightAudit|array NightAudit model on success, error array on failure.
 	 */
+	/** @var int|null Property ID to scope audit queries to. */
+	private ?int $propertyId = null;
+
+	/**
+	 * Scope this audit run to a specific property.
+	 */
+	public function forProperty( int $propertyId ): static {
+		$clone = clone $this;
+		$clone->propertyId = $propertyId;
+		return $clone;
+	}
+
 	public function runAudit( ?string $date = null ): NightAudit|array {
 		$date = $date ?: wp_date( 'Y-m-d', strtotime( '-1 day' ) );
 
-		// 1. Check if audit already exists for this date.
-		if ( $this->repository->hasAuditForDate( $date ) ) {
+		// Scope the repository to the active property so existence checks
+		// and writes are per-property (prevents one property blocking another).
+		$repo = $this->propertyId !== null
+			? $this->repository->scopeToProperty( $this->propertyId )
+			: $this->repository;
+
+		// 1. Check if audit already exists for this date (property-scoped).
+		if ( $repo->hasAuditForDate( $date ) ) {
 			return [
 				'error'   => true,
 				'message' => sprintf(
@@ -58,7 +80,7 @@ class NightAuditService {
 			];
 		}
 
-		$this->repository->beginTransaction();
+		$repo->beginTransaction();
 
 		try {
 			// 2. Count rooms by status from nzl_rooms.
@@ -97,8 +119,8 @@ class NightAuditService {
 				? round( $roomRevenue / $totalRooms, 2 )
 				: 0.00;
 
-			// 10. Insert the night audit record.
-			$audit = $this->repository->create( [
+			// 10. Insert the night audit record (property-scoped).
+			$auditData = [
 				'audit_date'        => $date,
 				'total_rooms'       => $totalRooms,
 				'occupied_rooms'    => $occupiedRooms,
@@ -122,7 +144,13 @@ class NightAuditService {
 				'run_by'            => get_current_user_id() ?: null,
 				'run_at'            => current_time( 'mysql' ),
 				'status'            => NightAudit::STATUS_COMPLETED,
-			] );
+			];
+
+			if ( $this->propertyId !== null ) {
+				$auditData['property_id'] = $this->propertyId;
+			}
+
+			$audit = $repo->create( $auditData );
 
 			if ( ! $audit ) {
 				throw new \RuntimeException(
@@ -134,9 +162,9 @@ class NightAuditService {
 			//     AND status = confirmed → status = no_show.
 			$this->markNoShowBookings( $date );
 
-			$this->repository->commit();
+			$repo->commit();
 		} catch ( \Throwable $e ) {
-			$this->repository->rollback();
+			$repo->rollback();
 
 			$this->logger->error( 'Night audit failed', [
 				'date'  => $date,
@@ -285,19 +313,34 @@ class NightAuditService {
 	// ── Private Data Gathering ─────────────────────────────────────
 
 	/**
-	 * Get room status counts from the rooms table.
+	 * Build a property_id SQL condition fragment.
 	 *
-	 * @return object{total_rooms: int, out_of_order_rooms: int}
+	 * @param string $alias Table alias (e.g. 'b' or empty string).
+	 * @param array  $args  Bind-parameter array (modified by reference).
+	 * @return string SQL fragment like " AND b.property_id = %d" or empty string.
 	 */
+	private function propertyCondition( string $alias, array &$args ): string {
+		if ( $this->propertyId === null ) {
+			return '';
+		}
+		$prefix = $alias ? "{$alias}." : '';
+		$args[] = $this->propertyId;
+		return " AND {$prefix}property_id = %d";
+	}
+
 	private function getRoomStats(): object {
 		$rooms = $this->db->table( 'rooms' );
+		$args  = [];
+		$propCond = $this->propertyCondition( '', $args );
 
-		$row = $this->db->getRow(
-			"SELECT
+		$sql = "SELECT
 				COUNT(*) AS total_rooms,
 				SUM( CASE WHEN status IN ('out_of_order', 'maintenance') THEN 1 ELSE 0 END ) AS out_of_order_rooms
-			FROM {$rooms}"
-		);
+			FROM {$rooms} WHERE 1=1{$propCond}";
+
+		$row = empty( $args )
+			? $this->db->getRow( $sql )
+			: $this->db->getRow( $sql, ...$args );
 
 		return (object) [
 			'total_rooms'       => $row ? (int) $row->total_rooms : 0,
@@ -313,65 +356,33 @@ class NightAuditService {
 	 */
 	private function getBookingStats( string $date ): object {
 		$bookings = $this->db->table( 'bookings' );
+		$nextDate = ( new \DateTimeImmutable( $date ) )->modify( '+1 day' )->format( 'Y-m-d' );
 
-		// Arrivals: check_in = date AND status IN (confirmed, checked_in).
-		$arrivals = (int) $this->db->getVar(
-			"SELECT COUNT(*) FROM {$bookings}
-			 WHERE check_in = %s
-			   AND status IN ('confirmed', 'checked_in')",
-			$date
-		);
+		// Single aggregate query instead of 6 separate queries (perf fix P8).
+		// Uses range comparison instead of DATE() to preserve index use (perf fix P4).
+		$args = [];
+		$propCond = $this->propertyCondition( '', $args );
 
-		// Departures: check_out = date AND status = checked_out.
-		$departures = (int) $this->db->getVar(
-			"SELECT COUNT(*) FROM {$bookings}
-			 WHERE check_out = %s
-			   AND status = 'checked_out'",
-			$date
-		);
-
-		// No-shows: check_in = date AND status IN (confirmed) — not yet checked in.
-		$noShows = (int) $this->db->getVar(
-			"SELECT COUNT(*) FROM {$bookings}
-			 WHERE check_in = %s
-			   AND status = 'confirmed'",
-			$date
-		);
-
-		// Walk-ins: source = walk_in AND check_in = date.
-		$walkIns = (int) $this->db->getVar(
-			"SELECT COUNT(*) FROM {$bookings}
-			 WHERE check_in = %s
-			   AND source = 'walk_in'
-			   AND status NOT IN ('cancelled', 'no_show')",
-			$date
-		);
-
-		// Cancellations: cancelled on this date.
-		$cancellations = (int) $this->db->getVar(
-			"SELECT COUNT(*) FROM {$bookings}
-			 WHERE DATE( cancelled_at ) = %s
-			   AND status = 'cancelled'",
-			$date
-		);
-
-		// Total guests: sum of adults + children for bookings spanning the date.
-		$totalGuests = (int) $this->db->getVar(
-			"SELECT COALESCE( SUM( adults + children ), 0 ) FROM {$bookings}
-			 WHERE check_in <= %s
-			   AND check_out > %s
-			   AND status IN ('confirmed', 'checked_in')",
-			$date,
-			$date
+		$row = $this->db->getRow(
+			"SELECT
+				SUM( CASE WHEN check_in = %s AND status IN ('confirmed', 'checked_in') THEN 1 ELSE 0 END ) AS arrivals,
+				SUM( CASE WHEN check_out = %s AND status = 'checked_out' THEN 1 ELSE 0 END ) AS departures,
+				SUM( CASE WHEN check_in = %s AND status = 'confirmed' THEN 1 ELSE 0 END ) AS no_shows,
+				SUM( CASE WHEN check_in = %s AND source = 'walk_in' AND status NOT IN ('cancelled', 'no_show') THEN 1 ELSE 0 END ) AS walk_ins,
+				SUM( CASE WHEN cancelled_at >= %s AND cancelled_at < %s AND status = 'cancelled' THEN 1 ELSE 0 END ) AS cancellations,
+				COALESCE( SUM( CASE WHEN check_in <= %s AND check_out > %s AND status IN ('confirmed', 'checked_in') THEN adults + children ELSE 0 END ), 0 ) AS total_guests
+			FROM {$bookings}
+			WHERE 1=1{$propCond}",
+			$date, $date, $date, $date, $date, $nextDate, $date, $date, ...$args
 		);
 
 		return (object) [
-			'arrivals'      => $arrivals,
-			'departures'    => $departures,
-			'no_shows'      => $noShows,
-			'walk_ins'      => $walkIns,
-			'cancellations' => $cancellations,
-			'total_guests'  => $totalGuests,
+			'arrivals'      => $row ? (int) $row->arrivals : 0,
+			'departures'    => $row ? (int) $row->departures : 0,
+			'no_shows'      => $row ? (int) $row->no_shows : 0,
+			'walk_ins'      => $row ? (int) $row->walk_ins : 0,
+			'cancellations' => $row ? (int) $row->cancellations : 0,
+			'total_guests'  => $row ? (int) $row->total_guests : 0,
 		];
 	}
 
@@ -386,14 +397,15 @@ class NightAuditService {
 	 */
 	private function getOccupiedRooms( string $date ): int {
 		$bookings = $this->db->table( 'bookings' );
+		$args     = [ $date, $date ];
+		$propCond = $this->propertyCondition( '', $args );
 
 		return (int) $this->db->getVar(
 			"SELECT COUNT(*) FROM {$bookings}
 			 WHERE check_in <= %s
 			   AND check_out > %s
-			   AND status IN ('confirmed', 'checked_in')",
-			$date,
-			$date
+			   AND status IN ('confirmed', 'checked_in'){$propCond}",
+			...$args
 		);
 	}
 
@@ -405,6 +417,9 @@ class NightAuditService {
 	 */
 	private function getPaymentStats( string $date ): object {
 		$payments = $this->db->table( 'payments' );
+		$nextDate = ( new \DateTimeImmutable( $date ) )->modify( '+1 day' )->format( 'Y-m-d' );
+		$args     = [ $date, $nextDate ];
+		$propCond = $this->propertyCondition( '', $args );
 
 		$row = $this->db->getRow(
 			"SELECT
@@ -412,9 +427,10 @@ class NightAuditService {
 				COALESCE( SUM( CASE WHEN method = 'credit_card' THEN amount ELSE 0 END ), 0 ) AS card_collected,
 				COALESCE( SUM( CASE WHEN method NOT IN ('cash', 'credit_card') THEN amount ELSE 0 END ), 0 ) AS other_collected
 			FROM {$payments}
-			WHERE DATE( payment_date ) = %s
-			  AND status = 'completed'",
-			$date
+			WHERE payment_date >= %s
+			  AND payment_date < %s
+			  AND status = 'completed'{$propCond}",
+			...$args
 		);
 
 		return (object) [
@@ -436,6 +452,8 @@ class NightAuditService {
 	private function getRevenueStats( string $date ): object {
 		$folios     = $this->db->table( 'folios' );
 		$folioItems = $this->db->table( 'folio_items' );
+		$args       = [ $date ];
+		$propCond   = $this->propertyCondition( 'f', $args );
 
 		$row = $this->db->getRow(
 			"SELECT
@@ -443,8 +461,8 @@ class NightAuditService {
 				COALESCE( SUM( CASE WHEN fi.category NOT IN ('room_charge', 'discount', 'payment') THEN fi.total ELSE 0 END ), 0 ) AS other_revenue
 			FROM {$folioItems} fi
 			INNER JOIN {$folios} f ON f.id = fi.folio_id
-			WHERE fi.date = %s",
-			$date
+			WHERE fi.date = %s{$propCond}",
+			...$args
 		);
 
 		return (object) [
@@ -465,20 +483,73 @@ class NightAuditService {
 	private function markNoShowBookings( string $date ): int {
 		$bookings = $this->db->table( 'bookings' );
 
-		$updated = $this->db->query(
-			"UPDATE {$bookings}
-			 SET status = 'no_show',
-			     updated_at = %s
+		// Build property-scoped candidate query.
+		$args     = [ $date ];
+		$propCond = $this->propertyCondition( '', $args );
+
+		$candidates = $this->db->getResults(
+			"SELECT id, room_type_id, check_in, check_out FROM {$bookings}
 			 WHERE check_in = %s
-			   AND status = 'confirmed'",
-			current_time( 'mysql' ),
-			$date
+			   AND status = 'confirmed'{$propCond}",
+			...$args
 		);
 
-		$count = (int) $updated;
+		if ( empty( $candidates ) ) {
+			return 0;
+		}
+
+		$count = 0;
+
+		foreach ( $candidates as $booking ) {
+			// Each no-show is atomic: UPDATE must succeed before inventory restore.
+			$this->db->beginTransaction();
+
+			try {
+				// Conditionally update status — affected rows confirms it was still 'confirmed'.
+				$affected = $this->db->query(
+					"UPDATE {$bookings}
+					 SET status = 'no_show',
+					     updated_at = %s
+					 WHERE id = %d
+					   AND status = 'confirmed'",
+					current_time( 'mysql' ),
+					(int) $booking->id
+				);
+
+				if ( (int) $affected === 0 ) {
+					// Another process already changed the status — skip.
+					$this->db->rollback();
+					continue;
+				}
+
+				// Restore inventory only after confirming the status transition.
+				$restored = $this->availabilityService->restoreInventory(
+					(int) $booking->room_type_id,
+					$booking->check_in,
+					$booking->check_out
+				);
+
+				if ( ! $restored ) {
+					$this->db->rollback();
+					$this->logger->warning( 'Inventory restore failed for no-show booking', [
+						'booking_id' => $booking->id,
+					] );
+					continue;
+				}
+
+				$this->db->commit();
+				$count++;
+			} catch ( \Throwable $e ) {
+				$this->db->rollback();
+				$this->logger->warning( 'Failed to mark no-show for booking', [
+					'booking_id' => $booking->id,
+					'error'      => $e->getMessage(),
+				] );
+			}
+		}
 
 		if ( $count > 0 ) {
-			$this->logger->info( 'Marked bookings as no-show', [
+			$this->logger->info( 'Marked bookings as no-show with inventory restored', [
 				'date'  => $date,
 				'count' => $count,
 			] );

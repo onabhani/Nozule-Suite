@@ -251,12 +251,22 @@ class AdminBookingController {
 
 		$data = $request->get_params();
 
-		// Remove non-updatable fields.
+		// Remove non-updatable fields. Status changes must go through
+		// dedicated endpoints (confirm, cancel, check-in, check-out) to
+		// ensure state machine logic, inventory updates, and audit logs.
 		unset(
 			$data['id'],
 			$data['booking_number'],
+			$data['status'],
+			$data['property_id'],
 			$data['created_at'],
-			$data['created_by']
+			$data['created_by'],
+			$data['confirmed_at'],
+			$data['checked_in_at'],
+			$data['checked_out_at'],
+			$data['cancelled_at'],
+			$data['cancelled_by'],
+			$data['cancellation_reason']
 		);
 
 		if ( ! $this->validator->validateUpdate( $data ) ) {
@@ -275,7 +285,7 @@ class AdminBookingController {
 		$checkIn  = $data['check_in'] ?? $booking->check_in;
 		$checkOut = $data['check_out'] ?? $booking->check_out;
 		if ( isset( $data['check_in'] ) || isset( $data['check_out'] ) ) {
-			$data['nights'] = (int) ( ( strtotime( $checkOut ) - strtotime( $checkIn ) ) / DAY_IN_SECONDS );
+			$data['nights'] = (int) ( new \DateTimeImmutable( $checkIn ) )->diff( new \DateTimeImmutable( $checkOut ) )->days;
 		}
 
 		$success = $this->bookingRepository->update( $id, $data );

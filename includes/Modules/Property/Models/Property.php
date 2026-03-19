@@ -69,25 +69,11 @@ class Property extends BaseModel {
 	 *
 	 * @var string[]
 	 */
-	protected static array $intFields = [
-		'id',
-		'star_rating',
-		'total_rooms',
-		'total_floors',
-		'year_built',
-		'year_renovated',
-	];
-
 	/**
 	 * Fields cast to float.
 	 *
 	 * @var string[]
 	 */
-	protected static array $floatFields = [
-		'latitude',
-		'longitude',
-	];
-
 	/**
 	 * Fields decoded from JSON.
 	 *
@@ -105,6 +91,22 @@ class Property extends BaseModel {
 	 *
 	 * @return string[]
 	 */
+
+	protected static array $casts = [
+		'id' => 'int',
+		'star_rating' => 'int',
+		'total_rooms' => 'int',
+		'total_floors' => 'int',
+		'year_built' => 'int',
+		'year_renovated' => 'int',
+		'latitude' => 'float',
+		'longitude' => 'float',
+		'photos' => 'array',
+		'facilities' => 'array',
+		'policies' => 'array',
+		'social_links' => 'array',
+	];
+
 	public static function validTypes(): array {
 		return [
 			self::TYPE_HOTEL,
@@ -128,34 +130,6 @@ class Property extends BaseModel {
 			self::STATUS_ACTIVE,
 			self::STATUS_INACTIVE,
 		];
-	}
-
-	/**
-	 * Create from a database row with type casting.
-	 */
-	public static function fromRow( object $row ): static {
-		$data = (array) $row;
-
-		foreach ( static::$intFields as $field ) {
-			if ( isset( $data[ $field ] ) ) {
-				$data[ $field ] = (int) $data[ $field ];
-			}
-		}
-
-		foreach ( static::$floatFields as $field ) {
-			if ( isset( $data[ $field ] ) && $data[ $field ] !== null ) {
-				$data[ $field ] = (float) $data[ $field ];
-			}
-		}
-
-		foreach ( static::$jsonFields as $field ) {
-			if ( isset( $data[ $field ] ) && is_string( $data[ $field ] ) ) {
-				$decoded = json_decode( $data[ $field ], true );
-				$data[ $field ] = is_array( $decoded ) ? $decoded : [];
-			}
-		}
-
-		return new static( $data );
 	}
 
 	/**

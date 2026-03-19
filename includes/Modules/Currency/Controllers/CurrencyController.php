@@ -292,11 +292,24 @@ class CurrencyController {
 			'decimal_places', 'exchange_rate', 'is_default', 'is_active', 'sort_order',
 		];
 
+		$intFields   = [ 'decimal_places', 'is_default', 'is_active', 'sort_order' ];
+		$floatFields = [ 'exchange_rate' ];
+
 		$data = [];
 		foreach ( $fields as $field ) {
 			$value = $request->get_param( $field );
-			if ( $value !== null ) {
-				$data[ $field ] = $value;
+			if ( $value === null ) {
+				continue;
+			}
+
+			if ( in_array( $field, $intFields, true ) ) {
+				$data[ $field ] = absint( $value );
+			} elseif ( in_array( $field, $floatFields, true ) ) {
+				$data[ $field ] = (float) $value;
+			} elseif ( $field === 'code' ) {
+				$data[ $field ] = strtoupper( sanitize_text_field( $value ) );
+			} else {
+				$data[ $field ] = sanitize_text_field( $value );
 			}
 		}
 

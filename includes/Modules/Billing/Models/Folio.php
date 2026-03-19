@@ -38,64 +38,31 @@ class Folio extends BaseModel {
 	public const STATUS_VOID   = 'void';
 
 	/**
-	 * Fields that should be cast to integers.
-	 *
-	 * @var string[]
-	 */
-	protected static array $intFields = [
-		'id',
-		'booking_id',
-		'group_booking_id',
-		'guest_id',
-		'closed_by',
-		'created_by',
-	];
-
-	/**
-	 * Fields that should be cast to floats.
-	 *
-	 * @var string[]
-	 */
-	protected static array $floatFields = [
-		'subtotal',
-		'tax_total',
-		'discount_total',
-		'grand_total',
-		'paid_amount',
-	];
-
-	/**
 	 * All valid status values.
 	 *
 	 * @return string[]
 	 */
+
+	protected static array $casts = [
+		'id' => 'int',
+		'booking_id' => 'int',
+		'group_booking_id' => 'int',
+		'guest_id' => 'int',
+		'closed_by' => 'int',
+		'created_by' => 'int',
+		'subtotal' => 'float',
+		'tax_total' => 'float',
+		'discount_total' => 'float',
+		'grand_total' => 'float',
+		'paid_amount' => 'float',
+	];
+
 	public static function validStatuses(): array {
 		return [
 			self::STATUS_OPEN,
 			self::STATUS_CLOSED,
 			self::STATUS_VOID,
 		];
-	}
-
-	/**
-	 * Create from a database row with type casting.
-	 */
-	public static function fromRow( object $row ): static {
-		$data = (array) $row;
-
-		foreach ( static::$intFields as $field ) {
-			if ( isset( $data[ $field ] ) ) {
-				$data[ $field ] = (int) $data[ $field ];
-			}
-		}
-
-		foreach ( static::$floatFields as $field ) {
-			if ( isset( $data[ $field ] ) ) {
-				$data[ $field ] = (float) $data[ $field ];
-			}
-		}
-
-		return new static( $data );
 	}
 
 	/**

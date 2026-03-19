@@ -126,6 +126,17 @@ class PricingService {
 			$checkOut
 		);
 
+		// Pre-load inventory for the entire range to avoid N+1 in resolveBasePrice().
+		$inventoryRecords = $this->inventoryRepo->getForDateRange(
+			$roomTypeId,
+			$checkIn,
+			( new \DateTimeImmutable( $checkOut ) )->modify( '-1 day' )->format( 'Y-m-d' )
+		);
+		$inventoryByDate = [];
+		foreach ( $inventoryRecords as $inv ) {
+			$inventoryByDate[ $inv->date ] = $inv;
+		}
+
 		// Calculate nightly rates.
 		$nightlyRates = [];
 		$subtotal     = 0.0;
@@ -135,7 +146,8 @@ class PricingService {
 				$roomTypeId,
 				$ratePlan,
 				$date,
-				$seasonalRates
+				$seasonalRates,
+				$inventoryByDate[ $date ] ?? null
 			);
 			$nightlyRates[ $date ] = $rate;
 			$subtotal             += $rate;
@@ -239,10 +251,11 @@ class PricingService {
 		int      $roomTypeId,
 		RatePlan $ratePlan,
 		string   $date,
-		array    $seasonalRates = []
+		array    $seasonalRates = [],
+		?object  $preloadedInventory = null
 	): float {
 		// Step 1: Resolve base price.
-		$basePrice = $this->resolveBasePrice( $roomTypeId, $date );
+		$basePrice = $this->resolveBasePrice( $roomTypeId, $date, $preloadedInventory );
 
 		// Step 2: Apply rate plan modifier.
 		$price = $this->applyModifier(
@@ -423,8 +436,8 @@ class PricingService {
 	 * @param string $date       The date (Y-m-d).
 	 * @return float The base price.
 	 */
-	private function resolveBasePrice( int $roomTypeId, string $date ): float {
-		$inventory = $this->inventoryRepo->getForDate( $roomTypeId, $date );
+	private function resolveBasePrice( int $roomTypeId, string $date, ?object $preloadedInventory = null ): float {
+		$inventory = $preloadedInventory ?? $this->inventoryRepo->getForDate( $roomTypeId, $date );
 
 		if ( $inventory !== null ) {
 			$override = $inventory->getEffectivePrice();

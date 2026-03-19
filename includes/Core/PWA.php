@@ -68,7 +68,7 @@ class PWA {
      * Registration only runs when the browser supports the Service Worker API.
      */
     public function registerServiceWorker(): void {
-        $sw_url = esc_url( NZL_PLUGIN_URL . 'assets/pwa/service-worker.js' );
+        $sw_url = esc_js( esc_url( NZL_PLUGIN_URL . 'assets/pwa/service-worker.js' ) );
         ?>
         <script>
         (function () {

@@ -96,6 +96,7 @@ class SettingsManager {
         }
 
         $this->cache[ $key ] = $value;
+        wp_cache_delete( 'autoload_settings', 'nozule' );
 
         return $result !== false;
     }
@@ -109,6 +110,7 @@ class SettingsManager {
         $option_key = $parts[1] ?? $parts[0];
 
         unset( $this->cache[ $key ] );
+        wp_cache_delete( 'autoload_settings', 'nozule' );
 
         return $this->db->delete( 'settings', [
             'option_group' => $group,
@@ -162,7 +164,7 @@ class SettingsManager {
             try {
                 return CredentialVault::encrypt( [ 'value' => $value ] );
             } catch ( \RuntimeException $e ) {
-                error_log( 'SettingsManager: CredentialVault encrypt failed for ' . $key . ': ' . $e->getMessage() );
+                error_log( 'SettingsManager: CredentialVault encrypt failed for a sensitive key: ' . $e->getMessage() );
             }
         }
 
@@ -199,6 +201,13 @@ class SettingsManager {
         }
         $this->loaded = true;
 
+        // Try persistent cache first to avoid DB query on every request.
+        $cached = wp_cache_get( 'autoload_settings', 'nozule' );
+        if ( is_array( $cached ) ) {
+            $this->cache = $cached;
+            return;
+        }
+
         $table   = $this->db->table( 'settings' );
         $results = $this->db->getResults(
             "SELECT option_group, option_key, option_value FROM {$table} WHERE autoload = 1"
@@ -208,5 +217,8 @@ class SettingsManager {
             $key     = $row->option_group . '.' . $row->option_key;
             $this->cache[ $key ] = $this->maybeDecrypt( $key, $row->option_value );
         }
+
+        // Cache for 60 seconds; invalidated on set/delete.
+        wp_cache_set( 'autoload_settings', $this->cache, 'nozule', 60 );
     }
 }

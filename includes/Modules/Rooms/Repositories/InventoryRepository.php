@@ -79,6 +79,32 @@ class InventoryRepository extends BaseRepository {
 	public function deductRooms( int $roomTypeId, string $startDate, string $endDate, int $quantity = 1 ): bool {
 		$table = $this->tableName();
 		$now   = current_time( 'mysql', true );
+		$expectedNights = $this->countNightsBetween( $startDate, $endDate );
+
+		// Lock the inventory rows to prevent concurrent bookings from reading
+		// stale availability (TOCTOU race condition). The caller MUST have an
+		// active transaction for FOR UPDATE to be effective.
+		$locked = $this->db->getResults(
+			"SELECT id, available_rooms FROM {$table}
+			 WHERE room_type_id = %d
+			   AND date >= %s
+			   AND date < %s
+			 FOR UPDATE",
+			$roomTypeId,
+			$startDate,
+			$endDate
+		);
+
+		// Verify we have inventory records for every night and all have enough rooms.
+		if ( count( $locked ) < $expectedNights ) {
+			return false;
+		}
+
+		foreach ( $locked as $row ) {
+			if ( (int) $row->available_rooms < $quantity ) {
+				return false;
+			}
+		}
 
 		$result = $this->db->query(
 			"UPDATE {$table}
@@ -98,9 +124,6 @@ class InventoryRepository extends BaseRepository {
 			$endDate,
 			$quantity
 		);
-
-		// Verify that every night in the range was updated.
-		$expectedNights = $this->countNightsBetween( $startDate, $endDate );
 
 		return $result !== false && (int) $result === $expectedNights;
 	}
@@ -191,36 +214,95 @@ class InventoryRepository extends BaseRepository {
 		$now     = current_time( 'mysql', true );
 		$created = 0;
 
+		// Batch-fetch all existing dates in one query instead of N queries.
+		$existingRecords = $this->getForDateRange( $roomTypeId, $startDate, $endDate );
+		$existingDates   = [];
+		foreach ( $existingRecords as $record ) {
+			$existingDates[ $record->date ] = true;
+		}
+
+		// Collect missing dates for batch insert.
 		$current = new \DateTimeImmutable( $startDate );
 		$end     = new \DateTimeImmutable( $endDate );
+		$missing = [];
 
 		while ( $current <= $end ) {
-			$dateStr  = $current->format( 'Y-m-d' );
-			$existing = $this->getForDate( $roomTypeId, $dateStr );
-
-			if ( ! $existing ) {
-				$id = $this->db->insert( $this->table, [
-					'room_type_id'    => $roomTypeId,
-					'date'            => $dateStr,
-					'total_rooms'     => $totalRooms,
-					'available_rooms' => $totalRooms,
-					'booked_rooms'    => 0,
-					'price_override'  => null,
-					'stop_sell'       => 0,
-					'min_stay'        => 1,
-					'created_at'      => $now,
-					'updated_at'      => $now,
-				] );
-
-				if ( $id !== false ) {
-					$created++;
-				}
+			$dateStr = $current->format( 'Y-m-d' );
+			if ( ! isset( $existingDates[ $dateStr ] ) ) {
+				$missing[] = $dateStr;
 			}
-
 			$current = $current->modify( '+1 day' );
 		}
 
+		if ( empty( $missing ) ) {
+			return 0;
+		}
+
+		// Batch insert in chunks to avoid overly long queries.
+		$chunks = array_chunk( $missing, 50 );
+
+		foreach ( $chunks as $chunk ) {
+			$values     = [];
+			$placeholders = [];
+
+			foreach ( $chunk as $dateStr ) {
+				$placeholders[] = '(%d, %s, %d, %d, 0, NULL, 0, 1, %s, %s)';
+				$values[]       = $roomTypeId;
+				$values[]       = $dateStr;
+				$values[]       = $totalRooms;
+				$values[]       = $totalRooms;
+				$values[]       = $now;
+				$values[]       = $now;
+			}
+
+			$sql = "INSERT INTO {$table}
+				(room_type_id, date, total_rooms, available_rooms, booked_rooms, price_override, stop_sell, min_stay, created_at, updated_at)
+				VALUES " . implode( ', ', $placeholders );
+
+			$result = $this->db->query( $sql, ...$values );
+
+			if ( $result !== false ) {
+				$created += (int) $result;
+			}
+		}
+
 		return $created;
+	}
+
+	/**
+	 * Get inventory for multiple room types across a date range in one query.
+	 *
+	 * Returns results grouped by room_type_id for efficient batch processing.
+	 *
+	 * @param int[]  $roomTypeIds Room type IDs.
+	 * @param string $startDate   Start date (Y-m-d).
+	 * @param string $endDate     End date (Y-m-d).
+	 * @return array<int, RoomInventory[]> Keyed by room_type_id.
+	 */
+	public function getForDateRangeBatch( array $roomTypeIds, string $startDate, string $endDate ): array {
+		if ( empty( $roomTypeIds ) ) {
+			return [];
+		}
+
+		$table        = $this->tableName();
+		$placeholders = implode( ',', array_fill( 0, count( $roomTypeIds ), '%d' ) );
+		$params       = array_merge( $roomTypeIds, [ $startDate, $endDate ] );
+
+		$rows = $this->db->getResults(
+			"SELECT * FROM {$table}
+			 WHERE room_type_id IN ({$placeholders})
+			   AND date >= %s
+			   AND date <= %s
+			 ORDER BY room_type_id ASC, date ASC",
+			...$params
+		);
+
+		$grouped = [];
+		foreach ( RoomInventory::fromRows( $rows ) as $inv ) {
+			$grouped[ $inv->room_type_id ][] = $inv;
+		}
+
+		return $grouped;
 	}
 
 	/**
