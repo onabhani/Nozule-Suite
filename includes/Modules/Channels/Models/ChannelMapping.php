@@ -55,6 +55,12 @@ class ChannelMapping extends BaseModel {
     /**
      * Create from a database row with type casting.
      */
+
+	protected static array $casts = [
+		'id' => 'int',
+		'room_type_id' => 'int',
+	];
+
     public static function fromRow( object $row ): static {
         $data = (array) $row;
 

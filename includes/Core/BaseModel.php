@@ -14,10 +14,24 @@ class BaseModel {
     }
 
     /**
-     * Fill attributes from an array.
+     * Fill attributes from an array, applying type casts if defined.
+     *
+     * Child classes may declare a static $casts array mapping field names
+     * to types ('int', 'float', 'bool'). When present, non-null values
+     * are automatically cast during fill.
      */
     public function fill( array $attributes ): static {
+        $casts = property_exists( static::class, 'casts' ) ? static::$casts : [];
+
         foreach ( $attributes as $key => $value ) {
+            if ( $value !== null && isset( $casts[ $key ] ) ) {
+                $value = match ( $casts[ $key ] ) {
+                    'int'   => (int) $value,
+                    'float' => (float) $value,
+                    'bool'  => (bool) $value,
+                    default => $value,
+                };
+            }
             $this->attributes[ $key ] = $value;
         }
         return $this;

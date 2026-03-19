@@ -15,6 +15,9 @@ abstract class BaseRepository {
     /** Model class name. */
     protected string $model;
 
+    /** Whether to auto-manage created_at / updated_at columns. */
+    protected bool $timestamps = true;
+
     /** When set, queries are scoped to this property. */
     protected ?int $propertyFilter = null;
 
@@ -105,6 +108,12 @@ abstract class BaseRepository {
      * @return BaseModel|false
      */
     public function create( array $data ) {
+        if ( $this->timestamps ) {
+            $now = current_time( 'mysql', true );
+            $data['created_at'] = $data['created_at'] ?? $now;
+            $data['updated_at'] = $data['updated_at'] ?? $now;
+        }
+
         $id = $this->db->insert( $this->table, $data );
         if ( $id === false ) {
             return false;
@@ -116,6 +125,10 @@ abstract class BaseRepository {
      * Update a record by ID.
      */
     public function update( int $id, array $data ): bool {
+        if ( $this->timestamps ) {
+            $data['updated_at'] = current_time( 'mysql', true );
+        }
+
         return $this->db->update( $this->table, $data, [ 'id' => $id ] ) !== false;
     }
 

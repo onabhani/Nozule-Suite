@@ -49,18 +49,19 @@ class HousekeepingTask extends BaseModel {
 	// ── Type Casting ────────────────────────────────────────────────
 
 	/** @var string[] */
-	protected static array $intFields = [
-		'id',
-		'room_id',
-		'assigned_to',
-		'created_by',
-	];
-
 	/**
 	 * All valid status values.
 	 *
 	 * @return string[]
 	 */
+
+	protected static array $casts = [
+		'id' => 'int',
+		'room_id' => 'int',
+		'assigned_to' => 'int',
+		'created_by' => 'int',
+	];
+
 	public static function validStatuses(): array {
 		return [
 			self::STATUS_DIRTY,
@@ -97,21 +98,6 @@ class HousekeepingTask extends BaseModel {
 			self::TYPE_INSPECTION,
 			self::TYPE_TURNDOWN,
 		];
-	}
-
-	/**
-	 * Create from a database row with type casting.
-	 */
-	public static function fromRow( object $row ): static {
-		$data = (array) $row;
-
-		foreach ( static::$intFields as $field ) {
-			if ( isset( $data[ $field ] ) ) {
-				$data[ $field ] = (int) $data[ $field ];
-			}
-		}
-
-		return new static( $data );
 	}
 
 	// ── Status Helpers ──────────────────────────────────────────────

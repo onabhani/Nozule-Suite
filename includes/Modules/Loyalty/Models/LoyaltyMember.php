@@ -17,17 +17,18 @@ use Nozule\Core\BaseModel;
  */
 class LoyaltyMember extends BaseModel {
 
-	protected static array $intFields = [
-		'id',
-		'guest_id',
-		'tier_id',
-		'points_balance',
-		'lifetime_points',
-	];
-
 	/**
 	 * Create from a database row with type casting.
 	 */
+
+	protected static array $casts = [
+		'id' => 'int',
+		'guest_id' => 'int',
+		'tier_id' => 'int',
+		'points_balance' => 'int',
+		'lifetime_points' => 'int',
+	];
+
 	public static function fromRow( object $row ): static {
 		$data = (array) $row;
 

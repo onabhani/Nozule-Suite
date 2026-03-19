@@ -38,30 +38,6 @@ class FolioItem extends BaseModel {
 	public const CAT_PAYMENT        = 'payment';
 
 	/**
-	 * Fields that should be cast to integers.
-	 *
-	 * @var string[]
-	 */
-	protected static array $intFields = [
-		'id',
-		'folio_id',
-		'quantity',
-		'posted_by',
-	];
-
-	/**
-	 * Fields that should be cast to floats.
-	 *
-	 * @var string[]
-	 */
-	protected static array $floatFields = [
-		'unit_price',
-		'subtotal',
-		'tax_total',
-		'total',
-	];
-
-	/**
 	 * Fields that are stored as JSON in the database.
 	 *
 	 * @var string[]
@@ -75,6 +51,18 @@ class FolioItem extends BaseModel {
 	 *
 	 * @return string[]
 	 */
+
+	protected static array $casts = [
+		'id' => 'int',
+		'folio_id' => 'int',
+		'quantity' => 'int',
+		'posted_by' => 'int',
+		'unit_price' => 'float',
+		'subtotal' => 'float',
+		'tax_total' => 'float',
+		'total' => 'float',
+	];
+
 	public static function validCategories(): array {
 		return [
 			self::CAT_ROOM_CHARGE,

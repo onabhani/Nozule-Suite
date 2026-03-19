@@ -52,49 +52,19 @@ class DowRule extends BaseModel {
 	];
 
 	/**
-	 * Fields that should be cast to integers.
-	 *
-	 * @var string[]
-	 */
-	protected static array $intFields = [
-		'id',
-		'room_type_id',
-		'day_of_week',
-	];
-
-	/**
-	 * Fields that should be cast to floats.
-	 *
-	 * @var string[]
-	 */
-	protected static array $floatFields = [
-		'modifier_value',
-	];
-
-	/**
 	 * Create from a database row, casting types automatically.
 	 */
-	public static function fromRow( object $row ): static {
-		$data = (array) $row;
-
-		foreach ( static::$intFields as $field ) {
-			if ( isset( $data[ $field ] ) ) {
-				$data[ $field ] = (int) $data[ $field ];
-			}
-		}
-
-		foreach ( static::$floatFields as $field ) {
-			if ( isset( $data[ $field ] ) ) {
-				$data[ $field ] = (float) $data[ $field ];
-			}
-		}
-
-		return new static( $data );
-	}
-
 	/**
 	 * Convert to array for database storage.
 	 */
+
+	protected static array $casts = [
+		'id' => 'int',
+		'room_type_id' => 'int',
+		'day_of_week' => 'int',
+		'modifier_value' => 'float',
+	];
+
 	public function toArray(): array {
 		return parent::toArray();
 	}

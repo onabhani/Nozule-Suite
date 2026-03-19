@@ -40,31 +40,6 @@ class PromoCode extends BaseModel {
 	public const TYPE_FIXED      = 'fixed';
 
 	/**
-	 * Fields that should be cast to integers.
-	 *
-	 * @var string[]
-	 */
-	protected static array $intFields = [
-		'id',
-		'max_uses',
-		'used_count',
-		'per_guest_limit',
-		'min_nights',
-		'created_by',
-	];
-
-	/**
-	 * Fields that should be cast to floats.
-	 *
-	 * @var string[]
-	 */
-	protected static array $floatFields = [
-		'discount_value',
-		'min_amount',
-		'max_discount',
-	];
-
-	/**
 	 * Fields that should be cast to booleans.
 	 *
 	 * @var string[]
@@ -78,6 +53,19 @@ class PromoCode extends BaseModel {
 	 *
 	 * @return string[]
 	 */
+
+	protected static array $casts = [
+		'id' => 'int',
+		'max_uses' => 'int',
+		'used_count' => 'int',
+		'per_guest_limit' => 'int',
+		'min_nights' => 'int',
+		'created_by' => 'int',
+		'discount_value' => 'float',
+		'min_amount' => 'float',
+		'max_discount' => 'float',
+	];
+
 	public static function validTypes(): array {
 		return [
 			self::TYPE_PERCENTAGE,
@@ -88,41 +76,6 @@ class PromoCode extends BaseModel {
 	/**
 	 * Create from a database row with type casting and JSON decoding.
 	 */
-	public static function fromRow( object $row ): static {
-		$data = (array) $row;
-
-		foreach ( static::$intFields as $field ) {
-			if ( isset( $data[ $field ] ) ) {
-				$data[ $field ] = (int) $data[ $field ];
-			}
-		}
-
-		foreach ( static::$floatFields as $field ) {
-			if ( isset( $data[ $field ] ) ) {
-				$data[ $field ] = (float) $data[ $field ];
-			}
-		}
-
-		foreach ( static::$boolFields as $field ) {
-			if ( isset( $data[ $field ] ) ) {
-				$data[ $field ] = (bool) (int) $data[ $field ];
-			}
-		}
-
-		// Decode JSON fields.
-		if ( isset( $data['applicable_room_types'] ) && is_string( $data['applicable_room_types'] ) ) {
-			$decoded = json_decode( $data['applicable_room_types'], true );
-			$data['applicable_room_types'] = is_array( $decoded ) ? $decoded : [];
-		}
-
-		if ( isset( $data['applicable_sources'] ) && is_string( $data['applicable_sources'] ) ) {
-			$decoded = json_decode( $data['applicable_sources'], true );
-			$data['applicable_sources'] = is_array( $decoded ) ? $decoded : [];
-		}
-
-		return new static( $data );
-	}
-
 	/**
 	 * Convert to array with JSON encoding for storage-compatible fields.
 	 */

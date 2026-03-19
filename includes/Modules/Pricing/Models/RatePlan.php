@@ -34,27 +34,6 @@ use Nozule\Core\BaseModel;
 class RatePlan extends BaseModel {
 
 	/**
-	 * Fields that should be cast to integers.
-	 *
-	 * @var string[]
-	 */
-	protected static array $intFields = [
-		'id',
-		'room_type_id',
-		'min_stay',
-		'max_stay',
-	];
-
-	/**
-	 * Fields that should be cast to floats.
-	 *
-	 * @var string[]
-	 */
-	protected static array $floatFields = [
-		'price_modifier',
-	];
-
-	/**
 	 * Fields that should be cast to booleans.
 	 *
 	 * @var string[]
@@ -65,35 +44,17 @@ class RatePlan extends BaseModel {
 	];
 
 	/**
-	 * Create from a database row with type casting.
-	 */
-	public static function fromRow( object $row ): static {
-		$data = (array) $row;
-
-		foreach ( static::$intFields as $field ) {
-			if ( isset( $data[ $field ] ) ) {
-				$data[ $field ] = (int) $data[ $field ];
-			}
-		}
-
-		foreach ( static::$floatFields as $field ) {
-			if ( isset( $data[ $field ] ) ) {
-				$data[ $field ] = (float) $data[ $field ];
-			}
-		}
-
-		foreach ( static::$boolFields as $field ) {
-			if ( isset( $data[ $field ] ) ) {
-				$data[ $field ] = (bool) $data[ $field ];
-			}
-		}
-
-		return new static( $data );
-	}
-
-	/**
 	 * Check whether this rate plan is currently active.
 	 */
+
+	protected static array $casts = [
+		'id' => 'int',
+		'room_type_id' => 'int',
+		'min_stay' => 'int',
+		'max_stay' => 'int',
+		'price_modifier' => 'float',
+	];
+
 	public function isActive(): bool {
 		return $this->status === 'active';
 	}

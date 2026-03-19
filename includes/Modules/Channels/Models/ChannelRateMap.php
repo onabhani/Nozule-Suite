@@ -23,33 +23,16 @@ use Nozule\Core\BaseModel;
 class ChannelRateMap extends BaseModel {
 
 	/**
-	 * @var string[]
-	 */
-	protected static array $intFields = [
-		'id',
-		'local_room_type_id',
-		'local_rate_plan_id',
-		'is_active',
-	];
-
-	/**
-	 * Create from a database row with type casting.
-	 */
-	public static function fromRow( object $row ): static {
-		$data = (array) $row;
-
-		foreach ( static::$intFields as $field ) {
-			if ( isset( $data[ $field ] ) ) {
-				$data[ $field ] = (int) $data[ $field ];
-			}
-		}
-
-		return new static( $data );
-	}
-
-	/**
 	 * Check whether this mapping is active.
 	 */
+
+	protected static array $casts = [
+		'id' => 'int',
+		'local_room_type_id' => 'int',
+		'local_rate_plan_id' => 'int',
+		'is_active' => 'int',
+	];
+
 	public function isActive(): bool {
 		return (bool) $this->is_active;
 	}

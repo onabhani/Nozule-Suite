@@ -50,31 +50,14 @@ class ChannelSyncLog extends BaseModel {
 	const TYPE_RESERVATIONS = 'reservations';
 
 	/**
-	 * @var string[]
-	 */
-	protected static array $intFields = [
-		'id',
-		'records_processed',
-	];
-
-	/**
-	 * Create from a database row with type casting.
-	 */
-	public static function fromRow( object $row ): static {
-		$data = (array) $row;
-
-		foreach ( static::$intFields as $field ) {
-			if ( isset( $data[ $field ] ) ) {
-				$data[ $field ] = (int) $data[ $field ];
-			}
-		}
-
-		return new static( $data );
-	}
-
-	/**
 	 * Check whether this log entry represents a successful sync.
 	 */
+
+	protected static array $casts = [
+		'id' => 'int',
+		'records_processed' => 'int',
+	];
+
 	public function isSuccess(): bool {
 		return $this->status === self::STATUS_SUCCESS;
 	}

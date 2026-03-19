@@ -27,59 +27,24 @@ class RoomInventory extends BaseModel {
 	/**
 	 * @var string[]
 	 */
-	protected static array $intFields = [
-		'id',
-		'room_type_id',
-		'total_rooms',
-		'available_rooms',
-		'booked_rooms',
-		'min_stay',
-	];
-
-	/**
-	 * @var string[]
-	 */
-	protected static array $floatFields = [
-		'price_override',
-	];
-
-	/**
-	 * @var string[]
-	 */
 	protected static array $boolFields = [
 		'stop_sell',
 	];
 
 	/**
-	 * Create from a database row with type casting.
-	 */
-	public static function fromRow( object $row ): static {
-		$data = (array) $row;
-
-		foreach ( static::$intFields as $field ) {
-			if ( isset( $data[ $field ] ) ) {
-				$data[ $field ] = (int) $data[ $field ];
-			}
-		}
-
-		foreach ( static::$floatFields as $field ) {
-			if ( isset( $data[ $field ] ) && $data[ $field ] !== null ) {
-				$data[ $field ] = (float) $data[ $field ];
-			}
-		}
-
-		foreach ( static::$boolFields as $field ) {
-			if ( isset( $data[ $field ] ) ) {
-				$data[ $field ] = (bool) $data[ $field ];
-			}
-		}
-
-		return new static( $data );
-	}
-
-	/**
 	 * Check whether rooms are available on this date.
 	 */
+
+	protected static array $casts = [
+		'id' => 'int',
+		'room_type_id' => 'int',
+		'total_rooms' => 'int',
+		'available_rooms' => 'int',
+		'booked_rooms' => 'int',
+		'min_stay' => 'int',
+		'price_override' => 'float',
+	];
+
 	public function hasAvailability(): bool {
 		return $this->available_rooms > 0 && ! $this->stop_sell;
 	}

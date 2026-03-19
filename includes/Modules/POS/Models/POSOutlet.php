@@ -35,16 +35,17 @@ class POSOutlet extends BaseModel {
 	public const STATUS_INACTIVE = 'inactive';
 
 	/** @var string[] */
-	protected static array $intFields = [
-		'id',
-		'sort_order',
-	];
-
 	/**
 	 * All valid outlet types.
 	 *
 	 * @return string[]
 	 */
+
+	protected static array $casts = [
+		'id' => 'int',
+		'sort_order' => 'int',
+	];
+
 	public static function validTypes(): array {
 		return [
 			self::TYPE_RESTAURANT,

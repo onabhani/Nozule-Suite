@@ -39,31 +39,19 @@ class RoomType extends BaseModel {
 	];
 
 	/**
-	 * Fields that should be cast to integers.
-	 *
-	 * @var string[]
-	 */
-	protected static array $intFields = [
-		'id',
-		'max_occupancy',
-		'base_occupancy',
-		'sort_order',
-	];
-
-	/**
-	 * Fields that should be cast to floats.
-	 *
-	 * @var string[]
-	 */
-	protected static array $floatFields = [
-		'base_price',
-		'extra_adult_price',
-		'extra_child_price',
-	];
-
-	/**
 	 * Create from a database row, decoding JSON fields automatically.
 	 */
+
+	protected static array $casts = [
+		'id' => 'int',
+		'max_occupancy' => 'int',
+		'base_occupancy' => 'int',
+		'sort_order' => 'int',
+		'base_price' => 'float',
+		'extra_adult_price' => 'float',
+		'extra_child_price' => 'float',
+	];
+
 	public static function fromRow( object $row ): static {
 		$data = (array) $row;
 

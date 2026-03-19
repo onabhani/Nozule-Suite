@@ -35,55 +35,32 @@ class POSOrder extends BaseModel {
 	public const STATUS_CANCELLED = 'cancelled';
 
 	/** @var string[] */
-	protected static array $intFields = [
-		'id',
-		'outlet_id',
-		'booking_id',
-		'guest_id',
-		'items_count',
-		'folio_item_id',
-		'created_by',
-	];
-
 	/** @var string[] */
-	protected static array $floatFields = [
-		'subtotal',
-		'tax_total',
-		'total',
-	];
-
 	/**
 	 * All valid status values.
 	 *
 	 * @return string[]
 	 */
+
+	protected static array $casts = [
+		'id' => 'int',
+		'outlet_id' => 'int',
+		'booking_id' => 'int',
+		'guest_id' => 'int',
+		'items_count' => 'int',
+		'folio_item_id' => 'int',
+		'created_by' => 'int',
+		'subtotal' => 'float',
+		'tax_total' => 'float',
+		'total' => 'float',
+	];
+
 	public static function validStatuses(): array {
 		return [
 			self::STATUS_OPEN,
 			self::STATUS_POSTED,
 			self::STATUS_CANCELLED,
 		];
-	}
-
-	/**
-	 * Create from a database row with type casting.
-	 */
-	public static function fromRow( object $row ): static {
-		$data = (array) $row;
-
-		foreach ( static::$intFields as $field ) {
-			if ( isset( $data[ $field ] ) ) {
-				$data[ $field ] = (int) $data[ $field ];
-			}
-		}
-
-		foreach ( static::$floatFields as $field ) {
-			if ( isset( $data[ $field ] ) ) {
-				$data[ $field ] = (float) $data[ $field ];
-			}
-		}
-
-		return new static( $data );
 	}
 
 	/**
