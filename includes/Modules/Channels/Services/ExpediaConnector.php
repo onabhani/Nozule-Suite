@@ -2,161 +2,125 @@
 
 namespace Nozule\Modules\Channels\Services;
 
+use Nozule\Core\Logger;
+use Nozule\Core\Plugin;
 use Nozule\Modules\Channels\Models\SyncResult;
 
 /**
- * Expedia channel connector.
+ * Expedia (EQC) channel connector.
  *
- * Placeholder implementation for the Expedia EQC (Expedia QuickConnect) /
- * Expedia Partner Solutions API. Each method contains the contract
- * signature and returns stub data. Replace the method bodies with real
- * API calls once Expedia partner credentials are available.
+ * Thin adapter that maps the AbstractChannelConnector contract to
+ * ExpediaApiClient (which handles XML building, HTTP, and parsing).
  */
 class ExpediaConnector extends AbstractChannelConnector {
 
-    /**
-     * {@inheritdoc}
-     */
+    private ?ExpediaApiClient $client = null;
+
     public function getChannelName(): string {
         return 'expedia';
     }
 
-    /**
-     * {@inheritdoc}
-     */
     public function getChannelLabel(): string {
         return 'Expedia';
     }
 
-    /**
-     * {@inheritdoc}
-     */
+    private function client(): ?ExpediaApiClient {
+        if ( $this->client instanceof ExpediaApiClient ) {
+            return $this->client;
+        }
+
+        $propertyId = (string) $this->getConfigValue( 'property_id', '' );
+        $username   = (string) $this->getConfigValue( 'username', $this->getConfigValue( 'api_key', '' ) );
+        $password   = (string) $this->getConfigValue( 'password', $this->getConfigValue( 'api_secret', '' ) );
+
+        if ( $propertyId === '' || $username === '' || $password === '' ) {
+            return null;
+        }
+
+        $logger = Plugin::getInstance()->container()->get( Logger::class );
+        $client = new ExpediaApiClient( $logger );
+        $client->setCredentials( $propertyId, $username, $password );
+
+        $endpoint = (string) $this->getConfigValue( 'api_endpoint', '' );
+        if ( $endpoint !== '' ) {
+            $client->setBaseUrl( $endpoint );
+        } elseif ( ! empty( $this->getConfigValue( 'use_sandbox', false ) ) ) {
+            $client->setBaseUrl( ExpediaApiClient::SANDBOX_BASE_URL );
+        }
+
+        $this->client = $client;
+        return $this->client;
+    }
+
     public function pushAvailability( array $inventory ): SyncResult {
-        $apiKey     = $this->getConfigValue( 'api_key', '' );
-        $propertyId = $this->getConfigValue( 'property_id', '' );
-
-        if ( empty( $apiKey ) || empty( $propertyId ) ) {
-            return SyncResult::failure(
-                __( 'Expedia API key and property ID are required.', 'nozule' )
-            );
+        $client = $this->client();
+        if ( ! $client ) {
+            return SyncResult::failure( __( 'Expedia credentials are not configured.', 'nozule' ) );
         }
 
-        // TODO: Implement Expedia AR (Avail/Rate) update request.
-        // Map each $inventory item to an Expedia AvailRateUpdate and
-        // push via the EQC endpoint.
+        $result = $client->pushAvailability( $inventory );
 
-        return SyncResult::success(
-            sprintf(
-                __( 'Availability sync to Expedia is not yet implemented. %d items queued.', 'nozule' ),
-                count( $inventory )
-            ),
-            0
-        );
+        return $result['success']
+            ? SyncResult::success( $result['message'], $result['records_processed'] )
+            : SyncResult::failure( $result['message'] );
     }
 
-    /**
-     * {@inheritdoc}
-     */
     public function pushRates( array $rates ): SyncResult {
-        $apiKey     = $this->getConfigValue( 'api_key', '' );
-        $propertyId = $this->getConfigValue( 'property_id', '' );
-
-        if ( empty( $apiKey ) || empty( $propertyId ) ) {
-            return SyncResult::failure(
-                __( 'Expedia API key and property ID are required.', 'nozule' )
-            );
+        $client = $this->client();
+        if ( ! $client ) {
+            return SyncResult::failure( __( 'Expedia credentials are not configured.', 'nozule' ) );
         }
 
-        // TODO: Implement Expedia rate update request via EQC.
+        $result = $client->pushRates( $rates );
 
-        return SyncResult::success(
-            sprintf(
-                __( 'Rate sync to Expedia is not yet implemented. %d items queued.', 'nozule' ),
-                count( $rates )
-            ),
-            0
-        );
+        return $result['success']
+            ? SyncResult::success( $result['message'], $result['records_processed'] )
+            : SyncResult::failure( $result['message'] );
     }
 
-    /**
-     * {@inheritdoc}
-     */
     public function pullReservations(): array {
-        $apiKey     = $this->getConfigValue( 'api_key', '' );
-        $propertyId = $this->getConfigValue( 'property_id', '' );
-
-        if ( empty( $apiKey ) || empty( $propertyId ) ) {
+        $client = $this->client();
+        if ( ! $client ) {
             return [];
         }
 
-        // TODO: Implement Expedia Booking Retrieval (BR) request.
-        // Return array of reservation data structured as:
-        // [
-        //     [
-        //         'external_id'   => 'EXP-67890',
-        //         'guest_name'    => 'Jane Smith',
-        //         'check_in'      => '2025-07-10',
-        //         'check_out'     => '2025-07-14',
-        //         'room_type_id'  => 'KING',
-        //         'total_amount'  => 800.00,
-        //         'currency'      => 'USD',
-        //         'status'        => 'confirmed',
-        //     ],
-        // ]
+        $lastSync = (string) $this->getConfigValue( 'last_sync_date', '' );
+        $result   = $client->pullReservations( $lastSync !== '' ? $lastSync : null );
 
-        return [];
+        return $result['success'] ? $result['reservations'] : [];
     }
 
-    /**
-     * {@inheritdoc}
-     */
     public function confirmReservation( string $id ): bool {
-        // TODO: Implement Expedia Booking Confirmation (BC) request.
-        return false;
-    }
-
-    /**
-     * {@inheritdoc}
-     */
-    public function cancelReservation( string $id, string $reason ): bool {
-        // TODO: Implement Expedia reservation cancellation via API.
-        return false;
-    }
-
-    /**
-     * {@inheritdoc}
-     */
-    public function testConnection(): bool {
-        $apiKey     = $this->getConfigValue( 'api_key', '' );
-        $propertyId = $this->getConfigValue( 'property_id', '' );
-
-        if ( empty( $apiKey ) || empty( $propertyId ) ) {
+        $client = $this->client();
+        if ( ! $client ) {
             return false;
         }
-
-        // TODO: Implement a lightweight health-check call to the
-        // Expedia EQC API (e.g., property details fetch).
-
-        return false;
+        return $client->confirmReservation( $id );
     }
 
-    /**
-     * {@inheritdoc}
-     */
+    public function cancelReservation( string $id, string $reason ): bool {
+        // Expedia cancellations are guest-initiated through their platform; partners
+        // do not cancel via EQC. Log and no-op success so local state can reflect
+        // the cancellation propagated through pullReservations().
+        $logger = Plugin::getInstance()->container()->get( Logger::class );
+        $logger->info( 'Expedia cancelReservation called (no-op; cancellations propagate via pullReservations).', [
+            'external_id' => $id,
+            'reason'      => $reason,
+        ] );
+        return true;
+    }
+
+    public function testConnection(): bool {
+        $client = $this->client();
+        if ( ! $client ) {
+            return false;
+        }
+        $result = $client->testConnection();
+        return (bool) ( $result['success'] ?? false );
+    }
+
     public function getConfigFields(): array {
         return [
-            [
-                'key'      => 'api_key',
-                'label'    => __( 'API Key', 'nozule' ),
-                'type'     => 'password',
-                'required' => true,
-            ],
-            [
-                'key'      => 'api_secret',
-                'label'    => __( 'API Secret', 'nozule' ),
-                'type'     => 'password',
-                'required' => true,
-            ],
             [
                 'key'      => 'property_id',
                 'label'    => __( 'Property ID', 'nozule' ),
@@ -164,8 +128,20 @@ class ExpediaConnector extends AbstractChannelConnector {
                 'required' => true,
             ],
             [
+                'key'      => 'username',
+                'label'    => __( 'Username', 'nozule' ),
+                'type'     => 'text',
+                'required' => true,
+            ],
+            [
+                'key'      => 'password',
+                'label'    => __( 'Password', 'nozule' ),
+                'type'     => 'password',
+                'required' => true,
+            ],
+            [
                 'key'      => 'api_endpoint',
-                'label'    => __( 'API Endpoint', 'nozule' ),
+                'label'    => __( 'API Endpoint (optional)', 'nozule' ),
                 'type'     => 'url',
                 'required' => false,
             ],

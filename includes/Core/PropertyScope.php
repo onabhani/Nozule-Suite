@@ -12,8 +12,11 @@ use Nozule\Modules\Employees\Repositories\EmployeeRepository;
  */
 class PropertyScope {
 
+	private const USER_META_KEY = 'nzl_active_property_id';
+
 	private int|null $activePropertyId = null;
 	private bool $isSuperAdmin = false;
+	private int $wpUserId = 0;
 
 	public function __construct( private EmployeeRepository $employees ) {}
 
@@ -21,10 +24,11 @@ class PropertyScope {
 	 * Resolve the active property for the given WordPress user.
 	 */
 	public function resolve( int $wpUserId ): void {
+		$this->wpUserId     = $wpUserId;
 		$this->isSuperAdmin = user_can( $wpUserId, 'nzl_super_admin' );
 
 		if ( $this->isSuperAdmin ) {
-			// Read from session if set, otherwise null (all properties).
+			// Read persisted preference from user meta; null = all properties.
 			$this->activePropertyId = $this->getSessionProperty();
 		} else {
 			$employee               = $this->employees->findByWpUserId( $wpUserId );
@@ -67,16 +71,39 @@ class PropertyScope {
 	}
 
 	// ------------------------------------------------------------------
-	// Session stubs — Phase 2 will implement real session storage.
+	// Persisted property preference (per-user meta).
+	//
+	// User meta is used instead of PHP sessions so the preference survives
+	// across requests, devices, and browser restarts without requiring
+	// session_start() (which conflicts with object caching in many hosts).
 	// ------------------------------------------------------------------
 
 	private function getSessionProperty(): int|null {
-		return null;
+		$userId = $this->wpUserId ?: get_current_user_id();
+		if ( $userId <= 0 ) {
+			return null;
+		}
+		$stored = get_user_meta( $userId, self::USER_META_KEY, true );
+		if ( $stored === '' || $stored === null || $stored === false ) {
+			return null;
+		}
+		$id = (int) $stored;
+		return $id > 0 ? $id : null;
 	}
 
-	private function setSessionProperty( int $id ): void { // phpcs:ignore Generic.CodeAnalysis.UnusedFunctionParameter
+	private function setSessionProperty( int $id ): void {
+		$userId = $this->wpUserId ?: get_current_user_id();
+		if ( $userId <= 0 ) {
+			return;
+		}
+		update_user_meta( $userId, self::USER_META_KEY, $id );
 	}
 
 	private function clearSessionProperty(): void {
+		$userId = $this->wpUserId ?: get_current_user_id();
+		if ( $userId <= 0 ) {
+			return;
+		}
+		delete_user_meta( $userId, self::USER_META_KEY );
 	}
 }

@@ -81,6 +81,57 @@ class NotificationsModule extends BaseModule {
 
 		// Clean up old notifications during daily maintenance.
 		add_action( 'nzl_daily_maintenance', [ $this, 'cleanOldNotifications' ], 20 );
+
+		// Terminal delivery status callback from external async handlers (e.g., SimpleNotify).
+		add_action( 'nozule/notifications/mark_delivered', [ $this, 'onMarkDelivered' ], 10, 3 );
+
+		// Admin notice when a channel is enabled but no external handler is registered.
+		add_action( 'admin_notices', [ $this, 'maybeRenderMissingHandlerNotice' ] );
+	}
+
+	/**
+	 * Bridge the 'nozule/notifications/mark_delivered' action to the service.
+	 *
+	 * @param int         $notification_id     Nozule notification ID.
+	 * @param string|null $provider_message_id Provider-side message identifier.
+	 * @param string      $status              'delivered' | 'failed'.
+	 */
+	public function onMarkDelivered( int $notification_id, ?string $provider_message_id, string $status ): void {
+		$this->container->get( NotificationService::class )
+			->markDelivered( $notification_id, $provider_message_id, $status );
+	}
+
+	/**
+	 * Render an admin notice when SMS or WhatsApp is enabled but no external
+	 * handler is registered (e.g., SimpleNotify not installed/active).
+	 */
+	public function maybeRenderMissingHandlerNotice(): void {
+		if ( ! current_user_can( 'manage_options' ) ) {
+			return;
+		}
+
+		$settings = $this->container->get( SettingsManager::class );
+		$missing  = [];
+
+		foreach ( [ 'sms', 'whatsapp' ] as $channel ) {
+			$enabled = (bool) $settings->get( "notifications.{$channel}_enabled", false );
+			if ( $enabled && ! has_filter( "nozule/notifications/{$channel}_handler" ) ) {
+				$missing[] = strtoupper( $channel );
+			}
+		}
+
+		if ( empty( $missing ) ) {
+			return;
+		}
+
+		printf(
+			'<div class="notice notice-warning"><p>%s</p></div>',
+			esc_html( sprintf(
+				/* translators: %s: comma-separated list of channel names */
+				__( 'Nozule: %s notifications are enabled but no external handler is registered. Install SimpleNotify (or another provider) to deliver these messages.', 'nozule' ),
+				implode( ', ', $missing )
+			) )
+		);
 	}
 
 	/**

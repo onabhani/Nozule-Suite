@@ -40,12 +40,17 @@ class NotificationService {
 	 * Skips duplicates if the same notification type has already been queued/sent
 	 * for the booking on the same channel.
 	 *
-	 * @param object $booking Booking model instance (or stdClass with booking fields).
-	 * @param string $type    Notification type (e.g., 'booking_confirmation').
-	 * @param string $channel Notification channel. Default 'email'.
+	 * @param object               $booking Booking model instance (or stdClass with booking fields).
+	 * @param string               $type    Notification type (e.g., 'booking_confirmation').
+	 * @param string               $channel Notification channel. Default 'email'.
+	 * @param array<string, mixed> $options Optional extras:
+	 *                                      - locale (string): override resolved locale
+	 *                                      - template_name (string): WhatsApp Business approved template id
+	 *                                      - template_lang (string): template language code (e.g. 'en', 'ar')
+	 *                                      - template_params (array): positional params for WA template placeholders
 	 * @return Notification|null The created notification, or null if skipped/failed.
 	 */
-	public function queue( object $booking, string $type, string $channel = 'email' ): ?Notification {
+	public function queue( object $booking, string $type, string $channel = 'email', array $options = [] ): ?Notification {
 		// Validate notification type.
 		if ( ! in_array( $type, Notification::TYPES, true ) ) {
 			$this->logger->warning( 'Invalid notification type attempted.', [
@@ -105,18 +110,29 @@ class NotificationService {
 			return null;
 		}
 
+		$locale          = $this->resolveLocale( $options['locale'] ?? null, $guest, $booking );
+		$template_name   = isset( $options['template_name'] ) ? (string) $options['template_name'] : null;
+		$template_lang   = isset( $options['template_lang'] ) ? (string) $options['template_lang'] : null;
+		$template_params = isset( $options['template_params'] ) && is_array( $options['template_params'] )
+			? wp_json_encode( $options['template_params'] )
+			: null;
+
 		$notification = $this->repository->create( [
-			'booking_id'    => $booking_id ?: null,
-			'guest_id'      => $guest_id ?: null,
-			'type'          => $type,
-			'channel'       => $channel,
-			'recipient'     => $recipient,
-			'subject'       => $rendered['subject'],
-			'content'       => $rendered['body'],
-			'content_html'  => $rendered['body_html'],
-			'template_id'   => $type,
-			'template_vars' => $template_vars,
-			'status'        => 'queued',
+			'booking_id'      => $booking_id ?: null,
+			'guest_id'        => $guest_id ?: null,
+			'type'            => $type,
+			'channel'         => $channel,
+			'recipient'       => $recipient,
+			'locale'          => $locale,
+			'subject'         => $rendered['subject'],
+			'content'         => $rendered['body'],
+			'content_html'    => $rendered['body_html'],
+			'template_id'     => $type,
+			'template_vars'   => $template_vars,
+			'template_name'   => $template_name,
+			'template_lang'   => $template_lang,
+			'template_params' => $template_params,
+			'status'          => 'queued',
 		] );
 
 		if ( ! $notification ) {
@@ -211,6 +227,23 @@ class NotificationService {
 			return false;
 		}
 
+		// Fail-fast: sms/whatsapp require an external handler when configured to do so.
+		if (
+			in_array( $notification->channel, [ 'sms', 'whatsapp' ], true )
+			&& (bool) $this->settings->get( 'notifications.require_external_handler', false )
+			&& ! has_filter( "nozule/notifications/{$notification->channel}_handler" )
+		) {
+			$this->repository->markAsFailed(
+				$notification->id,
+				__( 'No external handler registered for this channel.', 'nozule' )
+			);
+			$this->logger->warning( 'Notification failed: external handler required but not registered.', [
+				'notification_id' => $notification->id,
+				'channel'         => $notification->channel,
+			] );
+			return false;
+		}
+
 		try {
 			$sent = match ( $notification->channel ) {
 				'email'    => $this->sendEmail( $notification ),
@@ -221,21 +254,44 @@ class NotificationService {
 			};
 
 			if ( $sent ) {
-				$this->repository->markAsSent( $notification->id );
+				// For async channels with a registered handler, the handler has
+				// accepted/queued the message — terminal status arrives later via
+				// the 'nozule/notifications/mark_delivered' action. Keep the row
+				// in 'sending' until then instead of optimistically marking sent.
+				$isAsync = in_array( $notification->channel, [ 'sms', 'whatsapp' ], true )
+					&& has_filter( "nozule/notifications/{$notification->channel}_handler" );
 
-				$this->logger->info( 'Notification sent successfully.', [
-					'notification_id' => $notification->id,
-					'type'            => $notification->type,
-					'channel'         => $notification->channel,
-					'recipient'       => $notification->recipient,
-				] );
+				if ( $isAsync ) {
+					$this->repository->updateStatus( $notification->id, 'sending' );
 
-				/**
-				 * Fires after a notification has been sent successfully.
-				 *
-				 * @param Notification $notification The sent notification.
-				 */
-				do_action( 'nozule/notifications/sent', $notification );
+					$this->logger->info( 'Notification accepted by external handler; awaiting delivery.', [
+						'notification_id' => $notification->id,
+						'channel'         => $notification->channel,
+					] );
+
+					/**
+					 * Fires when an async handler accepts the notification for delivery.
+					 *
+					 * @param Notification $notification The accepted notification.
+					 */
+					do_action( 'nozule/notifications/accepted', $notification );
+				} else {
+					$this->repository->markAsSent( $notification->id );
+
+					$this->logger->info( 'Notification sent successfully.', [
+						'notification_id' => $notification->id,
+						'type'            => $notification->type,
+						'channel'         => $notification->channel,
+						'recipient'       => $notification->recipient,
+					] );
+
+					/**
+					 * Fires after a notification has been sent successfully.
+					 *
+					 * @param Notification $notification The sent notification.
+					 */
+					do_action( 'nozule/notifications/sent', $notification );
+				}
 
 				return true;
 			}
@@ -269,6 +325,72 @@ class NotificationService {
 
 			return false;
 		}
+	}
+
+	/**
+	 * Mark a notification as delivered or failed based on terminal status from an
+	 * external async handler (e.g., SimpleNotify webhook).
+	 *
+	 * Wired to the 'nozule/notifications/mark_delivered' action so third-party
+	 * plugins can report terminal delivery status back to Nozule. When status is
+	 * 'failed' and the notification still has retries left, it is requeued.
+	 *
+	 * @param int         $notification_id     Nozule notification ID.
+	 * @param string|null $provider_message_id Provider-side message identifier.
+	 * @param string      $status              'delivered' | 'failed'.
+	 */
+	public function markDelivered( int $notification_id, ?string $provider_message_id, string $status ): bool {
+		if ( ! in_array( $status, [ 'delivered', 'failed' ], true ) ) {
+			$this->logger->warning( 'markDelivered called with invalid status.', [
+				'notification_id' => $notification_id,
+				'status'          => $status,
+			] );
+			return false;
+		}
+
+		$notification = $this->repository->find( $notification_id );
+		if ( ! $notification ) {
+			$this->logger->warning( 'markDelivered: notification not found.', [
+				'notification_id' => $notification_id,
+			] );
+			return false;
+		}
+
+		if ( 'delivered' === $status ) {
+			$updates = [
+				'status'       => 'delivered',
+				'delivered_at' => current_time( 'mysql' ),
+				'sent_at'      => $notification->sent_at ?: current_time( 'mysql' ),
+			];
+			if ( $provider_message_id !== null && $provider_message_id !== '' ) {
+				$updates['external_id'] = $provider_message_id;
+			}
+			$this->repository->update( $notification_id, $updates );
+
+			$this->logger->info( 'Notification delivered.', [
+				'notification_id' => $notification_id,
+				'provider_msg_id' => $provider_message_id,
+			] );
+
+			do_action( 'nozule/notifications/delivered', $notification, $provider_message_id );
+			return true;
+		}
+
+		// Failed: requeue if retries remain, else terminal failure.
+		$this->repository->incrementAttemptAndRequeue(
+			$notification_id,
+			$provider_message_id
+				? sprintf( 'External handler reported failure (provider id: %s).', $provider_message_id )
+				: 'External handler reported failure.'
+		);
+
+		$this->logger->warning( 'Notification reported failed by external handler.', [
+			'notification_id' => $notification_id,
+			'provider_msg_id' => $provider_message_id,
+		] );
+
+		do_action( 'nozule/notifications/delivery_failed', $notification, $provider_message_id );
+		return true;
 	}
 
 	/**
@@ -424,14 +546,21 @@ class NotificationService {
 	/**
 	 * Send a push notification.
 	 *
-	 * This is a placeholder for push notification integration.
+	 * Built-in: pushes to the SSE real-time event stream so any logged-in
+	 * staff viewing the admin dashboard receives it instantly in-browser.
+	 *
+	 * External push providers (FCM, OneSignal, etc.) can be wired via the
+	 * 'nozule/notifications/push_handler' filter for native mobile push.
 	 *
 	 * @param Notification $notification The notification to send.
 	 * @return bool True if sent successfully.
 	 */
 	public function sendPush( Notification $notification ): bool {
 		/**
-		 * Filter to provide a custom push notification handler.
+		 * Filter to provide a custom push notification handler (e.g., FCM).
+		 *
+		 * If a handler is registered it takes precedence over the built-in
+		 * SSE delivery. Return a callable(Notification): bool.
 		 *
 		 * @param callable|null $handler      The push handler callback.
 		 * @param Notification  $notification The notification to send.
@@ -442,7 +571,27 @@ class NotificationService {
 			return (bool) call_user_func( $handler, $notification );
 		}
 
-		$this->logger->warning( 'Push notification skipped: no push service configured.', [
+		// Built-in: push to SSE event stream for in-browser real-time delivery.
+		if ( class_exists( \Nozule\API\SSEController::class ) ) {
+			\Nozule\API\SSEController::pushEvent( 'notification', [
+				'id'         => $notification->id,
+				'type'       => $notification->type,
+				'subject'    => $notification->subject ?? '',
+				'body'       => $notification->content,
+				'booking_id' => $notification->booking_id,
+				'guest_id'   => $notification->guest_id,
+				'created_at' => $notification->created_at ?? current_time( 'c' ),
+			] );
+
+			$this->logger->info( 'Push notification delivered via SSE.', [
+				'notification_id' => $notification->id,
+				'type'            => $notification->type,
+			] );
+
+			return true;
+		}
+
+		$this->logger->warning( 'Push notification skipped: no push service configured and SSE unavailable.', [
 			'notification_id' => $notification->id,
 		] );
 
@@ -745,6 +894,33 @@ class NotificationService {
 			'push'     => (string) ( $guest->wp_user_id ?? $booking->wp_user_id ?? '' ),
 			default    => '',
 		};
+	}
+
+	/**
+	 * Resolve locale for a notification: explicit override > guest preference > property default > 'en'.
+	 *
+	 * @param string|null $override Explicit locale passed in options.
+	 * @param object|null $guest    Guest record.
+	 * @param object      $booking  Booking record.
+	 */
+	private function resolveLocale( ?string $override, ?object $guest, object $booking ): string {
+		$candidates = [
+			$override,
+			$guest->locale ?? null,
+			$guest->language ?? null,
+			$booking->locale ?? null,
+			$this->settings->get( 'notifications.default_locale' ),
+			$this->settings->get( 'hotel.default_locale' ),
+		];
+
+		foreach ( $candidates as $candidate ) {
+			if ( is_string( $candidate ) && $candidate !== '' ) {
+				// Normalize to 2–5 char code (e.g., 'ar', 'en', 'en_US').
+				return substr( $candidate, 0, 5 );
+			}
+		}
+
+		return 'en';
 	}
 
 	/**

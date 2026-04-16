@@ -27,6 +27,22 @@ class GuestRepository extends BaseRepository {
     }
 
     /**
+     * Find a guest by linked WordPress user ID.
+     */
+    public function findByWpUserId( int $wpUserId ): ?Guest {
+        if ( $wpUserId <= 0 ) {
+            return null;
+        }
+        $table = $this->tableName();
+        $row   = $this->db->getRow(
+            "SELECT * FROM {$table} WHERE wp_user_id = %d LIMIT 1",
+            $wpUserId
+        );
+
+        return $row ? Guest::fromRow( $row ) : null;
+    }
+
+    /**
      * Find a guest by phone number.
      */
     public function findByPhone( string $phone ): ?Guest {

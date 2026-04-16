@@ -66,6 +66,9 @@ function nzl_migration_002_seed_data(): void {
         [ 'notifications', 'whatsapp_enabled', '0' ],
         [ 'notifications', 'admin_email_on_booking', '1' ],
         [ 'notifications', 'reminder_days_before', '1' ],
+        [ 'notifications', 'push_enabled', '1' ],
+        [ 'notifications', 'default_locale', 'en' ],
+        [ 'notifications', 'require_external_handler', '0' ],
 
         // Display
         [ 'display', 'primary_color', '#1e40af' ],

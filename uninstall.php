@@ -35,6 +35,15 @@ if ( $remove_data ) {
         $wpdb->query( "DROP TABLE IF EXISTS `{$table}`" ); // phpcs:ignore WordPress.DB.PreparedSQL
     }
 
+    // Remove auto-created frontend pages and their option pointers.
+    foreach ( [ 'nzl_page_booking', 'nzl_page_my_account', 'nzl_page_register' ] as $page_option ) {
+        $page_id = (int) get_option( $page_option, 0 );
+        if ( $page_id > 0 && get_post_meta( $page_id, '_nzl_auto_created', true ) === '1' ) {
+            wp_delete_post( $page_id, true );
+        }
+        delete_option( $page_option );
+    }
+
     // Remove options
     delete_option( 'nzl_db_version' );
     delete_option( 'nzl_remove_data_on_uninstall' );

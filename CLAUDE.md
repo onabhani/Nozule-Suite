@@ -60,7 +60,7 @@ Exceptions/            — Custom exceptions (optional)
 |--------|---------|
 | Active development | Bookings, Rooms, Pricing, Billing, Guests, Channels, Notifications, POS, Groups, Loyalty, Promotions, Currency, Housekeeping, Reports, Forecasting, Audit, Reviews, WhatsApp, Messaging, RateShopping, Property, Branding |
 | Stable | Settings, Documents, Employees, Integrations, Metasearch |
-| Stub/incomplete | Channels' OTA connectors (Booking.com, Expedia) — placeholder methods with TODOs for availability push, rate sync, reservation pull/confirm/cancel |
+| Stub/incomplete | None — all connectors have real implementations pending credential-based sandbox validation |
 
 ### Frontend
 
@@ -123,9 +123,11 @@ Exceptions/            — Custom exceptions (optional)
 
 ## Known Gotchas
 
-- **PropertyScope session methods are no-ops:** `PropertyScope::getSessionProperty()` and `setSessionProperty()` are stub implementations (Phase 2 TODO). Super admins cannot persist property filters across requests
-- **OTA connectors are stubs:** `BookingComConnector` and `ExpediaConnector` in Channels have placeholder methods that return empty `SyncResult` objects. Do not call them expecting real API responses
+- **PropertyScope uses user meta for persistence:** `getSessionProperty()`/`setSessionProperty()`/`clearSessionProperty()` persist via `wp_usermeta` key `nzl_active_property_id`. Preference survives across requests/devices for the same WP user
+- **OTA connectors are implemented but unverified:** `BookingComConnector` and `ExpediaConnector` delegate to `BookingComApiClient` / `ExpediaApiClient` which issue real OTA-XML requests over HTTPS. They have NOT been validated against live sandbox credentials. Expect to tune XML envelopes, endpoint paths, and error handling against the actual partner responses. Booking.com `confirmReservation`/`cancelReservation` are intentional no-ops (cancellations/confirmations are not partner-initiated on Booking.com)
 - **No uninstall safety net:** `uninstall.php` drops all `nzl_*` tables when `nzl_remove_data_on_uninstall` option is true. Be careful with that flag in production
+- **SMS/WhatsApp delivery is external:** Nozule only handles email natively via `wp_mail`. SMS and WhatsApp require an external handler registered on `nozule/notifications/sms_handler` / `whatsapp_handler` filters (SimpleNotify is the reference integration). See `docs/notifications-integration.md`. When `notifications.require_external_handler` is `1` and no handler is registered, SMS/WA notifications fail terminally with no retry
+- **Migration numbering:** Sequence is 001–012, 014–019 (013 was skipped). Next migration should be `020`
 
 ## Domain Terminology
 

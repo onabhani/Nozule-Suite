@@ -2,155 +2,128 @@
 
 namespace Nozule\Modules\Channels\Services;
 
+use Nozule\Core\Logger;
+use Nozule\Core\Plugin;
 use Nozule\Modules\Channels\Models\SyncResult;
 
 /**
  * Booking.com channel connector.
  *
- * Placeholder implementation for the Booking.com Connectivity API.
- * Each method contains the contract signature and returns stub data.
- * Replace the method bodies with real API calls once the Booking.com
- * connectivity partner credentials are available.
+ * Thin adapter that maps the AbstractChannelConnector contract to
+ * BookingComApiClient (which handles XML building, HTTP, and parsing).
  */
 class BookingComConnector extends AbstractChannelConnector {
 
-    /**
-     * {@inheritdoc}
-     */
+    private ?BookingComApiClient $client = null;
+
     public function getChannelName(): string {
         return 'booking_com';
     }
 
-    /**
-     * {@inheritdoc}
-     */
     public function getChannelLabel(): string {
         return 'Booking.com';
     }
 
     /**
-     * {@inheritdoc}
+     * Lazily resolve and configure the API client from connector config.
      */
+    private function client(): ?BookingComApiClient {
+        if ( $this->client instanceof BookingComApiClient ) {
+            return $this->client;
+        }
+
+        $hotelId  = (string) $this->getConfigValue( 'hotel_id', '' );
+        $username = (string) $this->getConfigValue( 'username', $this->getConfigValue( 'api_key', '' ) );
+        $password = (string) $this->getConfigValue( 'password', '' );
+
+        if ( $hotelId === '' || $username === '' || $password === '' ) {
+            return null;
+        }
+
+        $logger = Plugin::getInstance()->container()->get( Logger::class );
+        $client = new BookingComApiClient( $logger );
+        $client->setCredentials( $hotelId, $username, $password );
+
+        $endpoint = (string) $this->getConfigValue( 'api_endpoint', '' );
+        if ( $endpoint !== '' ) {
+            $client->setBaseUrl( $endpoint );
+        } elseif ( ! empty( $this->getConfigValue( 'use_sandbox', false ) ) ) {
+            $client->setBaseUrl( BookingComApiClient::SANDBOX_BASE_URL );
+        }
+
+        $this->client = $client;
+        return $this->client;
+    }
+
     public function pushAvailability( array $inventory ): SyncResult {
-        $apiKey  = $this->getConfigValue( 'api_key', '' );
-        $hotelId = $this->getConfigValue( 'hotel_id', '' );
-
-        if ( empty( $apiKey ) || empty( $hotelId ) ) {
-            return SyncResult::failure(
-                __( 'Booking.com API key and hotel ID are required.', 'nozule' )
-            );
+        $client = $this->client();
+        if ( ! $client ) {
+            return SyncResult::failure( __( 'Booking.com credentials are not configured.', 'nozule' ) );
         }
 
-        // TODO: Implement Booking.com OTA_HotelAvailNotifRQ XML/JSON call.
-        // Each $inventory item should be mapped to a Booking.com room-stay
-        // availability record and pushed via their connectivity endpoint.
+        $result = $client->pushAvailability( $inventory );
 
-        return SyncResult::success(
-            sprintf(
-                __( 'Availability sync to Booking.com is not yet implemented. %d items queued.', 'nozule' ),
-                count( $inventory )
-            ),
-            0
-        );
+        return $result['success']
+            ? SyncResult::success( $result['message'], $result['records_processed'] )
+            : SyncResult::failure( $result['message'] );
     }
 
-    /**
-     * {@inheritdoc}
-     */
     public function pushRates( array $rates ): SyncResult {
-        $apiKey  = $this->getConfigValue( 'api_key', '' );
-        $hotelId = $this->getConfigValue( 'hotel_id', '' );
-
-        if ( empty( $apiKey ) || empty( $hotelId ) ) {
-            return SyncResult::failure(
-                __( 'Booking.com API key and hotel ID are required.', 'nozule' )
-            );
+        $client = $this->client();
+        if ( ! $client ) {
+            return SyncResult::failure( __( 'Booking.com credentials are not configured.', 'nozule' ) );
         }
 
-        // TODO: Implement Booking.com OTA_HotelRateAmountNotifRQ call.
+        $result = $client->pushRates( $rates );
 
-        return SyncResult::success(
-            sprintf(
-                __( 'Rate sync to Booking.com is not yet implemented. %d items queued.', 'nozule' ),
-                count( $rates )
-            ),
-            0
-        );
+        return $result['success']
+            ? SyncResult::success( $result['message'], $result['records_processed'] )
+            : SyncResult::failure( $result['message'] );
     }
 
-    /**
-     * {@inheritdoc}
-     */
     public function pullReservations(): array {
-        $apiKey  = $this->getConfigValue( 'api_key', '' );
-        $hotelId = $this->getConfigValue( 'hotel_id', '' );
-
-        if ( empty( $apiKey ) || empty( $hotelId ) ) {
+        $client = $this->client();
+        if ( ! $client ) {
             return [];
         }
 
-        // TODO: Implement Booking.com OTA_ReadRQ / reservation pull.
-        // Return array of reservation data structured as:
-        // [
-        //     [
-        //         'external_id'   => 'BDC-12345',
-        //         'guest_name'    => 'John Doe',
-        //         'check_in'      => '2025-06-01',
-        //         'check_out'     => '2025-06-05',
-        //         'room_type_id'  => 'DBL',
-        //         'total_amount'  => 500.00,
-        //         'currency'      => 'USD',
-        //         'status'        => 'confirmed',
-        //     ],
-        // ]
+        $lastSync = (string) $this->getConfigValue( 'last_sync_date', '' );
+        $result   = $client->pullReservations( $lastSync !== '' ? $lastSync : null );
 
-        return [];
+        return $result['success'] ? $result['reservations'] : [];
     }
 
-    /**
-     * {@inheritdoc}
-     */
     public function confirmReservation( string $id ): bool {
-        // TODO: Implement Booking.com reservation confirmation via API.
-        return false;
+        // Booking.com auto-confirms reservations at source; no explicit confirm
+        // endpoint exists. Treat as a no-op success so downstream sync marks
+        // the local reservation as acknowledged.
+        return true;
     }
 
-    /**
-     * {@inheritdoc}
-     */
     public function cancelReservation( string $id, string $reason ): bool {
-        // TODO: Implement Booking.com reservation cancellation via API.
-        return false;
+        // Cancellations originate from the guest on Booking.com; partners cannot
+        // cancel reservations via the Connectivity API. Log and return true so
+        // local state is updated without implying a remote action.
+        $logger = Plugin::getInstance()->container()->get( Logger::class );
+        $logger->info( 'Booking.com cancelReservation called (no-op; cancellations are guest-initiated).', [
+            'external_id' => $id,
+            'reason'      => $reason,
+        ] );
+        return true;
     }
 
-    /**
-     * {@inheritdoc}
-     */
     public function testConnection(): bool {
-        $apiKey  = $this->getConfigValue( 'api_key', '' );
-        $hotelId = $this->getConfigValue( 'hotel_id', '' );
-
-        if ( empty( $apiKey ) || empty( $hotelId ) ) {
+        $client = $this->client();
+        if ( ! $client ) {
             return false;
         }
 
-        // TODO: Implement a lightweight health-check call to the
-        // Booking.com connectivity API (e.g., property details fetch).
-
-        return false;
+        $result = $client->testConnection();
+        return (bool) ( $result['success'] ?? false );
     }
 
-    /**
-     * {@inheritdoc}
-     */
     public function getConfigFields(): array {
         return [
-            [
-                'key'      => 'api_key',
-                'label'    => __( 'API Key', 'nozule' ),
-                'type'     => 'password',
-                'required' => true,
-            ],
             [
                 'key'      => 'hotel_id',
                 'label'    => __( 'Hotel ID', 'nozule' ),
@@ -158,8 +131,20 @@ class BookingComConnector extends AbstractChannelConnector {
                 'required' => true,
             ],
             [
+                'key'      => 'username',
+                'label'    => __( 'Username', 'nozule' ),
+                'type'     => 'text',
+                'required' => true,
+            ],
+            [
+                'key'      => 'password',
+                'label'    => __( 'Password', 'nozule' ),
+                'type'     => 'password',
+                'required' => true,
+            ],
+            [
                 'key'      => 'api_endpoint',
-                'label'    => __( 'API Endpoint', 'nozule' ),
+                'label'    => __( 'API Endpoint (optional)', 'nozule' ),
                 'type'     => 'url',
                 'required' => false,
             ],

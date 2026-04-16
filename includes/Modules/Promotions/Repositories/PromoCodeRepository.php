@@ -227,22 +227,46 @@ class PromoCodeRepository extends BaseRepository {
 	/**
 	 * Count the number of times a specific guest has used a promo code.
 	 *
-	 * This method checks the booking_logs or a dedicated usage table.
-	 * For now, returns 0 as a stub — integrate with booking records as needed.
+	 * Counts non-cancelled bookings tied to this guest/promo pair. Cancellations
+	 * are excluded so an aborted checkout doesn't permanently consume a guest's
+	 * per-guest allowance.
 	 *
 	 * @param int $promoId The promo code ID.
 	 * @param int $guestId The guest ID.
 	 */
 	public function getGuestUsageCount( int $promoId, int $guestId ): int {
+		if ( $promoId <= 0 || $guestId <= 0 ) {
+			return 0;
+		}
+
+		global $wpdb;
+		$table = $wpdb->prefix . 'nzl_bookings';
+
+		// phpcs:ignore WordPress.DB.DirectDatabaseQuery, WordPress.DB.PreparedSQL.InterpolatedNotPrepared
+		$count = $wpdb->get_var(
+			$wpdb->prepare(
+				"SELECT COUNT(*) FROM {$table}
+				 WHERE promo_code_id = %d
+				   AND guest_id = %d
+				   AND status != 'cancelled'",
+				$promoId,
+				$guestId
+			)
+		);
+
+		$count = (int) $count;
+
 		/**
-		 * Filter to retrieve guest-specific promo usage count.
+		 * Filter the computed guest-specific promo usage count so other modules
+		 * can add alternative sources (e.g., external booking logs).
 		 *
-		 * Other modules (e.g., Bookings) can hook in to supply the actual count
-		 * by querying their own tables.
+		 * @param int $count   Current count from nzl_bookings.
+		 * @param int $promoId The promo code ID.
+		 * @param int $guestId The guest ID.
 		 */
 		return (int) apply_filters(
 			'nozule/promotions/guest_usage_count',
-			0,
+			$count,
 			$promoId,
 			$guestId
 		);

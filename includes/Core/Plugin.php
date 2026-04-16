@@ -248,23 +248,49 @@ class Plugin {
             true
         );
 
+        wp_enqueue_script(
+            'nozule-guest-register',
+            NZL_PLUGIN_URL . 'assets/js/components/guest-register.js',
+            [ 'nozule-api' ],
+            NZL_VERSION,
+            true
+        );
+
+        wp_enqueue_script(
+            'nozule-my-account',
+            NZL_PLUGIN_URL . 'assets/js/components/my-account.js',
+            [ 'nozule-api' ],
+            NZL_VERSION,
+            true
+        );
+
         // Alpine.js CDN — loaded LAST so alpine:init listeners are ready
         wp_enqueue_script(
             'alpinejs',
             'https://cdn.jsdelivr.net/npm/alpinejs@3.x.x/dist/cdn.min.js',
-            [ 'nozule-store', 'nozule-booking-widget', 'nozule-booking-form' ],
+            [ 'nozule-store', 'nozule-booking-widget', 'nozule-booking-form', 'nozule-guest-register', 'nozule-my-account' ],
             '3.14.0',
             true
         );
 
         // Localize script with config
         wp_localize_script( 'nozule-api', 'NozuleConfig', [
-            'nonce'    => wp_create_nonce( 'wp_rest' ),
-            'apiBase'  => rest_url( 'nozule/v1' ),
-            'siteUrl'  => home_url(),
-            'locale'   => get_locale(),
-            'currency' => $this->container->get( SettingsManager::class )->get( 'currency.default', 'USD' ),
-            'dateFormat' => get_option( 'date_format', 'Y-m-d' ),
+            'nonce'         => wp_create_nonce( 'wp_rest' ),
+            'apiBase'       => rest_url( 'nozule/v1' ),
+            'siteUrl'       => home_url(),
+            'locale'        => get_locale(),
+            'currency'      => $this->container->get( SettingsManager::class )->get( 'currency.default', 'USD' ),
+            'dateFormat'    => get_option( 'date_format', 'Y-m-d' ),
+            'myAccountUrl'  => (string) apply_filters(
+                'nozule/portal/my_account_url',
+                ( $pid = (int) get_option( 'nzl_page_my_account', 0 ) ) > 0 ? get_permalink( $pid ) : home_url( '/my-account/' )
+            ),
+            'loginUrl'      => (string) apply_filters( 'nozule/portal/login_url', wp_login_url() ),
+            'logoutUrl'     => wp_logout_url( home_url() ),
+            'registerUrl'   => (string) apply_filters(
+                'nozule/portal/register_url',
+                ( $pid = (int) get_option( 'nzl_page_register', 0 ) ) > 0 ? get_permalink( $pid ) : home_url( '/register/' )
+            ),
         ] );
 
         // RTL support
@@ -311,6 +337,18 @@ class Plugin {
         add_shortcode( 'nozule_confirmation', function () {
             ob_start();
             include NZL_PLUGIN_DIR . 'templates/public/confirmation.php';
+            return ob_get_clean();
+        } );
+
+        add_shortcode( 'nozule_register', function () {
+            ob_start();
+            include NZL_PLUGIN_DIR . 'templates/public/register.php';
+            return ob_get_clean();
+        } );
+
+        add_shortcode( 'nozule_my_account', function () {
+            ob_start();
+            include NZL_PLUGIN_DIR . 'templates/public/my-account.php';
             return ob_get_clean();
         } );
     }

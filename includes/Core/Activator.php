@@ -16,11 +16,67 @@ class Activator {
         self::createRoles();
         self::seedDefaultSettings();
         self::scheduleEvents();
+        self::createFrontendPages();
 
         update_option( 'nzl_db_version', NZL_DB_VERSION );
         update_option( 'nzl_activated_at', current_time( 'mysql' ) );
 
         flush_rewrite_rules();
+    }
+
+    /**
+     * Create the default frontend pages (booking, my-account, register) if they
+     * don't already exist. Page IDs are stored in options and later resolved
+     * through the nozule/portal/*_url filters.
+     */
+    private static function createFrontendPages(): void {
+        $pages = [
+            'nzl_page_booking'    => [
+                'title'     => __( 'Book a Room', 'nozule' ),
+                'slug'      => 'book',
+                'shortcode' => '[nozule_booking]' . "\n\n" . '[nozule_rooms]' . "\n\n" . '[nozule_booking_form]' . "\n\n" . '[nozule_confirmation]',
+            ],
+            'nzl_page_my_account' => [
+                'title'     => __( 'My Account', 'nozule' ),
+                'slug'      => 'my-account',
+                'shortcode' => '[nozule_my_account]',
+            ],
+            'nzl_page_register'   => [
+                'title'     => __( 'Create Account', 'nozule' ),
+                'slug'      => 'register',
+                'shortcode' => '[nozule_register]',
+            ],
+        ];
+
+        foreach ( $pages as $optionKey => $page ) {
+            $existingId = (int) get_option( $optionKey, 0 );
+            if ( $existingId > 0 && get_post_status( $existingId ) ) {
+                continue;
+            }
+
+            // Check if a page with this slug already exists (e.g., manually created).
+            $existing = get_page_by_path( $page['slug'], OBJECT, 'page' );
+            if ( $existing instanceof \WP_Post ) {
+                update_option( $optionKey, (int) $existing->ID );
+                continue;
+            }
+
+            $pageId = wp_insert_post( [
+                'post_title'   => $page['title'],
+                'post_name'    => $page['slug'],
+                'post_content' => $page['shortcode'],
+                'post_status'  => 'publish',
+                'post_type'    => 'page',
+                'post_author'  => get_current_user_id() ?: 1,
+                'meta_input'   => [
+                    '_nzl_auto_created' => '1',
+                ],
+            ] );
+
+            if ( ! is_wp_error( $pageId ) && $pageId > 0 ) {
+                update_option( $optionKey, (int) $pageId );
+            }
+        }
     }
 
     /**
@@ -82,6 +138,12 @@ class Activator {
 
         require_once NZL_PLUGIN_DIR . 'migrations/017_add_performance_indexes.php';
         nzl_migration_017_add_performance_indexes();
+
+        require_once NZL_PLUGIN_DIR . 'migrations/018_add_notification_locale_and_templates.php';
+        nzl_migration_018_add_notification_locale_and_templates();
+
+        require_once NZL_PLUGIN_DIR . 'migrations/019_add_promo_code_id_to_bookings.php';
+        nzl_migration_019_add_promo_code_id_to_bookings();
     }
 
     /**
